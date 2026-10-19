@@ -1,0 +1,208 @@
+@prefix sd:   <urn:sumidashi:vocab#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sds:  <urn:sumidashi:shapes#> .
+
+# 設計知識の制約。tools/dev/validate_knowledge.py が pyshacl で generated/knowledge.ttl に当てる。
+
+sds:prefixes
+    sh:declare [ sh:prefix "sd" ; sh:namespace "urn:sumidashi:vocab#"^^xsd:anyURI ] .
+
+# ------------------------------------------------------------------ チェック
+sds:CheckShape a sh:NodeShape ;
+    sh:targetClass sd:Check ;
+    sh:property [
+        sh:path sd:identifier ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:pattern "^[A-Z]+(-[A-Z]+)?-[0-9]{2}$" ;
+        sh:message "チェックIDは 1 つで、CA-DEP-01 の形にする" ;
+    ] ;
+    sh:property [
+        sh:path sd:basedOn ;
+        sh:minCount 1 ;
+        sh:class sd:Principle ;
+        sh:message "チェックは、定義済みの原則を 1 つ以上根拠に持つ" ;
+    ] ;
+    sh:property [
+        sh:path sd:belongsTo ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:class sd:Philosophy ;
+        sh:message "チェックは思想を 1 つだけ持つ" ;
+    ] ;
+    sh:property [
+        sh:path sd:status ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:in ( "draft" "ready" ) ;
+    ] ;
+    sh:property [
+        sh:path sd:detection ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:in ( "static" "hybrid" "llm" ) ;
+    ] ;
+    sh:property [
+        sh:path sd:defaultSeverity ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:in ( "High" "Medium" "Low" "Info" ) ;
+    ] ;
+    sh:property [
+        sh:path sd:related ;
+        sh:class sd:Check ;
+        sh:message "related は定義済みのチェックを指す" ;
+    ] ;
+    sh:property [
+        sh:path sd:alsoAccept ;
+        sh:class sd:Check ;
+        sh:message "also_accept は定義済みのチェックを指す" ;
+    ] ;
+    sh:property [
+        sh:path sd:conflictsWith ;
+        sh:class sd:Check ;
+        sh:message "conflicts_with は定義済みのチェックを指す" ;
+    ] .
+
+# ready のチェックは、violation・borderline・not_violation の評価ケースをそれぞれ 1 つ以上持つ（draft は対象外）
+sds:ReadyCheckFixturesShape a sh:NodeShape ;
+    sh:targetClass sd:Check ;
+    sh:sparql [
+        sh:message "ready のチェックに violation の評価ケースがない" ;
+        sh:prefixes sds:prefixes ;
+        sh:select """
+            SELECT $this WHERE {
+                $this sd:status "ready" .
+                FILTER NOT EXISTS { $this sd:hasFixture ?f . ?f sd:label "violation" . }
+            }
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "ready のチェックに borderline の評価ケースがない" ;
+        sh:prefixes sds:prefixes ;
+        sh:select """
+            SELECT $this WHERE {
+                $this sd:status "ready" .
+                FILTER NOT EXISTS { $this sd:hasFixture ?f . ?f sd:label "borderline" . }
+            }
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "ready のチェックに not_violation の評価ケースがない" ;
+        sh:prefixes sds:prefixes ;
+        sh:select """
+            SELECT $this WHERE {
+                $this sd:status "ready" .
+                FILTER NOT EXISTS { $this sd:hasFixture ?f . ?f sd:label "not_violation" . }
+            }
+        """ ;
+    ] .
+
+# conflictsWith は対称で、その組には裁定ルールつきの衝突が定義されている
+sds:ConflictSymmetryShape a sh:NodeShape ;
+    sh:targetClass sd:Check ;
+    sh:sparql [
+        sh:message "{$this} は {?other} と衝突するが、逆向きの conflictsWith がない" ;
+        sh:prefixes sds:prefixes ;
+        sh:select """
+            SELECT $this ?other WHERE {
+                $this sd:conflictsWith ?other .
+                FILTER NOT EXISTS { ?other sd:conflictsWith $this . }
+            }
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "{$this} と {?other} の衝突に裁定ルールがない（design-router/conflicts.yml に組を書く）" ;
+        sh:prefixes sds:prefixes ;
+        sh:select """
+            SELECT $this ?other WHERE {
+                $this sd:conflictsWith ?other .
+                FILTER NOT EXISTS {
+                    ?c a sd:Conflict ; sd:between $this , ?other ; sd:resolvedBy ?r .
+                    ?r a sd:Ruling .
+                }
+            }
+        """ ;
+    ] .
+
+# alsoAccept は related を含む
+sds:AlsoAcceptShape a sh:NodeShape ;
+    sh:targetClass sd:Check ;
+    sh:sparql [
+        sh:message "{$this} は {?other} を also_accept にしているが、related に入れていない" ;
+        sh:prefixes sds:prefixes ;
+        sh:select """
+            SELECT $this ?other WHERE {
+                $this sd:alsoAccept ?other .
+                FILTER NOT EXISTS { $this sd:related ?other . }
+            }
+        """ ;
+    ] .
+
+# ------------------------------------------------------------------ 原則・出典
+sds:PrincipleShape a sh:NodeShape ;
+    sh:targetClass sd:Principle ;
+    sh:property [
+        sh:path sd:citedFrom ;
+        sh:minCount 1 ;
+        sh:class sd:Source ;
+        sh:message "原則は、定義済みの出典を 1 つ以上持つ" ;
+    ] ;
+    sh:property [
+        sh:path sd:statement ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+sds:SourceShape a sh:NodeShape ;
+    sh:targetClass sd:Source ;
+    sh:property [
+        sh:path sd:name ;
+        sh:minCount 1 ;
+        sh:message "出典には書名・題名がいる" ;
+    ] .
+
+# ------------------------------------------------------------------ 評価ケース・衝突
+sds:FixtureShape a sh:NodeShape ;
+    sh:targetClass sd:Fixture ;
+    sh:property [
+        sh:path sd:label ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:in ( "violation" "borderline" "not_violation" ) ;
+    ] ;
+    sh:property [
+        sh:path sd:path ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+    ] .
+
+sds:ConflictShape a sh:NodeShape ;
+    sh:targetClass sd:Conflict ;
+    sh:property [
+        sh:path sd:between ;
+        sh:minCount 2 ; sh:maxCount 2 ;
+        sh:class sd:Check ;
+        sh:message "衝突は定義済みのチェック 2 つの組" ;
+    ] ;
+    sh:property [
+        sh:path sd:resolvedBy ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:class sd:Ruling ;
+        sh:message "衝突には定義済みの裁定ルールが 1 つ要る" ;
+    ] .
+
+# ------------------------------------------------------------------ ADR（対象リポジトリのもの）
+sds:ADRShape a sh:NodeShape ;
+    sh:targetClass sd:ADR ;
+    sh:property [
+        sh:path sd:exempts ;
+        sh:class sd:Check ;
+        sh:message "ADR の exempts は実在するチェックIDを指す" ;
+    ] ;
+    sh:sparql [
+        sh:message "exempts を持つ ADR は scope が空であってはならない" ;
+        sh:prefixes sds:prefixes ;
+        sh:select """
+            SELECT $this WHERE {
+                $this sd:exempts ?c .
+                FILTER NOT EXISTS { $this sd:scope ?s . FILTER (STRLEN(STR(?s)) > 0) }
+            }
+        """ ;
+    ] .

@@ -1,0 +1,16 @@
+{
+  "case": "ca-dep-04/b1-ts",
+  "check": "CA-DEP-04",
+  "label": "borderline",
+  "split": "dev",
+  "description": "domain と infrastructure の循環だが、domain → infrastructure の辺が import type だけ。型だけの辺を除くと循環が消える。",
+  "findings": [
+    {
+      "id": "CA-DEP-04",
+      "verdict": "borderline",
+      "file": "src/domain/customer.ts",
+      "start_line": 1,
+      "end_line": 1
+    }
+  ]
+}

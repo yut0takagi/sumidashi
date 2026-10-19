@@ -1,0 +1,16 @@
+{
+  "case": "ca-dep-03/b1-py",
+  "check": "CA-DEP-03",
+  "label": "borderline",
+  "split": "dev",
+  "description": "アプリケーション層がインフラ層の UnitOfWork を TYPE_CHECKING の中でだけ import している（型注釈にしか使わない）。",
+  "findings": [
+    {
+      "id": "CA-DEP-03",
+      "verdict": "borderline",
+      "file": "src/shop/application/reserve_stock.py",
+      "start_line": 8,
+      "end_line": 8
+    }
+  ]
+}

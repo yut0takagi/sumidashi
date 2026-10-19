@@ -1,0 +1,358 @@
+# ビジネス視点のチェック項目（8個）
+# 書かれた業務要求（業務ルール台帳・チケットの受け入れ条件）とコードの整合だけを見る。施策の良し悪しは判定しない。
+# 台帳（docs/business-rules.yml）がないリポジトリでは BIZ-01〜04・07・08 を走らせない。BIZ-05・06 は台帳なしでも動く。
+# 1チェック=1エントリ。id は一度振ったら変えない。
+# スキーマ: schemas/checks-file.schema.json
+
+philosophy:
+  id: business
+  name: ビジネス視点
+  summary: 業務ルール台帳・受け入れ条件とコードの整合
+  release: v1
+  id_prefixes: [BIZ]
+
+sources:
+  - id: ross-2003
+    title: "Principles of the Business Rule Approach"
+    author: Ronald G. Ross
+    year: 2003
+  - id: myers-1979
+    title: The Art of Software Testing
+    author: Glenford J. Myers
+    year: 1979
+  - id: adzic-2011
+    title: "Specification by Example: How Successful Teams Deliver the Right Software"
+    author: Gojko Adzic
+    year: 2011
+  - id: fowler-2002
+    title: Patterns of Enterprise Application Architecture
+    author: Martin Fowler
+    year: 2002
+  - id: evans-2003
+    title: "Domain-Driven Design: Tackling Complexity in the Heart of Software"
+    author: Eric Evans
+    year: 2003
+  - id: vernon-2013
+    title: Implementing Domain-Driven Design
+    author: Vaughn Vernon
+    year: 2013
+
+principles:
+  - id: biz.rule-traceability
+    statement: 業務ルールは、台帳の1行と、それを実装したコード・確かめるテストとを互いに辿れるようにする
+    sources: [ross-2003]
+  - id: biz.externalized-volatile-rules
+    statement: 変わりやすい業務ルールの閾値・率・期間は、コードに直書きせず、コードを変えずに変えられる1か所に置く
+    sources: [ross-2003]
+  - id: biz.rule-boundary-tests
+    statement: 業務ルールの条件の境界は、境界値とその前後の値でテストする
+    sources: [myers-1979]
+  - id: biz.acceptance-criteria
+    statement: 実装は、チケットに書かれた受け入れ条件を満たす
+    sources: [adzic-2011]
+  - id: biz.money-and-time-types
+    statement: 金額は丸めを明示した十進の型か整数の最小単位で扱い、締め日や期限はタイムゾーンを決めた日時で判定する
+    sources: [fowler-2002]
+  - id: biz.core-domain-investment
+    statement: 設計の手間はコアドメインにかけ、汎用の領域は単純な構造に保つ
+    sources: [evans-2003, vernon-2013]
+
+checks:
+  - id: BIZ-01
+    name: 台帳の業務ルールと実装が辿れない
+    principle: 台帳の業務ルールには、実在する実装箇所を書く
+    principles: [biz.rule-traceability]
+    source: Ross『Principles of the Business Rule Approach』
+    status: draft
+    release: v1.5
+    applies_when:
+      layers: [any]
+      languages: [yaml]
+      file_kinds: [business-rules]
+      requires: [business_rules]
+    detection:
+      type: static
+      static: >-
+        業務ルール台帳（docs/business-rules.yml）の各ルールの implemented_in を読み、空のもの、
+        指すファイルが存在しないもの（シンボルの指定があれば、そのシンボルが存在しないもの）を列挙する
+    location: 台帳の、そのルールの id の行
+    criteria:
+      violation: 台帳のルールに実装箇所が書かれていない、または implemented_in が指す箇所がコードに存在しない
+      borderline: >-
+        implemented_in のファイルは存在するが、ルールの文に出る数値と用語集の語が、そのファイルに1つも出てこない
+        （ファイルの移動・分割で、指す先がずれた可能性がある）
+      not_violation: implemented_in が実在するファイル（とシンボル）を指している
+    exclusions:
+      - 台帳で廃止と明記されたルール
+      - 台帳で未実装と明記し、チケットを紐づけたルール
+    severity:
+      default: High
+    fix_patterns:
+      - 実装箇所を台帳の implemented_in に書く
+      - 実装がまだなら、台帳のルールに未実装と明記してチケットを紐づける
+    related: [BIZ-04, BIZ-07]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: BIZ-02
+    name: 同じ業務ルールの実装どうしで条件や値が食い違っている
+    principle: 1つの業務ルールは1か所で実装し、複数の実装の間で条件や値を食い違わせない
+    principles: [mdl.single-source-of-knowledge, biz.rule-traceability]
+    source: Ross『Principles of the Business Rule Approach』
+    status: draft
+    release: v1.5
+    applies_when:
+      layers: [any]
+      languages: [typescript, python]
+      requires: [business_rules]
+    detection:
+      type: hybrid
+      static: >-
+        implemented_in に2か所以上を挙げたルールと、ルールの文に出る数値・用語を含む条件式がコードの2か所以上にある
+        ルールを列挙し、各箇所の条件式の比較演算子と定数を並べる
+      question: >-
+        これらの実装は同じ業務ルールを実装しているのに、条件（境界を含むか、対象の範囲）か値が
+        食い違っているか。
+    location: 台帳の implemented_in の先頭の実装と食い違う側の、条件式の行範囲
+    criteria:
+      violation: 1つのルールが複数箇所で実装され、条件か値が食い違っている
+      borderline: 食い違いが、ルールの適用時期の違い（旧ルールからの移行期間など）によるものかもしれない
+      not_violation: 複数箇所の実装が、同じ関数・同じ定数を共有している
+    exclusions:
+      - テストコード
+    severity:
+      default: High
+    fix_patterns:
+      - 実装を1か所にまとめ（MDL-02 と同じ直し方）、台帳の implemented_in を1つにする
+    related: [MDL-02, BIZ-01]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: BIZ-03
+    name: 変わりやすい業務ルールの値がコードに直書きされている
+    principle: 変わりやすい業務ルールの閾値・率・期間は、コードを変えずに変えられる1か所に置く
+    principles: [biz.externalized-volatile-rules]
+    source: Ross『Principles of the Business Rule Approach』
+    status: draft
+    release: v1.5
+    applies_when:
+      layers: [any]
+      languages: [typescript, python]
+      requires: [business_rules]
+    detection:
+      type: hybrid
+      static: >-
+        台帳で change_frequency が high のルールについて、implemented_in のファイルから、
+        ルールの文に出る数値と同じ数値リテラル（率・金額・日数など）を列挙する
+      question: >-
+        この数値リテラルは、変わりやすい業務ルールの閾値・率・期間そのもので、
+        値を変えるたびにコードの修正とデプロイが要る置き方になっているか。
+    location: 数値リテラルの行
+    criteria:
+      violation: change_frequency が high のルールの閾値・率・期間が、コードの中に数値リテラルとして直書きされている
+      borderline: >-
+        数値は名前付きの定数になっているが、その定数がコードの中にある
+        （設定やマスタに出すべきかは、変える頻度と、変える人が誰かによる）
+      not_violation: 設定・マスタデータ・ルールエンジンなど、コードを変えずに変えられる場所から読んでいる。change_frequency が low のルール
+    exclusions:
+      - テストコード
+    severity:
+      default: Medium
+    fix_patterns:
+      - 値を名前付きの設定かマスタに出し、ルールID をコメントか名前で紐づける
+    related: [BIZ-01, MDL-04]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: BIZ-04
+    name: 重要な業務ルールに境界のテストがない
+    principle: 重要度の高い業務ルールは、条件の境界値とその前後の値でテストする
+    principles: [biz.rule-boundary-tests, biz.rule-traceability]
+    source: Myers『The Art of Software Testing』Boundary-Value Analysis
+    status: draft
+    release: v1.5
+    applies_when:
+      layers: [any]
+      languages: [yaml]
+      file_kinds: [business-rules]
+      requires: [business_rules]
+    detection:
+      type: static
+      static: >-
+        台帳で重要度（importance）が high のルールについて、tests が空のもの、指すテストファイルが存在しないもの、
+        テストファイルにルールの文の境界値（閾値の数値）が1つも出てこないものを列挙する
+    location: 台帳の、そのルールの id の行
+    criteria:
+      violation: 重要度が high のルールに、テストがない。またはテストに条件の境界値が1つも出てこない
+      borderline: テストに境界値は出るが、境界の片側（以上と未満のどちらか）の値しか出てこない
+      not_violation: 境界値とその前後の値で、ルールの条件をテストしている
+    exclusions:
+      - 台帳で廃止と明記されたルール
+      - 重要度が high でないルール
+    severity:
+      default: Medium
+    fix_patterns:
+      - 境界値とその前後の値（以上・未満の両側）でルールを確かめるテストを書き、台帳の tests に登録する
+    related: [BIZ-01, BIZ-05]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: BIZ-05
+    name: チケットの受け入れ条件をコードが満たしていない
+    principle: 差分のコードは、紐づくチケットの受け入れ条件を満たし、逆の動きをしない
+    principles: [biz.acceptance-criteria]
+    source: Adzic『Specification by Example』
+    status: draft
+    release: v1
+    applies_when:
+      layers: [any]
+      languages: [typescript, python]
+      requires: [ticket]
+    detection:
+      type: llm
+      question: >-
+        チケットの受け入れ条件のこの項目について、差分のコードは条件を満たしていないか、
+        または逆の動きをするか。
+    location: 条件に反する実装の行範囲。実装が見当たらない場合は、関連する変更の最初の行
+    criteria:
+      violation: チケットの受け入れ条件のうち、コードで満たされていないもの、または逆の動きをするものがある
+      borderline: >-
+        受け入れ条件の文が曖昧で、満たしているかを判断できない。
+        または条件を満たすかが、差分の外のコードや設定にかかっている
+      not_violation: 受け入れ条件を満たす実装がある。その条件が今回の差分の範囲外だと PR 本文に書かれている
+    exclusions:
+      - PR 本文にチケットへのリンクがない場合（チェックを走らせない）
+      - 受け入れ条件の欄がないチケット
+    severity:
+      default: High
+    fix_patterns:
+      - 満たしていない条件を実装し、その条件を確かめるテストを足す
+      - 条件のほうが変わったなら、チケットの受け入れ条件を更新する
+    related: [BIZ-04]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: BIZ-06
+    name: 金額・数量・日時の扱いに誤りがある
+    principle: 金額と数量は誤差の出ない型と明示した丸めで計算し、締め日や期限はタイムゾーンを決めた日時で判定する
+    principles: [biz.money-and-time-types]
+    source: Fowler『Patterns of Enterprise Application Architecture』Money
+    status: draft
+    release: v1
+    applies_when:
+      layers: [any]
+      languages: [typescript, python]
+    detection:
+      type: hybrid
+      static: >-
+        名前が金額・数量を表す変数・フィールド・引数（amount・price・total・fee・tax・quantity など）について、
+        浮動小数の型注釈（float）、parseFloat・float() による変換、小数のリテラルとの乗除算、丸めの呼び出し
+        （Math.round・toFixed・round など）を列挙する。あわせて、名前が締め日・期限を表す値
+        （deadline・closing・due・cutoff・expires など）との比較に、タイムゾーンのない現在時刻
+        （Python の datetime.now() の引数なし・datetime.utcnow()・date.today()、TypeScript の new Date() と getDate() など
+        ローカル時刻のメソッド）が使われる箇所を列挙する
+      question: >-
+        このコードは、金額・数量を誤差の出る型で計算しているか、台帳と違う丸めをしているか、
+        またはタイムゾーンを決めずに締め日や期限を判定しているか。
+    location: 誤差の出る演算・丸め・日時の判定の行
+    criteria:
+      violation: >-
+        金額を浮動小数で計算している。台帳に書かれた丸めと違う丸めをしている。
+        タイムゾーンを持たない日時で締め日や期限を判定している
+      borderline: >-
+        丸めの規則が台帳にもコードのコメントにもなく、正しい丸めかを決められない。
+        TypeScript の number で整数の金額だけを扱っている（今は誤差が出ないが、率の掛け算が入ると出る）
+      not_violation: >-
+        十進の型（Decimal・decimal.js・big.js など）か整数の最小単位で計算し、丸めを明示している。
+        タイムゾーン付きの日時で判定している
+    exclusions:
+      - テストコード
+      - 表示用の書式化だけを行う箇所（計算結果を変えないもの）
+    severity:
+      default: High
+    fix_patterns:
+      - 金額は十進の型か整数の最小単位で持ち、丸め（方式と桁）を Money 型の1か所に置く
+      - 締め日・期限の判定は、業務上のタイムゾーンを明示した日時で行う
+    related: [DDD-VO-01, DDD-VO-03, MDL-02]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: BIZ-07
+    name: 台帳にない業務ルールがコードにある
+    principle: コードにある業務上の条件分岐は、台帳のいずれかのルールに対応させる
+    principles: [biz.rule-traceability]
+    source: Ross『Principles of the Business Rule Approach』
+    status: draft
+    release: v1.5
+    applies_when:
+      layers: [domain, application]
+      languages: [typescript, python]
+      requires: [business_rules]
+    detection:
+      type: llm
+      question: >-
+        この条件分岐は業務上のルール（誰に・何を・いつ許すか、いくらにするか）で、
+        台帳のどのルールにも対応していないか。
+    location: 条件分岐の行範囲
+    criteria:
+      violation: 業務上の条件分岐がコードにあるが、台帳に対応するルールがない
+      borderline: 業務上のルールか、技術的な分岐（キャッシュ・リトライ・入力形式の検証など）かがコードだけでは決まらない
+      not_violation: 台帳のルールに対応する分岐（そのルールの implemented_in がこのファイルを指す）。技術的な分岐
+    exclusions:
+      - テストコード
+    severity:
+      default: Low
+    fix_patterns:
+      - 台帳にルールを追加し（/sumidashi:rules-draft で下書き）、根拠（規約・契約・法令・社内決定）を書く
+    related: [BIZ-01]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: BIZ-08
+    name: 設計の重さが業務上の重要度と合っていない
+    principle: コアドメインには業務ルールを表すモデルを置き、汎用の領域には重い設計を持ち込まない
+    principles: [biz.core-domain-investment, ddd.rich-domain-model]
+    source: Evans『Domain-Driven Design』15章 Distillation（Core Domain、Generic Subdomains）／Fowler『Patterns of Enterprise Application Architecture』Transaction Script、Domain Model
+    status: draft
+    release: v1.5
+    applies_when:
+      layers: [domain, application]
+      languages: [typescript, python]
+      requires: [business_rules]
+    detection:
+      type: llm
+      question: >-
+        この領域の設計の重さは、台帳のサブドメインの分類と食い違っているか
+        （generic なのに集約やドメインイベントなどの重い構造を持つ、または core なのに長い手続きの関数に
+        業務ルールが詰まっている）。
+    location: その領域の代表となる型（集約ルートかアプリケーションサービス）の宣言の行
+    criteria:
+      violation: generic の領域に重い設計をしている。または core の領域が、トランザクションスクリプトのまま複雑になっている
+      borderline: 台帳にサブドメインの分類がない領域
+      not_violation: core の領域に業務ルールを表すドメインモデルがあり、generic の領域が単純な構造（既製品の利用・CRUD）になっている
+    exclusions:
+      - テストコード
+    severity:
+      default: Info
+    fix_patterns:
+      - generic の領域は、既製品の利用か CRUD に寄せる
+      - core の領域は、手続きの中の業務ルールをドメインモデルに移す
+    related: [DDD-ENT-02, PLC-03]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []

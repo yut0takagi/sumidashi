@@ -1,0 +1,270 @@
+# ドメイン用語のチェック項目（6個）
+# docs/glossary.yml（用語集）とコードを照合する。用語集がないリポジトリでは走らせない。
+# 1チェック=1エントリ。id は一度振ったら変えない。
+# スキーマ: schemas/checks-file.schema.json
+
+philosophy:
+  id: glossary
+  name: ドメイン用語
+  summary: ドメイン用語オントロジー（用語集）とコードの照合
+  release: v1
+  id_prefixes: [GLO]
+
+sources:
+  - id: evans-2003
+    title: "Domain-Driven Design: Tackling Complexity in the Heart of Software"
+    author: Eric Evans
+    year: 2003
+  - id: skos-2009
+    title: SKOS Simple Knowledge Organization System Reference（W3C Recommendation）
+    author: Alistair Miles, Sean Bechhofer（編）
+    year: 2009
+    url: https://www.w3.org/TR/skos-reference/
+
+principles:
+  - id: glo.ubiquitous-language
+    statement: 1つのコンテキストの中では、業務の言葉とコードの名前を揃え、用語集にない言葉で業務を表さない
+    sources: [evans-2003]
+  - id: glo.one-term-one-concept
+    statement: 1つのコンテキストの中では、1つの概念を1つの名前で呼び、1つの名前で1つの概念だけを指す
+    sources: [evans-2003, skos-2009]
+  - id: glo.model-reflects-relations
+    statement: 用語集に書いた概念どうしの関係（部分・全体、参照）を、コードの構造（集約内部の所有、ID 参照）と一致させる
+    sources: [evans-2003]
+  - id: glo.well-formed-glossary
+    statement: 用語集の各用語は、空でなく循環しない定義と、ほかの用語と重ならないコード上の名前を持つ
+    sources: [skos-2009]
+
+checks:
+  - id: GLO-01
+    name: ドメイン層の名前に用語集にない業務用語が使われている
+    principle: ドメイン層の公開された型とメソッドの名前は、用語集に登録した業務の言葉で付ける
+    principles: [glo.ubiquitous-language]
+    source: Evans『Domain-Driven Design』2章 Communication and the Use of Language（Ubiquitous Language）
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain]
+      languages: [typescript, python]
+      requires: [glossary, layer_map]
+    detection:
+      type: hybrid
+      static: >-
+        ドメイン層の公開型・公開メソッドの名前を語に分け、用語集の term・code_names・synonyms_deprecated の
+        どれにも当たらない語を列挙する。言語の予約語と、技術的な語（get・set・create・find・list・id・dto、
+        Repository・Factory・Service・Event などの構成要素の名前）は除く
+      question: この語は業務上の概念を表す言葉か（技術用語や一般的な動詞・形容詞ではないか）。
+    location: その語を含む型かメソッドの名前がある行
+    criteria:
+      violation: ドメイン層の公開型・公開メソッドの名前に、用語集にない業務上の語が使われている
+      borderline: 業務上の語か一般的な語かが、名前だけでは決まらない（status・type・item・info など）
+      not_violation: 用語集の code_names にある語。技術的な語。DDD の構成要素の名前
+    exclusions:
+      - テストコード
+      - 非公開の型・メソッド（TypeScript の private・protected・#、Python の _ 始まり）
+      - 外部ライブラリ・外部 API から取り込んだ名前
+    severity:
+      default: Low
+    fix_patterns:
+      - 業務の言葉なら用語集に追加し、定義と code_names を書く
+      - 既存の用語の言い換えなら、用語集の code_names の名前に揃える
+    related: [GLO-02, GLO-05]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: GLO-02
+    name: 同じ概念が同じコンテキストの中で別々の名前で呼ばれている
+    principle: 1つのコンテキストの中では、1つの概念を1つの名前（用語集の code_names）で呼ぶ
+    principles: [glo.one-term-one-concept, glo.ubiquitous-language]
+    source: Evans『Domain-Driven Design』2章 Communication and the Use of Language／W3C SKOS Reference（prefLabel と altLabel）
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain, application]
+      languages: [typescript, python]
+      requires: [glossary, layer_map]
+    detection:
+      type: static
+      static: >-
+        用語集の各用語について、code_names と synonyms_deprecated（英字のもの）の名前を、
+        同じコンテキストのコードの型名・メソッド名・変数名から探す。コンテキストは用語集の context と、
+        同じ名前のディレクトリで対応づける。1つの用語に対して2つ以上の名前がコードに出るものを列挙する
+    location: >-
+      非推奨の側（synonyms_deprecated）の名前が最初に出る宣言の行。code_names どうしの場合は、
+      パスと行の昇順で2つ目の名前が最初に出る宣言の行
+    criteria:
+      violation: 同じ概念について、code_names の名前と synonyms_deprecated の名前が、同じコンテキストのコードに両方出る
+      borderline: >-
+        用語集の code_names に複数の名前があり、同じコンテキストで両方使われている
+        （意図した使い分けか、用語集の書き方の問題かは人が判断する）
+      not_violation: 別のコンテキスト（用語集の context が違う）で別の名前が使われている。code_names の名前だけが使われている
+    exclusions:
+      - テストコード
+      - 外部ライブラリ・外部 API の型の名前をそのまま使っている箇所
+      - 旧名から新名へ変換する変換層（アンチコラプション層）で、そう明示されているもの
+    severity:
+      default: Medium
+    fix_patterns:
+      - code_names の名前に統一し、非推奨の名前を使っている型・メソッド・変数の名前を変える
+    related: [GLO-03, GLO-05, MDL-01]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: GLO-03
+    name: 同じ名前が同じコンテキストの中で別の概念を指している
+    principle: 1つのコンテキストの中では、1つの名前で1つの概念だけを指す
+    principles: [glo.one-term-one-concept]
+    source: Evans『Domain-Driven Design』2章 Communication and the Use of Language
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain, application]
+      languages: [typescript, python]
+      requires: [glossary, layer_map]
+    detection:
+      type: llm
+      question: 同じコンテキストの中で、この名前は定義の異なる2つ以上の概念を指して使われているか。
+    location: 2つ目の意味で使われている型・メソッドの宣言の行
+    criteria:
+      violation: 同じ名前が、同じコンテキストの中で定義の違う概念を指して使われている
+      borderline: >-
+        同じ概念のライフサイクルの段階（見積中の注文と確定した注文など）を、同じ名前で呼んでいる。
+        段階を別の概念とみなすかは業務の判断
+      not_violation: 別のコンテキストで、同じ名前が別の意味で使われている（コンテキストが分かれていれば正しい）
+    exclusions:
+      - テストコード
+      - 外部ライブラリ・外部 API の名前
+    severity:
+      default: Medium
+    fix_patterns:
+      - 意味ごとに名前を分け、それぞれを用語集に登録する
+      - 別のコンテキストとして扱うべきなら、モジュールを分けて用語集の context も分ける
+    related: [GLO-02, MDL-05]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: GLO-04
+    name: 用語集の関係とコードの構造が食い違っている
+    principle: 用語集の has_part は集約内部の所有として、refers_to は ID 参照としてコードに表す
+    principles: [glo.model-reflects-relations, ddd.reference-by-id]
+    source: Evans『Domain-Driven Design』2章 Communication and the Use of Language、6章 Aggregates
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain]
+      languages: [typescript, python]
+      requires: [glossary, layer_map]
+    detection:
+      type: hybrid
+      static: >-
+        用語集の has_part と refers_to の各組について、code_names で両方の型を引き、
+        コード上の関係（フィールドの型が相手の型そのもの・そのコレクションか、相手の ID の型か、関係がないか）を列挙する
+      question: >-
+        このコード上の関係は、用語集の関係（has_part なら集約内部の所有、refers_to なら ID 参照）と
+        食い違っているか。
+    location: 関係を表すフィールドの宣言の行
+    criteria:
+      violation: has_part の関係が集約内部の所有になっていない。または refers_to の相手をオブジェクトとして参照している
+      borderline: >-
+        has_part の相手を ID で持っている（別の集約として切り出した設計判断の可能性があり、
+        用語集のほうが古いかもしれない）
+      not_violation: has_part の相手を集約の内部として所有し、refers_to の相手を ID で参照している
+    exclusions:
+      - テストコード
+      - 読み取りモデル（クエリ用の型）
+    severity:
+      default: Medium
+    fix_patterns:
+      - refers_to の相手は、オブジェクトではなく ID（値オブジェクト）で持つ
+      - 用語集とコードのどちらが正しいかを決め、用語集の関係かコードの構造のどちらかを直す
+    related: [DDD-AGG-04, DDD-AGG-01]
+    also_accept: [DDD-AGG-04]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: GLO-05
+    name: 非推奨の用語が新しいコードに使われている
+    principle: 用語集で非推奨とした言葉は、新しく書くコードの名前に使わない
+    principles: [glo.one-term-one-concept, glo.ubiquitous-language]
+    source: W3C SKOS Reference（altLabel・hiddenLabel）／Evans『Domain-Driven Design』2章
+    status: draft
+    release: v1
+    applies_when:
+      layers: [any]
+      languages: [typescript, python]
+      requires: [glossary]
+    detection:
+      type: static
+      static: >-
+        差分で追加された行の識別子（型名・メソッド名・変数名・引数名）を語に分け、
+        用語集の synonyms_deprecated（英字のもの）と照合する
+    location: 非推奨の語を含む識別子がある行
+    criteria:
+      violation: synonyms_deprecated の語が、差分で追加された識別子の1語としてそのまま使われている
+      borderline: >-
+        非推奨の語が、より長い語の一部として出る（Purchase が Purchaser に含まれるなど、
+        語の区切りが一致しない）
+      not_violation: >-
+        差分の外の既存コード（GLO-02 の対象）。外部ライブラリ・外部 API から import した名前。
+        文字列リテラルとコメントの中
+    exclusions:
+      - テストコード
+      - 旧スキーマ・旧 API との変換コードで、そう明示されているもの
+    severity:
+      default: Low
+    fix_patterns:
+      - 用語集の code_names の名前に置き換える
+    related: [GLO-02, GLO-01]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: GLO-06
+    name: 用語集そのものに欠陥がある
+    principle: 用語集の各用語は、空でなく循環しない定義と、重複しない code_names を持つ
+    principles: [glo.well-formed-glossary]
+    source: W3C SKOS Reference（Documentation Properties、Integrity Conditions）
+    status: draft
+    release: v1
+    applies_when:
+      layers: [any]
+      languages: [yaml]
+      file_kinds: [glossary]
+      requires: [glossary]
+    detection:
+      type: static
+      static: >-
+        用語集（docs/glossary.yml）を読み、definition が空の用語、定義文が別の用語の term だけでできていて
+        （助詞と「のこと」などを除くと語が残らない）その参照を辿ると元の用語に戻るもの、
+        同じコンテキストの中で同じ code_names を持つ用語の組を列挙する
+    location: 用語集の、該当する用語の term の行
+    criteria:
+      violation: 定義が空。定義が別の用語の言い換えだけで、辿ると元の用語に戻る（循環した定義）。同じコンテキストの中で code_names が重複している
+      borderline: >-
+        code_names が別のコンテキストの用語と重複している（コンテキストが分かれていれば正しいが、
+        取り違えの可能性がある）
+      not_violation: >-
+        定義の中でほかの用語を参照しているが、それ以外の説明もある
+        （注文明細の定義に「注文」が出るなど）
+    exclusions:
+      - 用語集の中で、作成中であると明示された用語
+    severity:
+      default: Low
+    fix_patterns:
+      - 空の定義を書く。業務上の条件（いつ、何を満たすと）まで書く
+      - 循環している定義の片方を、ほかの用語に頼らない説明に書き直す
+      - 重複した code_names を、どちらかの用語に寄せる
+    related: [GLO-02, GLO-03]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []

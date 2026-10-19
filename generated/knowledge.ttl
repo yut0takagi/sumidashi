@@ -1,0 +1,1538 @@
+# tools/dev/build_knowledge.py が生成した。手で編集しない。
+@prefix sd: <urn:sumidashi:vocab#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:sumidashi:check:BIZ-08> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:biz.core-domain-investment>,
+        <urn:sumidashi:principle:ddd.rich-domain-model> ;
+    sd:belongsTo <urn:sumidashi:philosophy:business> ;
+    sd:defaultSeverity "Info" ;
+    sd:detection "llm" ;
+    sd:identifier "BIZ-08" ;
+    sd:name "設計の重さが業務上の重要度と合っていない" ;
+    sd:related <urn:sumidashi:check:DDD-ENT-02>,
+        <urn:sumidashi:check:PLC-03> ;
+    sd:release "v1.5" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:CA-UC-02> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ca.use-case-responsibility> ;
+    sd:belongsTo <urn:sumidashi:philosophy:clean-architecture> ;
+    sd:defaultSeverity "Low" ;
+    sd:detection "llm" ;
+    sd:identifier "CA-UC-02" ;
+    sd:name "1つのユースケースが複数のアクターの目的を抱えている" ;
+    sd:related <urn:sumidashi:check:CA-UC-01> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:CA-UC-03> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ca.humble-object>,
+        <urn:sumidashi:principle:ca.use-case-responsibility> ;
+    sd:belongsTo <urn:sumidashi:philosophy:clean-architecture> ;
+    sd:defaultSeverity "Low" ;
+    sd:detection "llm" ;
+    sd:identifier "CA-UC-03" ;
+    sd:name "ユースケースが表示の形式を組み立てている" ;
+    sd:related <urn:sumidashi:check:CA-BND-02> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:GLO-06> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:glo.well-formed-glossary> ;
+    sd:belongsTo <urn:sumidashi:philosophy:glossary> ;
+    sd:defaultSeverity "Low" ;
+    sd:detection "static" ;
+    sd:identifier "GLO-06" ;
+    sd:name "用語集そのものに欠陥がある" ;
+    sd:related <urn:sumidashi:check:GLO-02>,
+        <urn:sumidashi:check:GLO-03> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:conflict:CA-DEP-01--MDL-01> a sd:Conflict ;
+    sd:between <urn:sumidashi:check:CA-DEP-01>,
+        <urn:sumidashi:check:MDL-01> ;
+    sd:resolvedBy <urn:sumidashi:ruling:R2-DEPENDENCY> .
+
+<urn:sumidashi:conflict:CA-DEP-03--MDL-01> a sd:Conflict ;
+    sd:between <urn:sumidashi:check:CA-DEP-03>,
+        <urn:sumidashi:check:MDL-01> ;
+    sd:resolvedBy <urn:sumidashi:ruling:R2-DEPENDENCY> .
+
+<urn:sumidashi:conflict:MDL-01--MDL-05> a sd:Conflict ;
+    sd:between <urn:sumidashi:check:MDL-01>,
+        <urn:sumidashi:check:MDL-05> ;
+    sd:resolvedBy <urn:sumidashi:ruling:R3-FEWER-FILES> .
+
+<urn:sumidashi:conflict:MDL-05--MDL-06> a sd:Conflict ;
+    sd:between <urn:sumidashi:check:MDL-05>,
+        <urn:sumidashi:check:MDL-06> ;
+    sd:resolvedBy <urn:sumidashi:ruling:R3-FEWER-FILES> .
+
+<urn:sumidashi:ruling:R0-ADR> a sd:Ruling ;
+    sd:identifier "R0-ADR" ;
+    sd:order 0 .
+
+<urn:sumidashi:ruling:R0-SCALE> a sd:Ruling ;
+    sd:identifier "R0-SCALE" ;
+    sd:order 1 .
+
+<urn:sumidashi:ruling:R1-HIGH> a sd:Ruling ;
+    sd:identifier "R1-HIGH" ;
+    sd:order 2 .
+
+<urn:sumidashi:ruling:R4-HOLD> a sd:Ruling ;
+    sd:identifier "R4-HOLD" ;
+    sd:order 5 .
+
+<urn:sumidashi:check:ADR-DOC-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:adr.decision-record> ;
+    sd:belongsTo <urn:sumidashi:philosophy:adr> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "static" ;
+    sd:identifier "ADR-DOC-01" ;
+    sd:name "ADR に必須の項目が欠けている" ;
+    sd:related <urn:sumidashi:check:ADR-DOC-02>,
+        <urn:sumidashi:check:ADR-DOC-03> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:ADR-DOC-06> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:adr.decision-record>,
+        <urn:sumidashi:principle:adr.supersede-not-rewrite> ;
+    sd:belongsTo <urn:sumidashi:philosophy:adr> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "llm" ;
+    sd:identifier "ADR-DOC-06" ;
+    sd:name "ADR が既存の Accepted の ADR と矛盾している" ;
+    sd:related <urn:sumidashi:check:ADR-CMP-02>,
+        <urn:sumidashi:check:ADR-DOC-05> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:BIZ-02> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:biz.rule-traceability>,
+        <urn:sumidashi:principle:mdl.single-source-of-knowledge> ;
+    sd:belongsTo <urn:sumidashi:philosophy:business> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "hybrid" ;
+    sd:identifier "BIZ-02" ;
+    sd:name "同じ業務ルールの実装どうしで条件や値が食い違っている" ;
+    sd:related <urn:sumidashi:check:BIZ-01>,
+        <urn:sumidashi:check:MDL-02> ;
+    sd:release "v1.5" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:BIZ-03> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:biz.externalized-volatile-rules> ;
+    sd:belongsTo <urn:sumidashi:philosophy:business> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "hybrid" ;
+    sd:identifier "BIZ-03" ;
+    sd:name "変わりやすい業務ルールの値がコードに直書きされている" ;
+    sd:related <urn:sumidashi:check:BIZ-01>,
+        <urn:sumidashi:check:MDL-04> ;
+    sd:release "v1.5" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:BIZ-05> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:biz.acceptance-criteria> ;
+    sd:belongsTo <urn:sumidashi:philosophy:business> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "llm" ;
+    sd:identifier "BIZ-05" ;
+    sd:name "チケットの受け入れ条件をコードが満たしていない" ;
+    sd:related <urn:sumidashi:check:BIZ-04> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:BIZ-06> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:biz.money-and-time-types> ;
+    sd:belongsTo <urn:sumidashi:philosophy:business> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "hybrid" ;
+    sd:identifier "BIZ-06" ;
+    sd:name "金額・数量・日時の扱いに誤りがある" ;
+    sd:related <urn:sumidashi:check:DDD-VO-01>,
+        <urn:sumidashi:check:DDD-VO-03>,
+        <urn:sumidashi:check:MDL-02> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:BIZ-07> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:biz.rule-traceability> ;
+    sd:belongsTo <urn:sumidashi:philosophy:business> ;
+    sd:defaultSeverity "Low" ;
+    sd:detection "llm" ;
+    sd:identifier "BIZ-07" ;
+    sd:name "台帳にない業務ルールがコードにある" ;
+    sd:related <urn:sumidashi:check:BIZ-01> ;
+    sd:release "v1.5" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:DDD-ENT-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.entity-identity> ;
+    sd:belongsTo <urn:sumidashi:philosophy:ddd-tactical> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "hybrid" ;
+    sd:identifier "DDD-ENT-01" ;
+    sd:name "エンティティの等価性が識別子で決まっていない" ;
+    sd:related <urn:sumidashi:check:DDD-VO-02> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:DDD-EVT-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.domain-event-as-fact> ;
+    sd:belongsTo <urn:sumidashi:philosophy:ddd-tactical> ;
+    sd:defaultSeverity "Low" ;
+    sd:detection "static" ;
+    sd:hasFixture <urn:sumidashi:fixture:ddd-evt-01/b1-ts>,
+        <urn:sumidashi:fixture:ddd-evt-01/h1-ts>,
+        <urn:sumidashi:fixture:ddd-evt-01/n1-ts>,
+        <urn:sumidashi:fixture:ddd-evt-01/n2-py>,
+        <urn:sumidashi:fixture:ddd-evt-01/v1-ts>,
+        <urn:sumidashi:fixture:ddd-evt-01/v2-py> ;
+    sd:identifier "DDD-EVT-01" ;
+    sd:name "ドメインイベントの名前が過去形になっていない" ;
+    sd:related <urn:sumidashi:check:DDD-EVT-02> ;
+    sd:release "v1" ;
+    sd:status "ready" .
+
+<urn:sumidashi:check:DDD-EVT-02> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.domain-event-as-fact> ;
+    sd:belongsTo <urn:sumidashi:philosophy:ddd-tactical> ;
+    sd:defaultSeverity "Low" ;
+    sd:detection "llm" ;
+    sd:identifier "DDD-EVT-02" ;
+    sd:name "ドメインイベントが業務上の出来事ではなくデータ変更の通知になっている" ;
+    sd:related <urn:sumidashi:check:DDD-EVT-01> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:DDD-REP-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.repository-per-aggregate> ;
+    sd:belongsTo <urn:sumidashi:philosophy:ddd-tactical> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "llm" ;
+    sd:identifier "DDD-REP-01" ;
+    sd:name "リポジトリが集約単位になっていない" ;
+    sd:related <urn:sumidashi:check:DDD-AGG-01>,
+        <urn:sumidashi:check:DDD-REP-02> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:GLO-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:glo.ubiquitous-language> ;
+    sd:belongsTo <urn:sumidashi:philosophy:glossary> ;
+    sd:defaultSeverity "Low" ;
+    sd:detection "hybrid" ;
+    sd:identifier "GLO-01" ;
+    sd:name "ドメイン層の名前に用語集にない業務用語が使われている" ;
+    sd:related <urn:sumidashi:check:GLO-02>,
+        <urn:sumidashi:check:GLO-05> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:GLO-04> a sd:Check ;
+    sd:alsoAccept <urn:sumidashi:check:DDD-AGG-04> ;
+    sd:basedOn <urn:sumidashi:principle:ddd.reference-by-id>,
+        <urn:sumidashi:principle:glo.model-reflects-relations> ;
+    sd:belongsTo <urn:sumidashi:philosophy:glossary> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "hybrid" ;
+    sd:identifier "GLO-04" ;
+    sd:name "用語集の関係とコードの構造が食い違っている" ;
+    sd:related <urn:sumidashi:check:DDD-AGG-01>,
+        <urn:sumidashi:check:DDD-AGG-04> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:MDL-04> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:mdl.cohesive-value-types>,
+        <urn:sumidashi:principle:mdl.single-source-of-knowledge> ;
+    sd:belongsTo <urn:sumidashi:philosophy:model-commonality> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "static" ;
+    sd:identifier "MDL-04" ;
+    sd:name "状態・区分が文字列や数値のリテラルのまま散らばっている" ;
+    sd:related <urn:sumidashi:check:BIZ-03>,
+        <urn:sumidashi:check:DDD-VO-03>,
+        <urn:sumidashi:check:MDL-03> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:SCL-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:scl.stateless-services> ;
+    sd:belongsTo <urn:sumidashi:philosophy:logic-placement> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "hybrid" ;
+    sd:identifier "SCL-01" ;
+    sd:name "サービスがリクエストをまたぐ状態を持っている" ;
+    sd:related <urn:sumidashi:check:SCL-05> ;
+    sd:release "v1.5" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:SCL-02> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.one-aggregate-per-transaction>,
+        <urn:sumidashi:principle:scl.minimal-immediate-consistency> ;
+    sd:belongsTo <urn:sumidashi:philosophy:logic-placement> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "llm" ;
+    sd:identifier "SCL-02" ;
+    sd:name "即時でなくてよい処理を同じトランザクションで同期的に実行している" ;
+    sd:related <urn:sumidashi:check:DDD-AGG-03> ;
+    sd:release "v1.5" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:SCL-03> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:scl.load-what-you-need> ;
+    sd:belongsTo <urn:sumidashi:philosophy:logic-placement> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "hybrid" ;
+    sd:identifier "SCL-03" ;
+    sd:name "ドメインロジックのために過剰に読み込んでいる" ;
+    sd:related <urn:sumidashi:check:DDD-AGG-04>,
+        <urn:sumidashi:check:SCL-04> ;
+    sd:release "v1.5" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:SCL-04> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:scl.separate-read-models> ;
+    sd:belongsTo <urn:sumidashi:philosophy:logic-placement> ;
+    sd:defaultSeverity "Low" ;
+    sd:detection "llm" ;
+    sd:identifier "SCL-04" ;
+    sd:name "読み取り専用の画面を集約経由で組み立てている" ;
+    sd:related <urn:sumidashi:check:CA-BND-01>,
+        <urn:sumidashi:check:SCL-03> ;
+    sd:release "v1.5" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:SCL-05> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.aggregate-invariants>,
+        <urn:sumidashi:principle:scl.avoid-contention-hotspots> ;
+    sd:belongsTo <urn:sumidashi:philosophy:logic-placement> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "llm" ;
+    sd:identifier "SCL-05" ;
+    sd:name "更新が1つの集約インスタンスに集中している" ;
+    sd:related <urn:sumidashi:check:DDD-AGG-03>,
+        <urn:sumidashi:check:SCL-01> ;
+    sd:release "v1.5" ;
+    sd:status "draft" .
+
+<urn:sumidashi:fixture:ca-bnd-02/b1-ts> a sd:Fixture ;
+    sd:label "borderline" ;
+    sd:path "evals/fixtures/ca-bnd-02/b1-ts" .
+
+<urn:sumidashi:fixture:ca-bnd-02/h1-py> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ca-bnd-02/h1-py" .
+
+<urn:sumidashi:fixture:ca-bnd-02/n1-ts> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ca-bnd-02/n1-ts" .
+
+<urn:sumidashi:fixture:ca-bnd-02/n2-py> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ca-bnd-02/n2-py" .
+
+<urn:sumidashi:fixture:ca-bnd-02/v1-ts> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ca-bnd-02/v1-ts" .
+
+<urn:sumidashi:fixture:ca-bnd-02/v2-py> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ca-bnd-02/v2-py" .
+
+<urn:sumidashi:fixture:ca-dep-01/b1-ts> a sd:Fixture ;
+    sd:label "borderline" ;
+    sd:path "evals/fixtures/ca-dep-01/b1-ts" .
+
+<urn:sumidashi:fixture:ca-dep-01/h1-ts> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ca-dep-01/h1-ts" .
+
+<urn:sumidashi:fixture:ca-dep-01/n1-ts> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ca-dep-01/n1-ts" .
+
+<urn:sumidashi:fixture:ca-dep-01/n2-py> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ca-dep-01/n2-py" .
+
+<urn:sumidashi:fixture:ca-dep-01/v1-ts> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ca-dep-01/v1-ts" .
+
+<urn:sumidashi:fixture:ca-dep-01/v2-py> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ca-dep-01/v2-py" .
+
+<urn:sumidashi:fixture:ca-dep-02/b1-ts> a sd:Fixture ;
+    sd:label "borderline" ;
+    sd:path "evals/fixtures/ca-dep-02/b1-ts" .
+
+<urn:sumidashi:fixture:ca-dep-02/b2-py> a sd:Fixture ;
+    sd:label "borderline" ;
+    sd:path "evals/fixtures/ca-dep-02/b2-py" .
+
+<urn:sumidashi:fixture:ca-dep-02/h1-py> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ca-dep-02/h1-py" .
+
+<urn:sumidashi:fixture:ca-dep-02/n1-ts> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ca-dep-02/n1-ts" .
+
+<urn:sumidashi:fixture:ca-dep-02/n2-py> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ca-dep-02/n2-py" .
+
+<urn:sumidashi:fixture:ca-dep-02/v1-ts> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ca-dep-02/v1-ts" .
+
+<urn:sumidashi:fixture:ca-dep-02/v2-py> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ca-dep-02/v2-py" .
+
+<urn:sumidashi:fixture:ca-dep-03/b1-py> a sd:Fixture ;
+    sd:label "borderline" ;
+    sd:path "evals/fixtures/ca-dep-03/b1-py" .
+
+<urn:sumidashi:fixture:ca-dep-03/h1-ts> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ca-dep-03/h1-ts" .
+
+<urn:sumidashi:fixture:ca-dep-03/n1-ts> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ca-dep-03/n1-ts" .
+
+<urn:sumidashi:fixture:ca-dep-03/n2-py> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ca-dep-03/n2-py" .
+
+<urn:sumidashi:fixture:ca-dep-03/v1-ts> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ca-dep-03/v1-ts" .
+
+<urn:sumidashi:fixture:ca-dep-03/v2-py> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ca-dep-03/v2-py" .
+
+<urn:sumidashi:fixture:ca-dep-04/b1-ts> a sd:Fixture ;
+    sd:label "borderline" ;
+    sd:path "evals/fixtures/ca-dep-04/b1-ts" .
+
+<urn:sumidashi:fixture:ca-dep-04/h1-ts> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ca-dep-04/h1-ts" .
+
+<urn:sumidashi:fixture:ca-dep-04/n1-ts> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ca-dep-04/n1-ts" .
+
+<urn:sumidashi:fixture:ca-dep-04/n2-py> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ca-dep-04/n2-py" .
+
+<urn:sumidashi:fixture:ca-dep-04/v1-ts> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ca-dep-04/v1-ts" .
+
+<urn:sumidashi:fixture:ca-dep-04/v2-py> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ca-dep-04/v2-py" .
+
+<urn:sumidashi:fixture:ca-dep-04/v3-py> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ca-dep-04/v3-py" .
+
+<urn:sumidashi:fixture:ddd-ent-03/b1-ts> a sd:Fixture ;
+    sd:label "borderline" ;
+    sd:path "evals/fixtures/ddd-ent-03/b1-ts" .
+
+<urn:sumidashi:fixture:ddd-ent-03/h1-py> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ddd-ent-03/h1-py" .
+
+<urn:sumidashi:fixture:ddd-ent-03/n1-ts> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ddd-ent-03/n1-ts" .
+
+<urn:sumidashi:fixture:ddd-ent-03/n2-py> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ddd-ent-03/n2-py" .
+
+<urn:sumidashi:fixture:ddd-ent-03/v1-ts> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ddd-ent-03/v1-ts" .
+
+<urn:sumidashi:fixture:ddd-ent-03/v2-py> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ddd-ent-03/v2-py" .
+
+<urn:sumidashi:fixture:ddd-evt-01/b1-ts> a sd:Fixture ;
+    sd:label "borderline" ;
+    sd:path "evals/fixtures/ddd-evt-01/b1-ts" .
+
+<urn:sumidashi:fixture:ddd-evt-01/h1-ts> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ddd-evt-01/h1-ts" .
+
+<urn:sumidashi:fixture:ddd-evt-01/n1-ts> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ddd-evt-01/n1-ts" .
+
+<urn:sumidashi:fixture:ddd-evt-01/n2-py> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ddd-evt-01/n2-py" .
+
+<urn:sumidashi:fixture:ddd-evt-01/v1-ts> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ddd-evt-01/v1-ts" .
+
+<urn:sumidashi:fixture:ddd-evt-01/v2-py> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ddd-evt-01/v2-py" .
+
+<urn:sumidashi:fixture:ddd-rep-02/b1-ts> a sd:Fixture ;
+    sd:label "borderline" ;
+    sd:path "evals/fixtures/ddd-rep-02/b1-ts" .
+
+<urn:sumidashi:fixture:ddd-rep-02/h1-py> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ddd-rep-02/h1-py" .
+
+<urn:sumidashi:fixture:ddd-rep-02/n1-ts> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ddd-rep-02/n1-ts" .
+
+<urn:sumidashi:fixture:ddd-rep-02/n2-py> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ddd-rep-02/n2-py" .
+
+<urn:sumidashi:fixture:ddd-rep-02/v1-ts> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ddd-rep-02/v1-ts" .
+
+<urn:sumidashi:fixture:ddd-rep-02/v2-py> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ddd-rep-02/v2-py" .
+
+<urn:sumidashi:fixture:ddd-vo-02/b1-py> a sd:Fixture ;
+    sd:label "borderline" ;
+    sd:path "evals/fixtures/ddd-vo-02/b1-py" .
+
+<urn:sumidashi:fixture:ddd-vo-02/h1-ts> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ddd-vo-02/h1-ts" .
+
+<urn:sumidashi:fixture:ddd-vo-02/n1-ts> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ddd-vo-02/n1-ts" .
+
+<urn:sumidashi:fixture:ddd-vo-02/n2-py> a sd:Fixture ;
+    sd:label "not_violation" ;
+    sd:path "evals/fixtures/ddd-vo-02/n2-py" .
+
+<urn:sumidashi:fixture:ddd-vo-02/v1-ts> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ddd-vo-02/v1-ts" .
+
+<urn:sumidashi:fixture:ddd-vo-02/v2-py> a sd:Fixture ;
+    sd:label "violation" ;
+    sd:path "evals/fixtures/ddd-vo-02/v2-py" .
+
+<urn:sumidashi:principle:adr.balanced-consequences> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:madr>,
+        <urn:sumidashi:source:nygard-2011> ;
+    sd:identifier "adr.balanced-consequences" ;
+    sd:statement "帰結には良い面だけでなく、失うものと新たに生じる制約も書く" .
+
+<urn:sumidashi:principle:adr.considered-options> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:madr> ;
+    sd:identifier "adr.considered-options" ;
+    sd:statement "決定には、検討した代替案と、それを採らなかった理由を残す" .
+
+<urn:sumidashi:principle:adr.explicit-deviation> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:sumidashi-requirements> ;
+    sd:identifier "adr.explicit-deviation" ;
+    sd:statement "設計原則から外れる決定は、どの原則から外れるかと、その理由を明示する" .
+
+<urn:sumidashi:principle:biz.acceptance-criteria> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:adzic-2011> ;
+    sd:identifier "biz.acceptance-criteria" ;
+    sd:statement "実装は、チケットに書かれた受け入れ条件を満たす" .
+
+<urn:sumidashi:principle:biz.core-domain-investment> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003>,
+        <urn:sumidashi:source:vernon-2013> ;
+    sd:identifier "biz.core-domain-investment" ;
+    sd:statement "設計の手間はコアドメインにかけ、汎用の領域は単純な構造に保つ" .
+
+<urn:sumidashi:principle:biz.externalized-volatile-rules> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:ross-2003> ;
+    sd:identifier "biz.externalized-volatile-rules" ;
+    sd:statement "変わりやすい業務ルールの閾値・率・期間は、コードに直書きせず、コードを変えずに変えられる1か所に置く" .
+
+<urn:sumidashi:principle:biz.money-and-time-types> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:fowler-2002> ;
+    sd:identifier "biz.money-and-time-types" ;
+    sd:statement "金額は丸めを明示した十進の型か整数の最小単位で扱い、締め日や期限はタイムゾーンを決めた日時で判定する" .
+
+<urn:sumidashi:principle:biz.rule-boundary-tests> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:myers-1979> ;
+    sd:identifier "biz.rule-boundary-tests" ;
+    sd:statement "業務ルールの条件の境界は、境界値とその前後の値でテストする" .
+
+<urn:sumidashi:principle:ca.acyclic-dependencies> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:martin-2017> ;
+    sd:identifier "ca.acyclic-dependencies" ;
+    sd:statement "モジュールの依存グラフに循環を作らない" .
+
+<urn:sumidashi:principle:ca.main-component> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:martin-2017> ;
+    sd:identifier "ca.main-component" ;
+    sd:statement "具象の生成と依存の組み立ては、最も外側の Main に閉じ込める" .
+
+<urn:sumidashi:principle:ddd.aggregate-root-access> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003> ;
+    sd:identifier "ddd.aggregate-root-access" ;
+    sd:statement "集約内部の状態は、集約ルートのメソッドを通してのみ変更する" .
+
+<urn:sumidashi:principle:ddd.domain-service-scope> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003> ;
+    sd:identifier "ddd.domain-service-scope" ;
+    sd:statement "ドメインサービスには、単一のエンティティや値オブジェクトに自然に属さない操作だけを置く" .
+
+<urn:sumidashi:principle:ddd.entity-identity> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003> ;
+    sd:identifier "ddd.entity-identity" ;
+    sd:statement "エンティティは属性ではなく、ライフサイクルを通じた同一性で区別する" .
+
+<urn:sumidashi:principle:ddd.intention-revealing-mutation> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003>,
+        <urn:sumidashi:source:vernon-2013> ;
+    sd:identifier "ddd.intention-revealing-mutation" ;
+    sd:statement "エンティティの状態は、意図を表すメソッドからだけ変えられるようにし、不変条件を迂回する書き込み口を作らない" .
+
+<urn:sumidashi:principle:ddd.persistence-ignorance> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003>,
+        <urn:sumidashi:source:vernon-2013> ;
+    sd:identifier "ddd.persistence-ignorance" ;
+    sd:statement "ドメインから見たリポジトリは、永続化の技術を表に出さないコレクションとしてふるまう" .
+
+<urn:sumidashi:principle:ddd.repository-per-aggregate> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003>,
+        <urn:sumidashi:source:vernon-2013> ;
+    sd:identifier "ddd.repository-per-aggregate" ;
+    sd:statement "リポジトリは集約ルートごとに置き、集約を丸ごと取得・保存する" .
+
+<urn:sumidashi:principle:ddd.self-validating-value> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:vernon-2013> ;
+    sd:identifier "ddd.self-validating-value" ;
+    sd:statement "値オブジェクトは生成時に自分の正しさを検証し、不正な値のまま存在させない" .
+
+<urn:sumidashi:principle:ddd.value-object-immutability> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003> ;
+    sd:identifier "ddd.value-object-immutability" ;
+    sd:statement "値オブジェクトは不変にし、属性の値で等価性を決める" .
+
+<urn:sumidashi:principle:glo.model-reflects-relations> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003> ;
+    sd:identifier "glo.model-reflects-relations" ;
+    sd:statement "用語集に書いた概念どうしの関係（部分・全体、参照）を、コードの構造（集約内部の所有、ID 参照）と一致させる" .
+
+<urn:sumidashi:principle:glo.well-formed-glossary> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:skos-2009> ;
+    sd:identifier "glo.well-formed-glossary" ;
+    sd:statement "用語集の各用語は、空でなく循環しない定義と、ほかの用語と重ならないコード上の名前を持つ" .
+
+<urn:sumidashi:principle:mdl.no-false-unification> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003>,
+        <urn:sumidashi:source:metz-2016> ;
+    sd:identifier "mdl.no-false-unification" ;
+    sd:statement "形が同じでも、意味・コンテキスト・変更理由が違うものは1つにまとめない" .
+
+<urn:sumidashi:principle:mdl.shared-kernel> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003> ;
+    sd:identifier "mdl.shared-kernel" ;
+    sd:statement "共有カーネルとして合意した型は、各所で再定義せずにそれを使う" .
+
+<urn:sumidashi:principle:plc.domain-object-purity> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:vernon-2013> ;
+    sd:identifier "plc.domain-object-purity" ;
+    sd:statement "エンティティと値オブジェクトは、自身の状態と引数だけで判断し、リポジトリや外部サービスを呼ばない" .
+
+<urn:sumidashi:principle:plc.domain-service-no-orchestration> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:vernon-2013> ;
+    sd:identifier "plc.domain-service-no-orchestration" ;
+    sd:statement "ドメインサービスは複数の集約にまたがる業務の判断だけを持ち、取得・保存・通知・トランザクションの制御をしない" .
+
+<urn:sumidashi:principle:plc.innermost-placement> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003>,
+        <urn:sumidashi:source:vernon-2013> ;
+    sd:identifier "plc.innermost-placement" ;
+    sd:statement "判断は、それに必要なデータを持つ最も内側の型に置き、内側に置けるものを外側に置かない" .
+
+<urn:sumidashi:principle:scl.avoid-contention-hotspots> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:kleppmann-2017>,
+        <urn:sumidashi:source:vernon-2013> ;
+    sd:identifier "scl.avoid-contention-hotspots" ;
+    sd:statement "多くの処理が同じ1つのインスタンスを更新する構造を避け、更新の競合を分散させる" .
+
+<urn:sumidashi:principle:scl.load-what-you-need> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:fowler-2002>,
+        <urn:sumidashi:source:kleppmann-2017> ;
+    sd:identifier "scl.load-what-you-need" ;
+    sd:statement "判断に必要なデータだけを、まとめて読み込む" .
+
+<urn:sumidashi:principle:scl.minimal-immediate-consistency> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:kleppmann-2017>,
+        <urn:sumidashi:source:vernon-2013> ;
+    sd:identifier "scl.minimal-immediate-consistency" ;
+    sd:statement "同じトランザクションで即時に揃える範囲は、業務上すぐに反映が要るものだけに絞る" .
+
+<urn:sumidashi:principle:scl.separate-read-models> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:fowler-cqrs-2011> ;
+    sd:identifier "scl.separate-read-models" ;
+    sd:statement "一覧・集計などの読み取りは、更新用の集約を経由せず、読み取り用のモデルで組み立てる" .
+
+<urn:sumidashi:principle:scl.stateless-services> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:kleppmann-2017>,
+        <urn:sumidashi:source:twelve-factor-2011> ;
+    sd:identifier "scl.stateless-services" ;
+    sd:statement "サービスはリクエストをまたぐ可変な状態を持たず、状態はデータストアなど外部の仕組みに置く" .
+
+<urn:sumidashi:source:adzic-2011> a sd:Source ;
+    sd:identifier "adzic-2011" ;
+    sd:name "Specification by Example: How Successful Teams Deliver the Right Software" .
+
+<urn:sumidashi:source:cockburn-2005> a sd:Source ;
+    sd:identifier "cockburn-2005" ;
+    sd:name "Hexagonal Architecture (Ports and Adapters)" .
+
+<urn:sumidashi:source:fowler-2003-anemic> a sd:Source ;
+    sd:identifier "fowler-2003-anemic" ;
+    sd:name "AnemicDomainModel" .
+
+<urn:sumidashi:source:fowler-cqrs-2011> a sd:Source ;
+    sd:identifier "fowler-cqrs-2011" ;
+    sd:name "CQRS" .
+
+<urn:sumidashi:source:hunt-thomas-1999> a sd:Source ;
+    sd:identifier "hunt-thomas-1999" ;
+    sd:name "The Pragmatic Programmer: From Journeyman to Master" .
+
+<urn:sumidashi:source:metz-2016> a sd:Source ;
+    sd:identifier "metz-2016" ;
+    sd:name "The Wrong Abstraction" .
+
+<urn:sumidashi:source:myers-1979> a sd:Source ;
+    sd:identifier "myers-1979" ;
+    sd:name "The Art of Software Testing" .
+
+<urn:sumidashi:source:twelve-factor-2011> a sd:Source ;
+    sd:identifier "twelve-factor-2011" ;
+    sd:name "The Twelve-Factor App" .
+
+<urn:sumidashi:check:ADR-CMP-02> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:adr.decision-conformance>,
+        <urn:sumidashi:principle:adr.supersede-not-rewrite> ;
+    sd:belongsTo <urn:sumidashi:philosophy:adr> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "hybrid" ;
+    sd:identifier "ADR-CMP-02" ;
+    sd:name "Superseded の ADR の決定に沿った実装が新しく追加されている" ;
+    sd:related <urn:sumidashi:check:ADR-CMP-01>,
+        <urn:sumidashi:check:ADR-DOC-06> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:ADR-DOC-02> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:adr.considered-options> ;
+    sd:belongsTo <urn:sumidashi:philosophy:adr> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "llm" ;
+    sd:identifier "ADR-DOC-02" ;
+    sd:name "ADR に検討した代替案が書かれていない" ;
+    sd:related <urn:sumidashi:check:ADR-DOC-01>,
+        <urn:sumidashi:check:ADR-DOC-03> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:ADR-DOC-04> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:adr.explicit-deviation>,
+        <urn:sumidashi:principle:adr.explicit-scope> ;
+    sd:belongsTo <urn:sumidashi:philosophy:adr> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "llm" ;
+    sd:identifier "ADR-DOC-04" ;
+    sd:name "ADR が原則から外れることを明示していない" ;
+    sd:related <urn:sumidashi:check:ADR-CMP-03>,
+        <urn:sumidashi:check:ADR-DOC-03>,
+        <urn:sumidashi:check:ADR-DOC-05> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:BIZ-04> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:biz.rule-boundary-tests>,
+        <urn:sumidashi:principle:biz.rule-traceability> ;
+    sd:belongsTo <urn:sumidashi:philosophy:business> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "static" ;
+    sd:identifier "BIZ-04" ;
+    sd:name "重要な業務ルールに境界のテストがない" ;
+    sd:related <urn:sumidashi:check:BIZ-01>,
+        <urn:sumidashi:check:BIZ-05> ;
+    sd:release "v1.5" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:CA-BND-02> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ca.boundary-data>,
+        <urn:sumidashi:principle:ca.framework-independence> ;
+    sd:belongsTo <urn:sumidashi:philosophy:clean-architecture> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "static" ;
+    sd:hasFixture <urn:sumidashi:fixture:ca-bnd-02/b1-ts>,
+        <urn:sumidashi:fixture:ca-bnd-02/h1-py>,
+        <urn:sumidashi:fixture:ca-bnd-02/n1-ts>,
+        <urn:sumidashi:fixture:ca-bnd-02/n2-py>,
+        <urn:sumidashi:fixture:ca-bnd-02/v1-ts>,
+        <urn:sumidashi:fixture:ca-bnd-02/v2-py> ;
+    sd:identifier "CA-BND-02" ;
+    sd:name "ユースケースの入出力に HTTP・Web フレームワークの型を使っている" ;
+    sd:related <urn:sumidashi:check:CA-BND-01>,
+        <urn:sumidashi:check:CA-UC-01> ;
+    sd:release "v1" ;
+    sd:status "ready" .
+
+<urn:sumidashi:check:CA-DEP-04> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ca.acyclic-dependencies>,
+        <urn:sumidashi:principle:ca.dependency-rule> ;
+    sd:belongsTo <urn:sumidashi:philosophy:clean-architecture> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "static" ;
+    sd:hasFixture <urn:sumidashi:fixture:ca-dep-04/b1-ts>,
+        <urn:sumidashi:fixture:ca-dep-04/h1-ts>,
+        <urn:sumidashi:fixture:ca-dep-04/n1-ts>,
+        <urn:sumidashi:fixture:ca-dep-04/n2-py>,
+        <urn:sumidashi:fixture:ca-dep-04/v1-ts>,
+        <urn:sumidashi:fixture:ca-dep-04/v2-py>,
+        <urn:sumidashi:fixture:ca-dep-04/v3-py> ;
+    sd:identifier "CA-DEP-04" ;
+    sd:name "層をまたぐ循環依存がある" ;
+    sd:related <urn:sumidashi:check:CA-DEP-01>,
+        <urn:sumidashi:check:CA-DEP-03> ;
+    sd:release "v1" ;
+    sd:status "ready" .
+
+<urn:sumidashi:check:CA-HUM-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ca.humble-object> ;
+    sd:belongsTo <urn:sumidashi:philosophy:clean-architecture> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "llm" ;
+    sd:identifier "CA-HUM-01" ;
+    sd:name "I/O と業務の判断が分離されていない" ;
+    sd:related <urn:sumidashi:check:PLC-01>,
+        <urn:sumidashi:check:PLC-03> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:CA-MAIN-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ca.main-component>,
+        <urn:sumidashi:principle:ca.ports-and-adapters> ;
+    sd:belongsTo <urn:sumidashi:philosophy:clean-architecture> ;
+    sd:defaultSeverity "Low" ;
+    sd:detection "hybrid" ;
+    sd:identifier "CA-MAIN-01" ;
+    sd:name "具象の組み立てがコンポジションルートの外に散らばっている" ;
+    sd:related <urn:sumidashi:check:CA-BND-03>,
+        <urn:sumidashi:check:CA-DEP-03> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:DDD-AGG-02> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.aggregate-invariants>,
+        <urn:sumidashi:principle:ddd.rich-domain-model> ;
+    sd:belongsTo <urn:sumidashi:philosophy:ddd-tactical> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "llm" ;
+    sd:identifier "DDD-AGG-02" ;
+    sd:name "集約の不変条件を集約の外で検証している" ;
+    sd:related <urn:sumidashi:check:CA-UC-01>,
+        <urn:sumidashi:check:DDD-AGG-01>,
+        <urn:sumidashi:check:PLC-03> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:DDD-AGG-03> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.one-aggregate-per-transaction> ;
+    sd:belongsTo <urn:sumidashi:philosophy:ddd-tactical> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "hybrid" ;
+    sd:identifier "DDD-AGG-03" ;
+    sd:name "1つのトランザクションで複数の集約を更新している" ;
+    sd:related <urn:sumidashi:check:SCL-02> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:DDD-ENT-03> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.aggregate-invariants>,
+        <urn:sumidashi:principle:ddd.intention-revealing-mutation> ;
+    sd:belongsTo <urn:sumidashi:philosophy:ddd-tactical> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "static" ;
+    sd:hasFixture <urn:sumidashi:fixture:ddd-ent-03/b1-ts>,
+        <urn:sumidashi:fixture:ddd-ent-03/h1-py>,
+        <urn:sumidashi:fixture:ddd-ent-03/n1-ts>,
+        <urn:sumidashi:fixture:ddd-ent-03/n2-py>,
+        <urn:sumidashi:fixture:ddd-ent-03/v1-ts>,
+        <urn:sumidashi:fixture:ddd-ent-03/v2-py> ;
+    sd:identifier "DDD-ENT-03" ;
+    sd:name "エンティティの状態を外から直接書き換えられる" ;
+    sd:related <urn:sumidashi:check:DDD-AGG-01>,
+        <urn:sumidashi:check:DDD-VO-02> ;
+    sd:release "v1" ;
+    sd:status "ready" .
+
+<urn:sumidashi:check:GLO-05> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:glo.one-term-one-concept>,
+        <urn:sumidashi:principle:glo.ubiquitous-language> ;
+    sd:belongsTo <urn:sumidashi:philosophy:glossary> ;
+    sd:defaultSeverity "Low" ;
+    sd:detection "static" ;
+    sd:identifier "GLO-05" ;
+    sd:name "非推奨の用語が新しいコードに使われている" ;
+    sd:related <urn:sumidashi:check:GLO-01>,
+        <urn:sumidashi:check:GLO-02> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:PLC-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ca.humble-object>,
+        <urn:sumidashi:principle:plc.domain-object-purity> ;
+    sd:belongsTo <urn:sumidashi:philosophy:logic-placement> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "static" ;
+    sd:identifier "PLC-01" ;
+    sd:name "エンティティ・値オブジェクトが外部を呼んでいる" ;
+    sd:related <urn:sumidashi:check:CA-DEP-02>,
+        <urn:sumidashi:check:CA-HUM-01>,
+        <urn:sumidashi:check:PLC-02> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:principle:adr.decision-conformance> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:madr>,
+        <urn:sumidashi:source:nygard-2011> ;
+    sd:identifier "adr.decision-conformance" ;
+    sd:statement "Accepted の ADR の決定は、その適用範囲のコードで守り、守られているかを確かめられるようにする" .
+
+<urn:sumidashi:principle:adr.supersede-not-rewrite> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:nygard-2011> ;
+    sd:identifier "adr.supersede-not-rewrite" ;
+    sd:statement "判断を覆すときは古い ADR を消さずに Superseded とし、置き換え先の ADR から参照する" .
+
+<urn:sumidashi:principle:ca.boundary-data> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:martin-2017> ;
+    sd:identifier "ca.boundary-data" ;
+    sd:statement "境界を越えるデータは、内側の都合で定義した単純なデータ構造にする" .
+
+<urn:sumidashi:principle:ca.framework-independence> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:martin-2017> ;
+    sd:identifier "ca.framework-independence" ;
+    sd:statement "業務ルールはフレームワーク・データベース・UI から独立させ、それらを交換可能な詳細として扱う" .
+
+<urn:sumidashi:principle:ca.ports-and-adapters> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:cockburn-2005>,
+        <urn:sumidashi:source:martin-2017> ;
+    sd:identifier "ca.ports-and-adapters" ;
+    sd:statement "内側が外部を使うときは、内側で定義したインターフェースを外側が実装する" .
+
+<urn:sumidashi:principle:ddd.domain-event-as-fact> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:vernon-2013> ;
+    sd:identifier "ddd.domain-event-as-fact" ;
+    sd:statement "ドメインイベントは、業務上起きた事実を過去形の名前で表す" .
+
+<urn:sumidashi:principle:ddd.explicit-domain-types> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:fowler-2018>,
+        <urn:sumidashi:source:vernon-2013> ;
+    sd:identifier "ddd.explicit-domain-types" ;
+    sd:statement "業務上の意味と制約を持つ値は、プリミティブ型ではなく専用の型で表す" .
+
+<urn:sumidashi:principle:ddd.one-aggregate-per-transaction> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:vernon-2013> ;
+    sd:identifier "ddd.one-aggregate-per-transaction" ;
+    sd:statement "1つのトランザクションで変更する集約は1つにし、集約をまたぐ整合は結果整合にする" .
+
+<urn:sumidashi:principle:ddd.reference-by-id> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:vernon-2013> ;
+    sd:identifier "ddd.reference-by-id" ;
+    sd:statement "他の集約はオブジェクトではなく識別子で参照する" .
+
+<urn:sumidashi:principle:mdl.cohesive-value-types> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:fowler-2002>,
+        <urn:sumidashi:source:fowler-2018> ;
+    sd:identifier "mdl.cohesive-value-types" ;
+    sd:statement "いつも一緒に扱う値の組と、取りうる値が決まった区分には、型として名前を付ける" .
+
+<urn:sumidashi:principle:plc.application-service-orchestrates> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003>,
+        <urn:sumidashi:source:vernon-2013> ;
+    sd:identifier "plc.application-service-orchestrates" ;
+    sd:statement "アプリケーションサービスは取得・ドメインの呼び出し・保存・通知を並べるだけにし、業務の判断を持たない" .
+
+<urn:sumidashi:ruling:R2-DEPENDENCY> a sd:Ruling ;
+    sd:identifier "R2-DEPENDENCY" ;
+    sd:order 3 .
+
+<urn:sumidashi:ruling:R3-FEWER-FILES> a sd:Ruling ;
+    sd:identifier "R3-FEWER-FILES" ;
+    sd:order 4 .
+
+<urn:sumidashi:source:fowler-2018> a sd:Source ;
+    sd:identifier "fowler-2018" ;
+    sd:name "Refactoring: Improving the Design of Existing Code (2nd Edition)" .
+
+<urn:sumidashi:source:ross-2003> a sd:Source ;
+    sd:identifier "ross-2003" ;
+    sd:name "Principles of the Business Rule Approach" .
+
+<urn:sumidashi:source:skos-2009> a sd:Source ;
+    sd:identifier "skos-2009" ;
+    sd:name "SKOS Simple Knowledge Organization System Reference（W3C Recommendation）" .
+
+<urn:sumidashi:source:sumidashi-requirements> a sd:Source ;
+    sd:identifier "sumidashi-requirements" ;
+    sd:name "sumidashi 要件定義「ADRの扱い」" .
+
+<urn:sumidashi:check:ADR-CMP-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:adr.decision-conformance>,
+        <urn:sumidashi:principle:adr.decision-record> ;
+    sd:belongsTo <urn:sumidashi:philosophy:adr> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "llm" ;
+    sd:identifier "ADR-CMP-01" ;
+    sd:name "Accepted の ADR の決定に反するコードがある" ;
+    sd:related <urn:sumidashi:check:ADR-CMP-02>,
+        <urn:sumidashi:check:ADR-CMP-03>,
+        <urn:sumidashi:check:ADR-DOC-05> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:ADR-CMP-03> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:adr.explicit-scope> ;
+    sd:belongsTo <urn:sumidashi:philosophy:adr> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "static" ;
+    sd:identifier "ADR-CMP-03" ;
+    sd:name "ADR で例外にしたチェックが scope の外でも破られている" ;
+    sd:related <urn:sumidashi:check:ADR-CMP-01>,
+        <urn:sumidashi:check:ADR-DOC-05> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:ADR-DOC-03> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:adr.balanced-consequences> ;
+    sd:belongsTo <urn:sumidashi:philosophy:adr> ;
+    sd:defaultSeverity "Low" ;
+    sd:detection "llm" ;
+    sd:identifier "ADR-DOC-03" ;
+    sd:name "ADR の帰結に良い面しか書かれていない" ;
+    sd:related <urn:sumidashi:check:ADR-DOC-02>,
+        <urn:sumidashi:check:ADR-DOC-04> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:CA-BND-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ca.boundary-data> ;
+    sd:belongsTo <urn:sumidashi:philosophy:clean-architecture> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "hybrid" ;
+    sd:identifier "CA-BND-01" ;
+    sd:name "ORM のモデルがそのまま境界を越えている" ;
+    sd:related <urn:sumidashi:check:CA-BND-02>,
+        <urn:sumidashi:check:DDD-REP-02> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:CA-BND-03> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ca.dependency-rule>,
+        <urn:sumidashi:principle:ca.ports-and-adapters> ;
+    sd:belongsTo <urn:sumidashi:philosophy:clean-architecture> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "hybrid" ;
+    sd:identifier "CA-BND-03" ;
+    sd:name "アプリケーション層が外部 I/O をポートを介さずに直接使っている" ;
+    sd:related <urn:sumidashi:check:CA-DEP-02>,
+        <urn:sumidashi:check:CA-DEP-03>,
+        <urn:sumidashi:check:CA-MAIN-01> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:DDD-AGG-04> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.reference-by-id> ;
+    sd:belongsTo <urn:sumidashi:philosophy:ddd-tactical> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "hybrid" ;
+    sd:identifier "DDD-AGG-04" ;
+    sd:name "他の集約をオブジェクト参照で保持している" ;
+    sd:related <urn:sumidashi:check:GLO-04> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:DDD-REP-02> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ca.dependency-rule>,
+        <urn:sumidashi:principle:ddd.persistence-ignorance> ;
+    sd:belongsTo <urn:sumidashi:philosophy:ddd-tactical> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "static" ;
+    sd:hasFixture <urn:sumidashi:fixture:ddd-rep-02/b1-ts>,
+        <urn:sumidashi:fixture:ddd-rep-02/h1-py>,
+        <urn:sumidashi:fixture:ddd-rep-02/n1-ts>,
+        <urn:sumidashi:fixture:ddd-rep-02/n2-py>,
+        <urn:sumidashi:fixture:ddd-rep-02/v1-ts>,
+        <urn:sumidashi:fixture:ddd-rep-02/v2-py> ;
+    sd:identifier "DDD-REP-02" ;
+    sd:name "リポジトリのインターフェースが永続化の技術を表に出している" ;
+    sd:related <urn:sumidashi:check:CA-BND-01>,
+        <urn:sumidashi:check:CA-DEP-02>,
+        <urn:sumidashi:check:DDD-REP-01> ;
+    sd:release "v1" ;
+    sd:status "ready" .
+
+<urn:sumidashi:check:DDD-SRV-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.domain-service-scope>,
+        <urn:sumidashi:principle:ddd.rich-domain-model> ;
+    sd:belongsTo <urn:sumidashi:philosophy:ddd-tactical> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "llm" ;
+    sd:identifier "DDD-SRV-01" ;
+    sd:name "1つのエンティティで完結する判断がサービスにある" ;
+    sd:related <urn:sumidashi:check:DDD-ENT-02>,
+        <urn:sumidashi:check:PLC-02>,
+        <urn:sumidashi:check:PLC-03> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:DDD-VO-02> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.value-object-immutability> ;
+    sd:belongsTo <urn:sumidashi:philosophy:ddd-tactical> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "static" ;
+    sd:hasFixture <urn:sumidashi:fixture:ddd-vo-02/b1-py>,
+        <urn:sumidashi:fixture:ddd-vo-02/h1-ts>,
+        <urn:sumidashi:fixture:ddd-vo-02/n1-ts>,
+        <urn:sumidashi:fixture:ddd-vo-02/n2-py>,
+        <urn:sumidashi:fixture:ddd-vo-02/v1-ts>,
+        <urn:sumidashi:fixture:ddd-vo-02/v2-py> ;
+    sd:identifier "DDD-VO-02" ;
+    sd:name "値オブジェクトが可変になっている" ;
+    sd:related <urn:sumidashi:check:DDD-ENT-01>,
+        <urn:sumidashi:check:DDD-ENT-03>,
+        <urn:sumidashi:check:DDD-VO-01> ;
+    sd:release "v1" ;
+    sd:status "ready" .
+
+<urn:sumidashi:check:GLO-03> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:glo.one-term-one-concept> ;
+    sd:belongsTo <urn:sumidashi:philosophy:glossary> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "llm" ;
+    sd:identifier "GLO-03" ;
+    sd:name "同じ名前が同じコンテキストの中で別の概念を指している" ;
+    sd:related <urn:sumidashi:check:GLO-02>,
+        <urn:sumidashi:check:MDL-05> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:MDL-02> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:mdl.single-source-of-knowledge> ;
+    sd:belongsTo <urn:sumidashi:philosophy:model-commonality> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "hybrid" ;
+    sd:identifier "MDL-02" ;
+    sd:name "同じ業務計算が複数の場所で別々に実装されている" ;
+    sd:related <urn:sumidashi:check:BIZ-02>,
+        <urn:sumidashi:check:DDD-VO-03>,
+        <urn:sumidashi:check:MDL-03> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:MDL-03> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.explicit-domain-types>,
+        <urn:sumidashi:principle:mdl.cohesive-value-types> ;
+    sd:belongsTo <urn:sumidashi:philosophy:model-commonality> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "hybrid" ;
+    sd:identifier "MDL-03" ;
+    sd:name "値オブジェクトにすべき値の組がバラの引数で散らばっている" ;
+    sd:related <urn:sumidashi:check:DDD-VO-01>,
+        <urn:sumidashi:check:DDD-VO-03>,
+        <urn:sumidashi:check:MDL-02> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:PLC-02> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:plc.application-service-orchestrates>,
+        <urn:sumidashi:principle:plc.domain-service-no-orchestration> ;
+    sd:belongsTo <urn:sumidashi:philosophy:logic-placement> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "hybrid" ;
+    sd:identifier "PLC-02" ;
+    sd:name "ドメインサービスが手順を調整している" ;
+    sd:related <urn:sumidashi:check:CA-HUM-01>,
+        <urn:sumidashi:check:DDD-SRV-01>,
+        <urn:sumidashi:check:PLC-01>,
+        <urn:sumidashi:check:PLC-03> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:principle:adr.decision-record> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:nygard-2011> ;
+    sd:identifier "adr.decision-record" ;
+    sd:statement "重要な設計判断は、背景・決定・帰結を ADR に記録し、チームが合意した判断の拠り所にする" .
+
+<urn:sumidashi:principle:adr.explicit-scope> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:sumidashi-requirements> ;
+    sd:identifier "adr.explicit-scope" ;
+    sd:statement "ADR による例外は、適用範囲（scope）と外れてよいチェック（exempts）を明示し、その範囲の外へ広げない" .
+
+<urn:sumidashi:principle:ca.humble-object> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:martin-2017> ;
+    sd:identifier "ca.humble-object" ;
+    sd:statement "テストしにくい振る舞い（I/O）とテストしやすい振る舞い（判断）を分ける" .
+
+<urn:sumidashi:principle:ca.use-case-responsibility> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:martin-2017> ;
+    sd:identifier "ca.use-case-responsibility" ;
+    sd:statement "アプリケーション固有の業務ルールはユースケースに置き、配送の仕組みや表示の形式を持ち込まない" .
+
+<urn:sumidashi:principle:glo.one-term-one-concept> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003>,
+        <urn:sumidashi:source:skos-2009> ;
+    sd:identifier "glo.one-term-one-concept" ;
+    sd:statement "1つのコンテキストの中では、1つの概念を1つの名前で呼び、1つの名前で1つの概念だけを指す" .
+
+<urn:sumidashi:principle:glo.ubiquitous-language> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003> ;
+    sd:identifier "glo.ubiquitous-language" ;
+    sd:statement "1つのコンテキストの中では、業務の言葉とコードの名前を揃え、用語集にない言葉で業務を表さない" .
+
+<urn:sumidashi:source:fowler-2002> a sd:Source ;
+    sd:identifier "fowler-2002" ;
+    sd:name "Patterns of Enterprise Application Architecture" .
+
+<urn:sumidashi:source:madr> a sd:Source ;
+    sd:identifier "madr" ;
+    sd:name "MADR: Markdown Architectural Decision Records" .
+
+<urn:sumidashi:check:ADR-DOC-05> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:adr.explicit-scope> ;
+    sd:belongsTo <urn:sumidashi:philosophy:adr> ;
+    sd:defaultSeverity "Low" ;
+    sd:detection "hybrid" ;
+    sd:identifier "ADR-DOC-05" ;
+    sd:name "ADR の適用範囲が書かれていない" ;
+    sd:related <urn:sumidashi:check:ADR-CMP-01>,
+        <urn:sumidashi:check:ADR-CMP-03>,
+        <urn:sumidashi:check:ADR-DOC-04> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:BIZ-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:biz.rule-traceability> ;
+    sd:belongsTo <urn:sumidashi:philosophy:business> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "static" ;
+    sd:identifier "BIZ-01" ;
+    sd:name "台帳の業務ルールと実装が辿れない" ;
+    sd:related <urn:sumidashi:check:BIZ-04>,
+        <urn:sumidashi:check:BIZ-07> ;
+    sd:release "v1.5" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:CA-DEP-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ca.dependency-rule> ;
+    sd:belongsTo <urn:sumidashi:philosophy:clean-architecture> ;
+    sd:conflictsWith <urn:sumidashi:check:MDL-01> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "static" ;
+    sd:hasFixture <urn:sumidashi:fixture:ca-dep-01/b1-ts>,
+        <urn:sumidashi:fixture:ca-dep-01/h1-ts>,
+        <urn:sumidashi:fixture:ca-dep-01/n1-ts>,
+        <urn:sumidashi:fixture:ca-dep-01/n2-py>,
+        <urn:sumidashi:fixture:ca-dep-01/v1-ts>,
+        <urn:sumidashi:fixture:ca-dep-01/v2-py> ;
+    sd:identifier "CA-DEP-01" ;
+    sd:name "ドメイン層が外側の層に依存している" ;
+    sd:related <urn:sumidashi:check:CA-DEP-02>,
+        <urn:sumidashi:check:CA-DEP-04> ;
+    sd:release "v1" ;
+    sd:status "ready" .
+
+<urn:sumidashi:check:CA-DEP-02> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ca.dependency-rule>,
+        <urn:sumidashi:principle:ca.framework-independence> ;
+    sd:belongsTo <urn:sumidashi:philosophy:clean-architecture> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "static" ;
+    sd:hasFixture <urn:sumidashi:fixture:ca-dep-02/b1-ts>,
+        <urn:sumidashi:fixture:ca-dep-02/b2-py>,
+        <urn:sumidashi:fixture:ca-dep-02/h1-py>,
+        <urn:sumidashi:fixture:ca-dep-02/n1-ts>,
+        <urn:sumidashi:fixture:ca-dep-02/n2-py>,
+        <urn:sumidashi:fixture:ca-dep-02/v1-ts>,
+        <urn:sumidashi:fixture:ca-dep-02/v2-py> ;
+    sd:identifier "CA-DEP-02" ;
+    sd:name "ドメイン層がフレームワーク・ORM・I/O ライブラリに依存している" ;
+    sd:related <urn:sumidashi:check:CA-BND-03>,
+        <urn:sumidashi:check:CA-DEP-01>,
+        <urn:sumidashi:check:DDD-REP-02> ;
+    sd:release "v1" ;
+    sd:status "ready" .
+
+<urn:sumidashi:check:DDD-AGG-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.aggregate-invariants>,
+        <urn:sumidashi:principle:ddd.aggregate-root-access> ;
+    sd:belongsTo <urn:sumidashi:philosophy:ddd-tactical> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "hybrid" ;
+    sd:identifier "DDD-AGG-01" ;
+    sd:name "集約の外から内部エンティティを直接変更している" ;
+    sd:related <urn:sumidashi:check:DDD-AGG-02>,
+        <urn:sumidashi:check:DDD-ENT-03> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:DDD-ENT-02> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.rich-domain-model> ;
+    sd:belongsTo <urn:sumidashi:philosophy:ddd-tactical> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "llm" ;
+    sd:identifier "DDD-ENT-02" ;
+    sd:name "エンティティが貧血ドメインモデルになっている" ;
+    sd:related <urn:sumidashi:check:CA-UC-01>,
+        <urn:sumidashi:check:DDD-SRV-01>,
+        <urn:sumidashi:check:PLC-03> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:DDD-VO-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.self-validating-value> ;
+    sd:belongsTo <urn:sumidashi:philosophy:ddd-tactical> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "hybrid" ;
+    sd:identifier "DDD-VO-01" ;
+    sd:name "値オブジェクトが生成時に自分を検証していない" ;
+    sd:related <urn:sumidashi:check:BIZ-06>,
+        <urn:sumidashi:check:DDD-VO-02>,
+        <urn:sumidashi:check:DDD-VO-03> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:MDL-06> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:mdl.shared-kernel>,
+        <urn:sumidashi:principle:mdl.single-source-of-knowledge> ;
+    sd:belongsTo <urn:sumidashi:philosophy:model-commonality> ;
+    sd:conflictsWith <urn:sumidashi:check:MDL-05> ;
+    sd:defaultSeverity "Low" ;
+    sd:detection "static" ;
+    sd:identifier "MDL-06" ;
+    sd:name "共有カーネルにある型を再定義している" ;
+    sd:related <urn:sumidashi:check:MDL-01>,
+        <urn:sumidashi:check:MDL-05> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:principle:biz.rule-traceability> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:ross-2003> ;
+    sd:identifier "biz.rule-traceability" ;
+    sd:statement "業務ルールは、台帳の1行と、それを実装したコード・確かめるテストとを互いに辿れるようにする" .
+
+<urn:sumidashi:principle:ddd.aggregate-invariants> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003>,
+        <urn:sumidashi:source:vernon-2013> ;
+    sd:identifier "ddd.aggregate-invariants" ;
+    sd:statement "集約の不変条件は、集約自身が状態を変えるたびに守る" .
+
+<urn:sumidashi:principle:ddd.rich-domain-model> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:evans-2003>,
+        <urn:sumidashi:source:fowler-2003-anemic> ;
+    sd:identifier "ddd.rich-domain-model" ;
+    sd:statement "データに関する業務ルールは、そのデータを持つドメインオブジェクトのふるまいとして置く" .
+
+<urn:sumidashi:source:kleppmann-2017> a sd:Source ;
+    sd:identifier "kleppmann-2017" ;
+    sd:name "Designing Data-Intensive Applications" .
+
+<urn:sumidashi:source:nygard-2011> a sd:Source ;
+    sd:identifier "nygard-2011" ;
+    sd:name "Documenting Architecture Decisions" .
+
+<urn:sumidashi:check:CA-DEP-03> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ca.dependency-rule> ;
+    sd:belongsTo <urn:sumidashi:philosophy:clean-architecture> ;
+    sd:conflictsWith <urn:sumidashi:check:MDL-01> ;
+    sd:defaultSeverity "High" ;
+    sd:detection "static" ;
+    sd:hasFixture <urn:sumidashi:fixture:ca-dep-03/b1-py>,
+        <urn:sumidashi:fixture:ca-dep-03/h1-ts>,
+        <urn:sumidashi:fixture:ca-dep-03/n1-ts>,
+        <urn:sumidashi:fixture:ca-dep-03/n2-py>,
+        <urn:sumidashi:fixture:ca-dep-03/v1-ts>,
+        <urn:sumidashi:fixture:ca-dep-03/v2-py> ;
+    sd:identifier "CA-DEP-03" ;
+    sd:name "アプリケーション層がアダプタ層・インフラ層に依存している" ;
+    sd:related <urn:sumidashi:check:CA-BND-03>,
+        <urn:sumidashi:check:CA-DEP-04>,
+        <urn:sumidashi:check:CA-MAIN-01> ;
+    sd:release "v1" ;
+    sd:status "ready" .
+
+<urn:sumidashi:check:CA-UC-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ca.use-case-responsibility> ;
+    sd:belongsTo <urn:sumidashi:philosophy:clean-architecture> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "hybrid" ;
+    sd:identifier "CA-UC-01" ;
+    sd:name "コントローラ・ハンドラに業務ロジックがある" ;
+    sd:related <urn:sumidashi:check:DDD-ENT-02>,
+        <urn:sumidashi:check:PLC-03> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:DDD-VO-03> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:ddd.explicit-domain-types> ;
+    sd:belongsTo <urn:sumidashi:philosophy:ddd-tactical> ;
+    sd:defaultSeverity "Low" ;
+    sd:detection "hybrid" ;
+    sd:identifier "DDD-VO-03" ;
+    sd:name "業務上の値をプリミティブ型のまま扱っている" ;
+    sd:related <urn:sumidashi:check:DDD-VO-01>,
+        <urn:sumidashi:check:MDL-03> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:GLO-02> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:glo.one-term-one-concept>,
+        <urn:sumidashi:principle:glo.ubiquitous-language> ;
+    sd:belongsTo <urn:sumidashi:philosophy:glossary> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "static" ;
+    sd:identifier "GLO-02" ;
+    sd:name "同じ概念が同じコンテキストの中で別々の名前で呼ばれている" ;
+    sd:related <urn:sumidashi:check:GLO-03>,
+        <urn:sumidashi:check:GLO-05>,
+        <urn:sumidashi:check:MDL-01> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:principle:mdl.single-source-of-knowledge> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:hunt-thomas-1999> ;
+    sd:identifier "mdl.single-source-of-knowledge" ;
+    sd:statement "同じ業務知識（概念・計算・ルール）は、1つのコンテキストの中で1か所にだけ表す" .
+
+<urn:sumidashi:philosophy:glossary> a sd:Philosophy ;
+    sd:identifier "glossary" ;
+    sd:name "ドメイン用語" ;
+    sd:release "v1" .
+
+<urn:sumidashi:philosophy:model-commonality> a sd:Philosophy ;
+    sd:identifier "model-commonality" ;
+    sd:name "モデルの共通化" ;
+    sd:release "v1" .
+
+<urn:sumidashi:principle:ca.dependency-rule> a sd:Principle ;
+    sd:citedFrom <urn:sumidashi:source:martin-2017> ;
+    sd:identifier "ca.dependency-rule" ;
+    sd:statement "ソースコードの依存は内側の方針へだけ向け、内側の層は外側の層の名前を一切知らない" .
+
+<urn:sumidashi:check:MDL-05> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:mdl.no-false-unification> ;
+    sd:belongsTo <urn:sumidashi:philosophy:model-commonality> ;
+    sd:conflictsWith <urn:sumidashi:check:MDL-01>,
+        <urn:sumidashi:check:MDL-06> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "llm" ;
+    sd:identifier "MDL-05" ;
+    sd:name "別の概念を1つの型にまとめた誤った共通化がある" ;
+    sd:related <urn:sumidashi:check:GLO-03>,
+        <urn:sumidashi:check:MDL-01>,
+        <urn:sumidashi:check:MDL-06> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:check:PLC-03> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:plc.application-service-orchestrates>,
+        <urn:sumidashi:principle:plc.innermost-placement> ;
+    sd:belongsTo <urn:sumidashi:philosophy:logic-placement> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "llm" ;
+    sd:identifier "PLC-03" ;
+    sd:name "アプリケーションサービスに業務判断がある" ;
+    sd:related <urn:sumidashi:check:CA-UC-01>,
+        <urn:sumidashi:check:DDD-AGG-02>,
+        <urn:sumidashi:check:DDD-ENT-02>,
+        <urn:sumidashi:check:DDD-SRV-01>,
+        <urn:sumidashi:check:PLC-02> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:philosophy:business> a sd:Philosophy ;
+    sd:identifier "business" ;
+    sd:name "ビジネス視点" ;
+    sd:release "v1" .
+
+<urn:sumidashi:philosophy:logic-placement> a sd:Philosophy ;
+    sd:identifier "logic-placement" ;
+    sd:name "ロジックの配置とスケール" ;
+    sd:release "v1" .
+
+<urn:sumidashi:source:martin-2017> a sd:Source ;
+    sd:identifier "martin-2017" ;
+    sd:name "Clean Architecture: A Craftsman's Guide to Software Structure and Design" .
+
+<urn:sumidashi:check:MDL-01> a sd:Check ;
+    sd:basedOn <urn:sumidashi:principle:mdl.single-source-of-knowledge> ;
+    sd:belongsTo <urn:sumidashi:philosophy:model-commonality> ;
+    sd:conflictsWith <urn:sumidashi:check:CA-DEP-01>,
+        <urn:sumidashi:check:CA-DEP-03>,
+        <urn:sumidashi:check:MDL-05> ;
+    sd:defaultSeverity "Medium" ;
+    sd:detection "hybrid" ;
+    sd:identifier "MDL-01" ;
+    sd:name "同じ概念を表す型が重複して定義されている" ;
+    sd:related <urn:sumidashi:check:GLO-02>,
+        <urn:sumidashi:check:MDL-05>,
+        <urn:sumidashi:check:MDL-06> ;
+    sd:release "v1" ;
+    sd:status "draft" .
+
+<urn:sumidashi:philosophy:adr> a sd:Philosophy ;
+    sd:identifier "adr" ;
+    sd:name "ADR（Architecture Decision Record）" ;
+    sd:release "v1" .
+
+<urn:sumidashi:philosophy:clean-architecture> a sd:Philosophy ;
+    sd:identifier "clean-architecture" ;
+    sd:name "クリーンアーキテクチャ" ;
+    sd:release "v1" .
+
+<urn:sumidashi:philosophy:ddd-tactical> a sd:Philosophy ;
+    sd:identifier "ddd-tactical" ;
+    sd:name "DDD 戦術設計" ;
+    sd:release "v1" .
+
+<urn:sumidashi:source:vernon-2013> a sd:Source ;
+    sd:identifier "vernon-2013" ;
+    sd:name "Implementing Domain-Driven Design" .
+
+<urn:sumidashi:source:evans-2003> a sd:Source ;
+    sd:identifier "evans-2003" ;
+    sd:name "Domain-Driven Design: Tackling Complexity in the Heart of Software" .
+

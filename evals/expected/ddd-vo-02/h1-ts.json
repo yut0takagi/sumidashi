@@ -1,0 +1,30 @@
+{
+  "case": "ddd-vo-02/h1-ts",
+  "check": "DDD-VO-02",
+  "label": "violation",
+  "split": "holdout",
+  "description": "ValueObject インターフェースを実装した Percentage に、公開の可変フィールドと、メソッドの中の ++ と += がある。",
+  "findings": [
+    {
+      "id": "DDD-VO-02",
+      "verdict": "violation",
+      "file": "src/pricing/domain/percentage.ts",
+      "start_line": 4,
+      "end_line": 4
+    },
+    {
+      "id": "DDD-VO-02",
+      "verdict": "violation",
+      "file": "src/pricing/domain/percentage.ts",
+      "start_line": 18,
+      "end_line": 18
+    },
+    {
+      "id": "DDD-VO-02",
+      "verdict": "violation",
+      "file": "src/pricing/domain/percentage.ts",
+      "start_line": 22,
+      "end_line": 22
+    }
+  ]
+}

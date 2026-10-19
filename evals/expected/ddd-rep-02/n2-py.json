@@ -1,0 +1,8 @@
+{
+  "case": "ddd-rep-02/n2-py",
+  "check": "DDD-REP-02",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "Protocol のリポジトリはドメインの型と自前の MemberFilter だけを使う。filter という名前の引数があるが型がドメインの型なので borderline にならない。SQLAlchemy を使う実装はインフラ層にある。",
+  "findings": []
+}

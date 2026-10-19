@@ -1,0 +1,44 @@
+{
+  "case": "ddd-ent-03/v1-ts",
+  "check": "DDD-ENT-03",
+  "label": "violation",
+  "split": "dev",
+  "description": "エンティティ Order に、修飾子なしの公開フィールド・public の可変フィールド・ガードのない set アクセサ・代入だけの setStatus がある。Customer は public の引数プロパティで email を公開している。static readonly・private・ガードつきのメソッドは対象外。",
+  "findings": [
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "violation",
+      "file": "src/domain/order.ts",
+      "start_line": 6,
+      "end_line": 6
+    },
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "violation",
+      "file": "src/domain/order.ts",
+      "start_line": 7,
+      "end_line": 7
+    },
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "violation",
+      "file": "src/domain/order.ts",
+      "start_line": 20,
+      "end_line": 22
+    },
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "violation",
+      "file": "src/domain/order.ts",
+      "start_line": 24,
+      "end_line": 26
+    },
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "violation",
+      "file": "src/domain/customer.ts",
+      "start_line": 4,
+      "end_line": 4
+    }
+  ]
+}

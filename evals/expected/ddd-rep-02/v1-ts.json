@@ -1,0 +1,30 @@
+{
+  "case": "ddd-rep-02/v1-ts",
+  "check": "DDD-REP-02",
+  "label": "violation",
+  "split": "dev",
+  "description": "ドメイン層のリポジトリのインターフェースに TypeORM の型が漏れている。FindOptionsWhere・EntityManager をメソッドの引数に取り、ProductRepository は TypeORM の Repository を継承している。",
+  "findings": [
+    {
+      "id": "DDD-REP-02",
+      "verdict": "violation",
+      "file": "src/domain/order-repository.ts",
+      "start_line": 6,
+      "end_line": 6
+    },
+    {
+      "id": "DDD-REP-02",
+      "verdict": "violation",
+      "file": "src/domain/order-repository.ts",
+      "start_line": 7,
+      "end_line": 7
+    },
+    {
+      "id": "DDD-REP-02",
+      "verdict": "violation",
+      "file": "src/domain/product-repository.ts",
+      "start_line": 4,
+      "end_line": 4
+    }
+  ]
+}

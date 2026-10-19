@@ -1,0 +1,23 @@
+{
+  "case": "ca-bnd-02/v2-py",
+  "check": "CA-BND-02",
+  "label": "violation",
+  "split": "dev",
+  "description": "アプリケーション層の公開メソッドが FastAPI の Request を受け取り、別の公開関数が Django の HttpResponse を返している。_ で始まるメソッドは対象外。",
+  "findings": [
+    {
+      "id": "CA-BND-02",
+      "verdict": "violation",
+      "file": "src/members/application/register_member.py",
+      "start_line": 13,
+      "end_line": 13
+    },
+    {
+      "id": "CA-BND-02",
+      "verdict": "violation",
+      "file": "src/members/application/export_members.py",
+      "start_line": 9,
+      "end_line": 9
+    }
+  ]
+}

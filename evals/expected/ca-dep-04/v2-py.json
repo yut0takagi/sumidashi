@@ -1,0 +1,16 @@
+{
+  "case": "ca-dep-04/v2-py",
+  "check": "CA-DEP-04",
+  "label": "violation",
+  "split": "dev",
+  "description": "domain の stock.py と application の restock.py が互いに import している。domain 内の customer.py と loyalty.py の循環は同じ層なので対象外。",
+  "findings": [
+    {
+      "id": "CA-DEP-04",
+      "verdict": "violation",
+      "file": "src/shop/domain/stock.py",
+      "start_line": 1,
+      "end_line": 1
+    }
+  ]
+}

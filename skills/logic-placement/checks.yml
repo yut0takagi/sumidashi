@@ -1,0 +1,367 @@
+# ロジックの配置とスケールのチェック項目（8個）
+# PLC はロジックの置き場所（エンティティ・ドメインサービス・アプリケーションサービス）、SCL は水平スケールを妨げる構造を見る。
+# 実行時の性能そのもの（応答時間、スループット）は測らない。
+# 配置の誤りのうち典型的なものは既存のチェック（CA-UC-01・DDD-SRV-01・DDD-ENT-02・DDD-AGG-02）で拾い、ここでは重ねない。
+# 1チェック=1エントリ。id は一度振ったら変えない。
+# スキーマ: schemas/checks-file.schema.json
+
+philosophy:
+  id: logic-placement
+  name: ロジックの配置とスケール
+  summary: ロジックの置き場所の判定と、水平スケールを妨げる構造
+  release: v1
+  id_prefixes: [PLC, SCL]
+
+sources:
+  - id: evans-2003
+    title: "Domain-Driven Design: Tackling Complexity in the Heart of Software"
+    author: Eric Evans
+    year: 2003
+  - id: vernon-2013
+    title: Implementing Domain-Driven Design
+    author: Vaughn Vernon
+    year: 2013
+  - id: martin-2017
+    title: "Clean Architecture: A Craftsman's Guide to Software Structure and Design"
+    author: Robert C. Martin
+    year: 2017
+  - id: fowler-2002
+    title: Patterns of Enterprise Application Architecture
+    author: Martin Fowler
+    year: 2002
+  - id: kleppmann-2017
+    title: Designing Data-Intensive Applications
+    author: Martin Kleppmann
+    year: 2017
+  - id: fowler-cqrs-2011
+    title: CQRS
+    author: Martin Fowler
+    year: 2011
+    url: https://martinfowler.com/bliki/CQRS.html
+  - id: twelve-factor-2011
+    title: The Twelve-Factor App
+    author: Adam Wiggins
+    year: 2011
+    url: https://12factor.net/
+
+principles:
+  - id: plc.innermost-placement
+    statement: 判断は、それに必要なデータを持つ最も内側の型に置き、内側に置けるものを外側に置かない
+    sources: [evans-2003, vernon-2013]
+  - id: plc.domain-object-purity
+    statement: エンティティと値オブジェクトは、自身の状態と引数だけで判断し、リポジトリや外部サービスを呼ばない
+    sources: [vernon-2013]
+  - id: plc.application-service-orchestrates
+    statement: アプリケーションサービスは取得・ドメインの呼び出し・保存・通知を並べるだけにし、業務の判断を持たない
+    sources: [vernon-2013, evans-2003]
+  - id: plc.domain-service-no-orchestration
+    statement: ドメインサービスは複数の集約にまたがる業務の判断だけを持ち、取得・保存・通知・トランザクションの制御をしない
+    sources: [vernon-2013]
+  - id: scl.stateless-services
+    statement: サービスはリクエストをまたぐ可変な状態を持たず、状態はデータストアなど外部の仕組みに置く
+    sources: [twelve-factor-2011, kleppmann-2017]
+  - id: scl.minimal-immediate-consistency
+    statement: 同じトランザクションで即時に揃える範囲は、業務上すぐに反映が要るものだけに絞る
+    sources: [vernon-2013, kleppmann-2017]
+  - id: scl.load-what-you-need
+    statement: 判断に必要なデータだけを、まとめて読み込む
+    sources: [fowler-2002, kleppmann-2017]
+  - id: scl.separate-read-models
+    statement: 一覧・集計などの読み取りは、更新用の集約を経由せず、読み取り用のモデルで組み立てる
+    sources: [fowler-cqrs-2011]
+  - id: scl.avoid-contention-hotspots
+    statement: 多くの処理が同じ1つのインスタンスを更新する構造を避け、更新の競合を分散させる
+    sources: [vernon-2013, kleppmann-2017]
+
+checks:
+  - id: PLC-01
+    name: エンティティ・値オブジェクトが外部を呼んでいる
+    principle: エンティティと値オブジェクトは、リポジトリや外部サービスを呼ばず、自身の状態と引数だけで判断する
+    principles: [plc.domain-object-purity, ca.humble-object]
+    source: Vernon『Implementing Domain-Driven Design』10章 Aggregates（Avoid Dependency Injection into an Aggregate）
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: static
+      static: >-
+        エンティティ・値オブジェクトのメソッドの本体で、名前が Repository・Repo・Client・Gateway・Api で終わる型の値
+        （フィールド・引数・ローカル変数）のメソッド呼び出しと、フレームワーク台帳で db・orm・http・cloud・messaging・io に
+        分類されるパッケージから import した名前の呼び出しを、呼び出し1つにつき1件列挙する
+    location: 呼び出しの行
+    criteria:
+      violation: エンティティ・値オブジェクトのメソッドが、リポジトリ・外部 API のクライアント・DB・ファイルなどの I/O を呼んでいる
+      borderline: >-
+        引数で受け取ったドメイン層のインターフェース（名前が Service・Policy・Calculator で終わるもの）を呼んでいる
+        （判断を外へ委ねるダブルディスパッチで、中身が I/O かはその実装次第）
+      not_violation: 自身のフィールドと引数だけで判断している。発生したドメインイベントを内部のリストに積むだけ
+    exclusions:
+      - テストコード
+      - ファクトリ（名前が Factory で終わるクラス）
+    severity:
+      default: High
+    fix_patterns:
+      - 外部から得る値はアプリケーションサービスで取得し、エンティティのメソッドには引数で渡す
+      - 外部の判断が要るなら、ドメイン層にインターフェースを置き、メソッドの引数で受け取る
+    related: [CA-HUM-01, CA-DEP-02, PLC-02]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: PLC-02
+    name: ドメインサービスが手順を調整している
+    principle: ドメインサービスは複数の集約にまたがる業務の判断だけを持ち、取得・保存・通知・トランザクションの制御はアプリケーションサービスに任せる
+    principles: [plc.domain-service-no-orchestration, plc.application-service-orchestrates]
+    source: Vernon『Implementing Domain-Driven Design』7章 Services
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: hybrid
+      static: >-
+        ドメイン層の、名前が Service で終わるクラスのメソッドの本体で、リポジトリ（名前が Repository・Repo で終わる型の値）の
+        save・find・get・update・delete・add・remove 系の呼び出し、transaction・commit・rollback・atomic・unitOfWork 系の呼び出し、
+        send・publish・notify・emit 系の呼び出しを列挙する
+      question: >-
+        このドメインサービスのメソッドは、取得・保存・通知・トランザクションの制御という手順の調整
+        （配置の判定手順で Q6 にあたる、アプリケーションサービスの仕事）をしているか。
+    location: 呼び出しの行
+    criteria:
+      violation: ドメインサービスが、集約の取得と保存、トランザクションの制御、外部への通知を自分で行っている
+      borderline: 判断に必要な参照データ（料金表など）をリポジトリから読むだけで、保存・通知・トランザクションの制御はしていない
+      not_violation: 必要な集約や値を引数で受け取り、判断の結果を返すだけ
+    exclusions:
+      - テストコード
+    severity:
+      default: Medium
+    fix_patterns:
+      - 取得・保存・通知・トランザクションの制御をアプリケーションサービスへ移し、ドメインサービスは引数を受けて判断を返すだけにする（Q6）
+    related: [PLC-01, PLC-03, DDD-SRV-01, CA-HUM-01]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: PLC-03
+    name: アプリケーションサービスに業務判断がある
+    principle: アプリケーションサービスは手順を並べるだけにし、ドメインオブジェクトの状態による業務上の分岐・計算は内側の型に置く
+    principles: [plc.application-service-orchestrates, plc.innermost-placement]
+    source: Vernon『Implementing Domain-Driven Design』14章 Application／Evans『Domain-Driven Design』4章 Isolating the Domain
+    status: draft
+    release: v1
+    applies_when:
+      layers: [application]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: llm
+      question: >-
+        このアプリケーションサービスのメソッドは、ドメインオブジェクトの状態を読んで業務上の分岐・計算をしているか
+        （配置の判定手順で Q2〜Q4 のどこかで結論が出る、内側の型の仕事か）。
+    location: 業務上の分岐・計算の行範囲
+    criteria:
+      violation: アプリケーションサービスが、ドメインオブジェクトのフィールドを読んで業務上の条件分岐や金額などの計算をしている
+      borderline: >-
+        分岐が業務の判断か、手順上の分岐（見つからなければ 404、権限がなければ拒否など）かが、コードだけでは決まらない
+      not_violation: 取得・ドメインオブジェクトのメソッドの呼び出し・保存・通知を並べるだけ。手順上の分岐
+    exclusions:
+      - テストコード
+    severity:
+      default: Medium
+    fix_patterns:
+      - >-
+        判定手順で結論の出た Q の置き場所へ移す（Q2 なら単一のエンティティのメソッド、Q3 なら集約ルートのメソッド）。
+        指摘には、どの Q で結論が出たかを添える
+    related: [DDD-ENT-02, DDD-SRV-01, DDD-AGG-02, CA-UC-01, PLC-02]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: SCL-01
+    name: サービスがリクエストをまたぐ状態を持っている
+    principle: サービスはリクエストをまたいで可変な状態を持たず、状態はデータストアなど外部の仕組みに置く
+    principles: [scl.stateless-services]
+    source: The Twelve-Factor App VI. Processes／Kleppmann『Designing Data-Intensive Applications』1章
+    status: draft
+    release: v1.5
+    applies_when:
+      layers: [application, domain]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: hybrid
+      static: >-
+        名前が Service・UseCase・Handler で終わるクラスの、コンストラクタ（Python は __init__）以外のメソッドの中の
+        this・self のフィールドへの代入・複合代入とコレクションの変更（push・set・append・update など）、
+        およびモジュールの最上位で宣言した変数への書き込みを列挙する
+      question: >-
+        この状態は、リクエストをまたいで残る可変な状態で、サーバーを複数台に増やすと台ごとに値が食い違うか。
+    location: 代入・変更の行
+    criteria:
+      violation: サービスのインスタンス変数やモジュール変数に、リクエストをまたいで残る値（キャッシュ、カウンタ、直前の処理結果）を書き込んでいる
+      borderline: >-
+        起動後に一度だけ読み込む読み取り専用のキャッシュ（台ごとに食い違っても害がないかは、データの性質による）。
+        インスタンスの寿命がリクエストスコープかシングルトンかが、DI の設定などコードの外にしかない
+      not_violation: コンストラクタで受け取った依存の保持。リクエストスコープで作られるインスタンスの中の状態
+    exclusions:
+      - テストコード
+      - Main（組み立て）のコード
+    severity:
+      default: High
+    fix_patterns:
+      - 状態をデータストアや外部のキャッシュ（Redis など）に移し、サービスは毎回そこから読む
+      - リクエストの間だけ要る値は、ローカル変数か引数で受け渡す
+    related: [SCL-05]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: SCL-02
+    name: 即時でなくてよい処理を同じトランザクションで同期的に実行している
+    principle: 同じトランザクションで即時に揃える範囲は、業務上すぐに反映が要るものだけに絞る
+    principles: [scl.minimal-immediate-consistency, ddd.one-aggregate-per-transaction]
+    source: Vernon『Implementing Domain-Driven Design』10章 Aggregates（Use Eventual Consistency Outside the Boundary）／Kleppmann『Designing Data-Intensive Applications』
+    status: draft
+    release: v1.5
+    applies_when:
+      layers: [application]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: llm
+      question: >-
+        このトランザクションの中の処理（通知、集計、他の集約の更新）は、業務ルール台帳で consistency が eventual とされた処理で、
+        同じトランザクションの中で同期的に実行されているか。
+    location: 即時でなくてよい処理の呼び出しの行
+    criteria:
+      violation: 台帳で consistency が eventual とされた処理が、同じトランザクションの中で同期的に実行されている
+      borderline: >-
+        業務ルール台帳がない、または台帳にその処理の consistency の記載がない
+        （即時に反映が要るかはコードから決められない）
+      not_violation: 台帳で consistency が immediate とされた処理。ドメインイベントやキューを通して後から実行している
+    exclusions:
+      - テストコード
+    severity:
+      default: Medium
+    fix_patterns:
+      - 即時でなくてよい処理をドメインイベントの購読側やジョブキューへ移し、トランザクションの外で実行する
+    related: [DDD-AGG-03]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: SCL-03
+    name: ドメインロジックのために過剰に読み込んでいる
+    principle: 判断に必要なデータだけを、ループの中で1件ずつではなくまとめて読み込む
+    principles: [scl.load-what-you-need]
+    source: Fowler『Patterns of Enterprise Application Architecture』Lazy Load／Kleppmann『Designing Data-Intensive Applications』
+    status: draft
+    release: v1.5
+    applies_when:
+      layers: [application, domain]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: hybrid
+      static: >-
+        ループ（for・while・map・forEach・内包表記）の本体の中にある、リポジトリ（名前が Repository・Repo で終わる型の値）の
+        取得メソッドの呼び出しを列挙する。あわせて、集約全体を取得した直後に、その集約のフィールドを1つしか読まない箇所を列挙する
+      question: >-
+        この読み込みは、ループの回数だけ取得を繰り返している（N+1）か、判断に要らない集約全体を読み込んでいるか。
+    location: 取得の呼び出しの行
+    criteria:
+      violation: ループの中でリポジトリから1件ずつ取得している。判断に1つのフィールドしか使わないのに、集約全体を読み込んでいる
+      borderline: >-
+        ループの回数に上限があるが、その上限がコードの外（業務の仕様や設定）にしか書かれていない
+        （常に数件なら問題にならない）
+      not_violation: findByIds などでまとめて取得している。集約の不変条件を守るために、更新の前に集約全体を読み込んでいる
+    exclusions:
+      - テストコード
+      - バッチ処理で、1件ずつのコミットを意図していると明示されたもの
+    severity:
+      default: Medium
+    fix_patterns:
+      - ループの前に ID をまとめ、1回の取得で読み込む
+      - 判断に必要な値だけを返す問い合わせを、読み取り用に用意する
+    related: [SCL-04, DDD-AGG-04]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: SCL-04
+    name: 読み取り専用の画面を集約経由で組み立てている
+    principle: 一覧・集計などの読み取りは、更新用の集約を大量に読まず、読み取り用のモデルで組み立てる
+    principles: [scl.separate-read-models]
+    source: Fowler "CQRS"（martinfowler.com/bliki）
+    status: draft
+    release: v1.5
+    applies_when:
+      layers: [application, adapter]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: llm
+      question: >-
+        この一覧・集計の処理は、更新用の集約を大量に読み込み、アプリケーション側で絞り込み・集計して
+        読み取り専用の結果を組み立てているか。
+    location: 集約を読み込んで組み立てる処理の行範囲
+    criteria:
+      violation: 一覧・集計のために更新用の集約を件数の上限なく読み込み、メモリ上で絞り込み・並べ替え・集計している
+      borderline: 読み込む件数が少ないことが、コードの外（業務の量）にしか根拠がない
+      not_violation: 読み取り用の問い合わせ（クエリサービス、ビュー、読み取りモデル）で組み立てている。件数に上限がある
+    exclusions:
+      - テストコード
+    severity:
+      default: Low
+    fix_patterns:
+      - 読み取り用の問い合わせ（クエリサービス）を設け、必要な列だけを DB 側で絞り込み・集計して返す
+    related: [SCL-03, CA-BND-01]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: SCL-05
+    name: 更新が1つの集約インスタンスに集中している
+    principle: 多くの処理が同じ1つのインスタンスを更新する構造を避け、更新の競合を分散させる
+    principles: [scl.avoid-contention-hotspots, ddd.aggregate-invariants]
+    source: Vernon『Implementing Domain-Driven Design』10章 Aggregates（Design Small Aggregates）／Kleppmann『Designing Data-Intensive Applications』7章 Transactions
+    status: draft
+    release: v1.5
+    applies_when:
+      layers: [domain, application]
+      languages: [typescript, python]
+      requires: [layer_map, aggregate_map]
+    detection:
+      type: llm
+      question: >-
+        この集約は、多くのユースケースが同じ1つのインスタンス（グローバルなカウンタ、在庫の単一行など）を更新する構造で、
+        同時の更新が競合の焦点になるか。
+    location: 集約ルートの型の宣言の行
+    criteria:
+      violation: 複数のユースケースが、固定の ID や単一の行で表される同じ集約インスタンスを更新する
+      borderline: 同時更新の頻度が業務の量次第で、コードからは決まらない
+      not_violation: 更新されるインスタンスが利用者ごと・注文ごとなどに分かれている。追記だけで更新が衝突しない
+    exclusions:
+      - テストコード
+    severity:
+      default: Medium
+    fix_patterns:
+      - 集約を分割し、競合する更新を別々のインスタンスに分ける
+      - 単一の値の上書きをやめ、追記型の記録（イベント）にして、合計は読み取り側で求める
+    related: [SCL-01, DDD-AGG-03]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []

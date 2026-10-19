@@ -1,0 +1,15 @@
+{
+  "case": "_applicability/crud-01-ts",
+  "kind": "applicability",
+  "description": "Express と Sequelize の CRUD。routes・models・services に分かれているが domain がなく、層マップは推定できない。",
+  "expect": {
+    "ddd-tactical": {
+      "applied": false,
+      "max_findings": 0
+    },
+    "clean-architecture": {
+      "mode": "dep-only",
+      "severity_shift": -1
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "todo-api",
+  "private": true,
+  "dependencies": {
+    "express": "^4.19.2",
+    "sequelize": "^6.37.3"
+  }
+}

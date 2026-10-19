@@ -1,0 +1,15 @@
+{
+  "case": "_applicability/crud-02-py",
+  "kind": "applicability",
+  "description": "FastAPI と SQLAlchemy の CRUD。api・db に分かれているが domain がなく、層マップは推定できない。",
+  "expect": {
+    "ddd-tactical": {
+      "applied": false,
+      "max_findings": 0
+    },
+    "clean-architecture": {
+      "mode": "dep-only",
+      "severity_shift": -1
+    }
+  }
+}

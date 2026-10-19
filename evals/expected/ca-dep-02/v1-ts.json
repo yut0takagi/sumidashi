@@ -1,0 +1,37 @@
+{
+  "case": "ca-dep-02/v1-ts",
+  "check": "CA-DEP-02",
+  "label": "violation",
+  "split": "dev",
+  "description": "ドメイン層が ORM（typeorm）・HTTP クライアント（axios）・ファイル I/O（fs）を import している。型だけの typeorm の import も violation のまま。uuid と decimal.js は対象外。",
+  "findings": [
+    {
+      "id": "CA-DEP-02",
+      "verdict": "violation",
+      "file": "src/domain/order.ts",
+      "start_line": 1,
+      "end_line": 1
+    },
+    {
+      "id": "CA-DEP-02",
+      "verdict": "violation",
+      "file": "src/domain/exchange-rate.ts",
+      "start_line": 1,
+      "end_line": 1
+    },
+    {
+      "id": "CA-DEP-02",
+      "verdict": "violation",
+      "file": "src/domain/order-repository.ts",
+      "start_line": 1,
+      "end_line": 1
+    },
+    {
+      "id": "CA-DEP-02",
+      "verdict": "violation",
+      "file": "src/domain/receipt.ts",
+      "start_line": 1,
+      "end_line": 1
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "case": "ddd-evt-01/b1-ts",
+  "check": "DDD-EVT-01",
+  "label": "borderline",
+  "split": "dev",
+  "description": "名前が名詞形（-ion・-al）で終わるイベント。OrderCancellationEvent・PaymentApproval は、出来事を表す名詞なのか命令なのか名前だけでは決まらない。",
+  "findings": [
+    {
+      "id": "DDD-EVT-01",
+      "verdict": "borderline",
+      "file": "src/domain/events/order-cancellation-event.ts",
+      "start_line": 3,
+      "end_line": 3
+    },
+    {
+      "id": "DDD-EVT-01",
+      "verdict": "borderline",
+      "file": "src/domain/events/payment-approval.ts",
+      "start_line": 3,
+      "end_line": 3
+    }
+  ]
+}

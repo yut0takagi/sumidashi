@@ -1,0 +1,625 @@
+# DDD 戦術設計のチェック項目（15個）
+# 1チェック=1エントリ。id は一度振ったら変えない。
+# スキーマ: schemas/checks-file.schema.json
+
+philosophy:
+  id: ddd-tactical
+  name: DDD 戦術設計
+  summary: 集約・エンティティ・値オブジェクト・リポジトリ・ドメインサービス・ドメインイベント
+  release: v1
+  id_prefixes: [DDD]
+
+sources:
+  - id: evans-2003
+    title: "Domain-Driven Design: Tackling Complexity in the Heart of Software"
+    author: Eric Evans
+    year: 2003
+  - id: vernon-2013
+    title: Implementing Domain-Driven Design
+    author: Vaughn Vernon
+    year: 2013
+  - id: fowler-2003-anemic
+    title: AnemicDomainModel
+    author: Martin Fowler
+    year: 2003
+    url: https://martinfowler.com/bliki/AnemicDomainModel.html
+  - id: fowler-2018
+    title: "Refactoring: Improving the Design of Existing Code (2nd Edition)"
+    author: Martin Fowler
+    year: 2018
+
+principles:
+  - id: ddd.aggregate-root-access
+    statement: 集約内部の状態は、集約ルートのメソッドを通してのみ変更する
+    sources: [evans-2003]
+  - id: ddd.aggregate-invariants
+    statement: 集約の不変条件は、集約自身が状態を変えるたびに守る
+    sources: [evans-2003, vernon-2013]
+  - id: ddd.one-aggregate-per-transaction
+    statement: 1つのトランザクションで変更する集約は1つにし、集約をまたぐ整合は結果整合にする
+    sources: [vernon-2013]
+  - id: ddd.reference-by-id
+    statement: 他の集約はオブジェクトではなく識別子で参照する
+    sources: [vernon-2013]
+  - id: ddd.entity-identity
+    statement: エンティティは属性ではなく、ライフサイクルを通じた同一性で区別する
+    sources: [evans-2003]
+  - id: ddd.rich-domain-model
+    statement: データに関する業務ルールは、そのデータを持つドメインオブジェクトのふるまいとして置く
+    sources: [evans-2003, fowler-2003-anemic]
+  - id: ddd.intention-revealing-mutation
+    statement: エンティティの状態は、意図を表すメソッドからだけ変えられるようにし、不変条件を迂回する書き込み口を作らない
+    sources: [evans-2003, vernon-2013]
+  - id: ddd.value-object-immutability
+    statement: 値オブジェクトは不変にし、属性の値で等価性を決める
+    sources: [evans-2003]
+  - id: ddd.self-validating-value
+    statement: 値オブジェクトは生成時に自分の正しさを検証し、不正な値のまま存在させない
+    sources: [vernon-2013]
+  - id: ddd.explicit-domain-types
+    statement: 業務上の意味と制約を持つ値は、プリミティブ型ではなく専用の型で表す
+    sources: [vernon-2013, fowler-2018]
+  - id: ddd.repository-per-aggregate
+    statement: リポジトリは集約ルートごとに置き、集約を丸ごと取得・保存する
+    sources: [evans-2003, vernon-2013]
+  - id: ddd.persistence-ignorance
+    statement: ドメインから見たリポジトリは、永続化の技術を表に出さないコレクションとしてふるまう
+    sources: [evans-2003, vernon-2013]
+  - id: ddd.domain-service-scope
+    statement: ドメインサービスには、単一のエンティティや値オブジェクトに自然に属さない操作だけを置く
+    sources: [evans-2003]
+  - id: ddd.domain-event-as-fact
+    statement: ドメインイベントは、業務上起きた事実を過去形の名前で表す
+    sources: [vernon-2013]
+
+checks:
+  # ---------------------------------------------------------------- AGG: 集約
+  - id: DDD-AGG-01
+    name: 集約の外から内部エンティティを直接変更している
+    principle: 集約内部の状態は集約ルートのメソッド経由でのみ変更する
+    principles: [ddd.aggregate-root-access, ddd.aggregate-invariants]
+    source: Evans『Domain-Driven Design』6章 Aggregates
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain, application]
+      languages: [typescript, python]
+      requires: [layer_map, aggregate_map]
+    detection:
+      type: hybrid
+      static: >-
+        集約外のファイルから、内部エンティティの setter 呼び出し・フィールド代入・
+        コレクションへの push/remove を列挙
+      question: >-
+        この変更は集約ルートを経由せずに内部エンティティの状態を変えているか。
+        ルートの不変条件チェックを迂回しているか。
+      implementation: ddd_agg_01
+    location: 内部エンティティを変更している文の行
+    criteria:
+      violation: 集約外のコードが内部エンティティの状態を書き換え、ルートのメソッドを通らない
+      borderline: ルートが内部エンティティの参照を返し、呼び出し側が読み取りのみ行っている
+      not_violation: ルートの中、または集約内のエンティティ同士での変更
+    exclusions:
+      - テストコード（tests/, *.spec.*, *_test.py）
+      - 集約を組み立てるファクトリ・再構築用のリポジトリ実装
+    severity:
+      default: High
+      deescalate: 対象の内部エンティティに不変条件が1つも定義されていない場合は Medium
+    fix_patterns:
+      - 変更操作を集約ルートのメソッドに移し、内部コレクションは読み取り専用で公開する
+    related: [DDD-AGG-02, DDD-ENT-03]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: DDD-AGG-02
+    name: 集約の不変条件を集約の外で検証している
+    principle: 集約が常に満たすべき条件は、集約自身が状態を変えるメソッドの中で検証する
+    principles: [ddd.aggregate-invariants, ddd.rich-domain-model]
+    source: Evans『Domain-Driven Design』6章 Aggregates／Vernon『Implementing Domain-Driven Design』10章 Aggregates
+    status: draft
+    release: v1
+    applies_when:
+      layers: [application, domain]
+      languages: [typescript, python]
+      requires: [layer_map, aggregate_map]
+    detection:
+      type: llm
+      question: >-
+        この検証は、集約が常に満たすべき条件（合計の上限、状態遷移の可否、明細の数など）か。
+        そして集約のメソッドの側では同じ検証をしていないか。
+    location: 集約の外で不変条件を検証している条件分岐の行範囲
+    criteria:
+      violation: アプリケーションサービスなど集約の外で不変条件を検証し、集約のメソッドは検証せずに状態を変える
+      borderline: 集約の外と中の両方で同じ条件を検証している（重複しているが、正しさは保たれている）
+      not_violation: 入力の形式検証や認可など、集約の不変条件ではない検証
+    exclusions:
+      - テストコード
+    severity:
+      default: High
+    fix_patterns:
+      - 検証を集約ルートの状態変更メソッドに移し、条件を満たさなければドメインの例外を投げる
+    related: [DDD-AGG-01, PLC-03, CA-UC-01]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: DDD-AGG-03
+    name: 1つのトランザクションで複数の集約を更新している
+    principle: 1つのトランザクションで変更する集約は1つにし、集約をまたぐ整合は結果整合で取る
+    principles: [ddd.one-aggregate-per-transaction]
+    source: Vernon『Implementing Domain-Driven Design』10章 Aggregates（Modify One Aggregate per Transaction）
+    status: draft
+    release: v1
+    applies_when:
+      layers: [application]
+      languages: [typescript, python]
+      requires: [layer_map, aggregate_map]
+    detection:
+      type: hybrid
+      static: >-
+        1つのユースケースの関数、またはトランザクション境界（transaction・atomic・unit of work）の中で、
+        異なる集約ルートのリポジトリの保存・更新が2回以上呼ばれる箇所を列挙する
+      question: これらの集約の更新は、業務上その場で同時に一貫している必要があるか。結果整合では足りないか。
+      implementation: ddd_agg_03
+    location: トランザクション境界かユースケースの関数名がある行
+    criteria:
+      violation: 即時の一貫性が要らない複数の集約を、1つのトランザクションで更新している
+      borderline: 即時の一貫性が要るかどうかが、コードの外（業務ルール台帳の consistency）にしか書かれていない
+      not_violation: 同じ集約を1回だけ更新している。または別集約の更新をドメインイベント経由で後から行っている
+    exclusions:
+      - テストコード
+      - データ移行・バッチの一括処理で、設定かコメントでそう明示されているもの
+    severity:
+      default: Medium
+    fix_patterns:
+      - 2つ目以降の集約の更新を、ドメインイベントを受けた別のハンドラ（別トランザクション）に移す
+    related: [SCL-02]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: DDD-AGG-04
+    name: 他の集約をオブジェクト参照で保持している
+    principle: 他の集約は識別子で参照し、オブジェクトとして抱え込まない
+    principles: [ddd.reference-by-id]
+    source: Vernon『Implementing Domain-Driven Design』10章 Aggregates（Reference Other Aggregates by Identity）
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain]
+      languages: [typescript, python]
+      requires: [layer_map, aggregate_map]
+    detection:
+      type: hybrid
+      static: 集約ルートのフィールドのうち、型が別の集約ルート（またはそのコレクション）であるものを列挙する
+      question: このフィールドの型は、独立したライフサイクルを持つ別の集約のルートか。
+      implementation: ddd_agg_04
+    location: フィールドの宣言の行
+    criteria:
+      violation: 集約ルートが、別の集約ルートのオブジェクトをフィールドに保持している
+      borderline: 別の集約の一部の値を、読み取り専用のスナップショット（値オブジェクト）として保持している
+      not_violation: 集約内部のエンティティ、値オブジェクト、他の集約の ID の保持
+    exclusions:
+      - テストコード
+      - 読み取りモデル（クエリ用の型）
+    severity:
+      default: Medium
+    fix_patterns:
+      - フィールドを相手の集約の ID（値オブジェクト）に置き換え、必要なときにリポジトリから取得する
+    related: [GLO-04]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  # ---------------------------------------------------------------- ENT: エンティティ
+  - id: DDD-ENT-01
+    name: エンティティの等価性が識別子で決まっていない
+    principle: エンティティの等価性は識別子だけで決め、属性の値では比べない
+    principles: [ddd.entity-identity]
+    source: Evans『Domain-Driven Design』5章 Entities
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: hybrid
+      static: >-
+        識別子を持つドメイン層のクラスで、equals・__eq__ が識別子以外の属性を比較しているもの、
+        または eq が既定のままの dataclass（全属性で比較される）を列挙する
+      question: このクラスは、属性が変わっても同じものとして扱うべきエンティティか（値オブジェクトとして扱うべきものではないか）。
+      implementation: ddd_ent_01
+    location: equals・__eq__ の定義の行、または dataclass のデコレータの行
+    criteria:
+      violation: エンティティの等価比較が、識別子以外の属性を含めて行われる
+      borderline: 識別子と版番号（version）など、同一性の一部とみなせる属性を組み合わせて比較している
+      not_violation: 識別子だけで比較している。または等価比較を定義していない（参照の同一性）
+    exclusions:
+      - テストコード
+    severity:
+      default: Medium
+    fix_patterns:
+      - equals・__eq__ を識別子の比較だけにし、dataclass なら eq=False にして __eq__ を明示する
+    related: [DDD-VO-02]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: DDD-ENT-02
+    name: エンティティが貧血ドメインモデルになっている
+    principle: エンティティ自身のデータに関する業務ルールは、そのエンティティのメソッドとして置く
+    principles: [ddd.rich-domain-model]
+    source: Fowler "AnemicDomainModel"／Evans『Domain-Driven Design』5章
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain, application]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: llm
+      question: >-
+        このエンティティは、自身のデータに関する業務ルール（状態遷移、計算、検証）をメソッドとして持たず、
+        外のサービスがフィールドを読み書きして処理しているか。
+    location: エンティティのクラス名がある行
+    criteria:
+      violation: エンティティがフィールドとアクセサだけを持ち、そのデータに関する業務ルールが外のサービスにある
+      borderline: 業務ルールがほとんどない単純なマスタデータ
+      not_violation: 状態遷移・計算・検証をエンティティのメソッドとして持っている
+    exclusions:
+      - テストコード
+      - DTO・ORM モデル・読み取りモデル
+    severity:
+      default: Medium
+      deescalate: business 台帳で generic に分類された領域では Low
+    fix_patterns:
+      - サービスにある業務ルールを、データを持つエンティティのメソッドに移す（ロジック配置の判定手順 Q2）
+    related: [DDD-SRV-01, PLC-03, CA-UC-01]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: DDD-ENT-03
+    name: エンティティの状態を外から直接書き換えられる
+    principle: エンティティの状態は意図を表すメソッドからだけ変えられるようにし、公開の書き込み口を作らない
+    principles: [ddd.intention-revealing-mutation, ddd.aggregate-invariants]
+    source: Evans『Domain-Driven Design』10章 Supple Design（Intention-Revealing Interfaces）／Vernon『Implementing Domain-Driven Design』5章 Entities
+    status: ready
+    release: v1
+    applies_when:
+      layers: [domain]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: static
+      static: >-
+        識別子（id・<クラス名>Id）を持つドメイン層のクラスについて、公開かつ readonly でないフィールド、
+        検証のない公開 setter（set アクセサ・@x.setter）、代入1文だけの setXxx・set_xxx メソッド、
+        Python の公開属性と frozen でない dataclass の公開フィールドを列挙する
+      implementation: ddd_ent_03
+    location: >-
+      フィールド・setter・setXxx メソッドの名前がある行。Python の公開属性は __init__ 内の最初の代入の行、
+      dataclass の公開フィールドはフィールドの宣言の行
+    criteria:
+      violation: >-
+        エンティティに、外から状態を書き換えられる公開の書き込み口がある（公開で readonly でないフィールド、
+        検証のない公開 setter、代入するだけの setXxx メソッド、Python の公開属性）
+      borderline: >-
+        書き換えはできないが、内部の可変なコレクションをそのまま公開している（readonly な配列・list のフィールド、
+        内部コレクションをそのまま返す getter・property）
+      not_violation: >-
+        フィールドが private・protected・readonly・# 付き・_ 始まりで、状態は意図を表すメソッドから変える。
+        検証（条件分岐・例外）を含む setter
+    exclusions:
+      - テストコード
+      - 名前が Dto・DTO・Props・Input・Output・Command・Query・Event・Error・Exception で終わるクラス
+      - ORM のモデル（インフラ層に置かれたもの）
+    severity:
+      default: Medium
+      escalate: 対象のクラスが集約ルートと推定され、そのフィールドが不変条件の検証に使われているなら High
+    fix_patterns:
+      - フィールドを private（Python は _ 始まり）にし、状態の変更を「何をするか」を表すメソッド（approve・changeAddress など）に置き換える
+      - 公開が必要なら readonly にし、コレクションは読み取り専用のコピーかビューを返す
+    related: [DDD-AGG-01, DDD-VO-02]
+    fixtures:
+      violation: [ddd-ent-03/v1-ts, ddd-ent-03/v2-py, ddd-ent-03/h1-py]
+      borderline: [ddd-ent-03/b1-ts]
+      not_violation: [ddd-ent-03/n1-ts, ddd-ent-03/n2-py]
+
+  # ---------------------------------------------------------------- VO: 値オブジェクト
+  - id: DDD-VO-01
+    name: 値オブジェクトが生成時に自分を検証していない
+    principle: 値オブジェクトは生成時に値の制約を検証し、不正な値のまま存在させない
+    principles: [ddd.self-validating-value]
+    source: Vernon『Implementing Domain-Driven Design』6章 Value Objects
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: hybrid
+      static: >-
+        値オブジェクトのコンストラクタ・ファクトリ・__post_init__ で、引数を検証せずに
+        （条件分岐・例外送出・検証関数の呼び出しがなく）フィールドへ代入しているものを列挙する
+      question: >-
+        この値オブジェクトには、業務上取りうる値の制約（範囲・形式・組み合わせ）があるのに、
+        生成時に検証していないか。
+      implementation: ddd_vo_01
+    location: コンストラクタ（__init__・__post_init__）の名前がある行
+    criteria:
+      violation: 業務上の制約がある値オブジェクトが、生成時に検証せずに値を受け入れる
+      borderline: 検証を生成元（ファクトリ・パーサ）に置き、コンストラクタを非公開にしている
+      not_violation: 制約のない値（任意の文字列のラベルなど）、または生成時に検証している
+    exclusions:
+      - テストコード
+    severity:
+      default: High
+    fix_patterns:
+      - コンストラクタ（またはファクトリ）で制約を検証し、違反したらドメインの例外を投げる
+    related: [DDD-VO-02, DDD-VO-03, BIZ-06]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: DDD-VO-02
+    name: 値オブジェクトが可変になっている
+    principle: 値オブジェクトは生成後に状態を変えられないようにし、変更は新しいインスタンスを返して表す
+    principles: [ddd.value-object-immutability]
+    source: Evans『Domain-Driven Design』5章 Value Objects
+    status: ready
+    release: v1
+    applies_when:
+      layers: [domain]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: static
+      static: >-
+        値オブジェクト（ValueObject を継承・実装するクラス、識別子を持たず equals・__eq__ を持つクラス、
+        識別子を持たないドメイン層の dataclass）について、公開で readonly でないフィールド、公開 setter、
+        コンストラクタ以外での this・self への代入、frozen でない dataclass を列挙する
+      implementation: ddd_vo_02
+    location: >-
+      フィールドの宣言・setter の名前・代入文の行。frozen でない dataclass はデコレータの行、
+      Python の公開属性は __init__ 内の代入の行
+    criteria:
+      violation: 値オブジェクトの状態を、生成後に書き換えられる（公開の可変フィールド、setter、コンストラクタ以外での代入、frozen でない dataclass）
+      borderline: フィールドは readonly・frozen だが、中身が可変なコレクション（配列・list・dict・Map）になっている
+      not_violation: すべてのフィールドが readonly・frozen で、変更系のメソッドは新しいインスタンスを返す
+    exclusions:
+      - テストコード
+      - 名前が Dto・Props・Command・Query・Event・Error・Exception・Config・Settings で終わるクラス
+    severity:
+      default: Medium
+    fix_patterns:
+      - フィールドを readonly（Python は @dataclass(frozen=True)）にし、変更系のメソッドは新しいインスタンスを返す
+      - コレクションは ReadonlyArray・tuple・frozenset など不変の型にする
+    related: [DDD-VO-01, DDD-ENT-01, DDD-ENT-03]
+    fixtures:
+      violation: [ddd-vo-02/v1-ts, ddd-vo-02/v2-py, ddd-vo-02/h1-ts]
+      borderline: [ddd-vo-02/b1-py]
+      not_violation: [ddd-vo-02/n1-ts, ddd-vo-02/n2-py]
+
+  - id: DDD-VO-03
+    name: 業務上の値をプリミティブ型のまま扱っている
+    principle: 業務上の意味と制約を持つ値は、プリミティブ型ではなく専用の値オブジェクトで表す
+    principles: [ddd.explicit-domain-types]
+    source: Vernon『Implementing Domain-Driven Design』6章 Value Objects／Fowler『Refactoring』Replace Primitive with Object
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: hybrid
+      static: >-
+        ドメイン層の公開シグネチャとフィールドで、業務上の意味を持つ名前（amount・price・email・quantity・rate・
+        *_id・*Id など）が string・number・int・float・Decimal などのプリミティブ型になっているものを列挙する
+      question: この値には業務上の制約か振る舞い（単位、範囲、形式、計算）があり、専用の型にすべきか。
+      implementation: ddd_vo_03
+    location: フィールドか引数の宣言の行
+    criteria:
+      violation: 制約か振る舞いがある業務上の値が、プリミティブ型のまま複数の場所で受け渡されている
+      borderline: 制約はあるが、使われているのが1か所だけ
+      not_violation: 制約も振る舞いもない値（表示名、自由記述のメモなど）
+    exclusions:
+      - テストコード
+      - DTO・ORM モデル・外部 API の型
+    severity:
+      default: Low
+    fix_patterns:
+      - 値と制約を持つ値オブジェクト（Money・EmailAddress・Quantity など）を定義し、シグネチャの型を置き換える
+    related: [MDL-03, DDD-VO-01]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  # ---------------------------------------------------------------- REP: リポジトリ
+  - id: DDD-REP-01
+    name: リポジトリが集約単位になっていない
+    principle: リポジトリは集約ルートごとに置き、集約の内部エンティティを単独で取得・保存しない
+    principles: [ddd.repository-per-aggregate]
+    source: Evans『Domain-Driven Design』6章 Repositories
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain, application]
+      languages: [typescript, python]
+      requires: [layer_map, aggregate_map]
+    detection:
+      type: llm
+      question: このリポジトリが扱う型は集約ルートか。集約の内部エンティティを単独で取得・保存していないか。
+    location: リポジトリのインターフェースかクラスの名前がある行
+    criteria:
+      violation: 集約の内部エンティティ専用のリポジトリがあり、ルートを通さずに取得・保存できる
+      borderline: 読み取り専用のクエリサービスとして、内部エンティティを一覧で取得している（CQRS の参照側）
+      not_violation: 集約ルートごとに1つのリポジトリがあり、集約を丸ごと取得・保存する
+    exclusions:
+      - テストコード
+    severity:
+      default: Medium
+    fix_patterns:
+      - 内部エンティティのリポジトリを削り、集約ルートのリポジトリから集約ごと取得してルートのメソッドで操作する
+    related: [DDD-AGG-01, DDD-REP-02]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: DDD-REP-02
+    name: リポジトリのインターフェースが永続化の技術を表に出している
+    principle: ドメインから見たリポジトリのインターフェースは、ドメインの型だけを受け渡し、ORM・DB の型を表に出さない
+    principles: [ddd.persistence-ignorance, ca.dependency-rule]
+    source: Evans『Domain-Driven Design』6章 Repositories／Vernon『Implementing Domain-Driven Design』12章 Repositories
+    status: ready
+    release: v1
+    applies_when:
+      layers: [domain, application]
+      languages: [typescript, python]
+      requires: [layer_map, aggregate_map]
+    detection:
+      type: static
+      static: >-
+        ドメイン層・アプリケーション層にある、名前が Repository・Repo で終わるインターフェース・抽象クラス・クラスについて、
+        公開メソッドの引数と戻り値の型に ORM・DB ドライバから import した名前が出るもの、
+        ORM の Repository 型を継承しているもの、SQL 文字列や生のクエリ条件を受け取る引数を列挙する
+      implementation: ddd_rep_02
+    location: メソッドの名前がある行。ORM の型を継承している場合はインターフェース・クラスの名前がある行
+    criteria:
+      violation: >-
+        リポジトリのメソッドの引数か戻り値に ORM・DB ドライバの型（TypeORM の FindOptionsWhere・EntityManager・QueryRunner、
+        Prisma の生成型、SQLAlchemy の Session・Select、Django の QuerySet など）が出る。または ORM の Repository 型を継承している
+      borderline: >-
+        引数に SQL 文字列や生のクエリ条件を受け取る（sql・query・where・filter という名前の string・dict・Record 型の引数）
+      not_violation: ドメインの型・識別子・値オブジェクト・仕様（Specification）オブジェクトだけを受け渡している
+    exclusions:
+      - テストコード
+      - インフラ層にあるリポジトリ実装（実装が ORM を使うのは正しい）
+    severity:
+      default: Medium
+    fix_patterns:
+      - インターフェースはドメインの型と識別子だけで定義し、ORM の型への変換はインフラ層の実装の中で行う
+      - 検索条件が複雑なら、ドメインの言葉で書いた仕様（Specification）オブジェクトを受け取る
+    related: [CA-DEP-02, CA-BND-01, DDD-REP-01]
+    fixtures:
+      violation: [ddd-rep-02/v1-ts, ddd-rep-02/v2-py, ddd-rep-02/h1-py]
+      borderline: [ddd-rep-02/b1-ts]
+      not_violation: [ddd-rep-02/n1-ts, ddd-rep-02/n2-py]
+
+  # ---------------------------------------------------------------- SRV: ドメインサービス
+  - id: DDD-SRV-01
+    name: 1つのエンティティで完結する判断がサービスにある
+    principle: 単一のエンティティの状態だけで決まる判断は、サービスではなくそのエンティティのメソッドに置く
+    principles: [ddd.domain-service-scope, ddd.rich-domain-model]
+    source: Evans『Domain-Driven Design』5章 Services
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain, application]
+      languages: [typescript, python]
+      requires: [layer_map, aggregate_map]
+    detection:
+      type: llm
+      question: >-
+        このサービスのメソッドの判断は、1つのエンティティ（またはその集約）の状態だけで決まるか。
+        複数の集約や外部の情報を必要としていないか。
+    location: サービスのメソッド名がある行
+    criteria:
+      violation: サービスのメソッドが、1つのエンティティの状態だけを読んで判断・計算し、結果をそのエンティティに書き戻している
+      borderline: 判断は1つのエンティティで決まるが、設定値や現在時刻を外から受け取っている
+      not_violation: 複数の集約にまたがる判断、または外部の情報（為替レートなど）を要する計算
+    exclusions:
+      - テストコード
+    severity:
+      default: Medium
+    fix_patterns:
+      - 判断をエンティティのメソッドに移し、サービスはそのメソッドを呼ぶだけにする（ロジック配置の判定手順 Q2）
+    related: [DDD-ENT-02, PLC-02, PLC-03]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  # ---------------------------------------------------------------- EVT: ドメインイベント
+  - id: DDD-EVT-01
+    name: ドメインイベントの名前が過去形になっていない
+    principle: ドメインイベントは、業務上起きた事実を過去形の名前（OrderPlaced など）で表す
+    principles: [ddd.domain-event-as-fact]
+    source: Vernon『Implementing Domain-Driven Design』8章 Domain Events
+    status: ready
+    release: v1
+    applies_when:
+      layers: [domain]
+      languages: [typescript, python]
+      requires: [layer_map, aggregate_map]
+    detection:
+      type: static
+      static: >-
+        ドメイン層で、名前が Event で終わるクラス・インターフェース・型、または DomainEvent などを継承・実装するクラスを列挙し、
+        名前（末尾の Event を除く）の2語目以降に過去分詞（-ed または不規則変化）があるかを調べる
+      implementation: ddd_evt_01
+    location: イベントのクラス・インターフェース・型の名前がある行
+    criteria:
+      violation: イベント名に過去分詞がなく、命令形・現在形・進行形になっている（PlaceOrder、OrderCancel、OrderShipping など）
+      borderline: 事実を表す名詞形になっている（OrderCancellation、PaymentApproval など -ion・-ment・-al・-ure・-ance で終わる）
+      not_violation: 過去分詞を含む（OrderPlaced、ItemAddedToCart、UserLoggedIn など）。基底クラス（DomainEvent など）
+    exclusions:
+      - テストコード
+      - 名前が Handler・Listener・Subscriber・Bus・Dispatcher・Publisher・Emitter・Store・Queue で終わるもの
+      - 基底の型（Event・DomainEvent・BaseEvent・IntegrationEvent・AbstractEvent）
+    severity:
+      default: Low
+    fix_patterns:
+      - 「何が起きたか」を過去形で表す名前に変える（PlaceOrderEvent → OrderPlaced）
+    related: [DDD-EVT-02]
+    fixtures:
+      violation: [ddd-evt-01/v1-ts, ddd-evt-01/v2-py, ddd-evt-01/h1-ts]
+      borderline: [ddd-evt-01/b1-ts]
+      not_violation: [ddd-evt-01/n1-ts, ddd-evt-01/n2-py]
+
+  - id: DDD-EVT-02
+    name: ドメインイベントが業務上の出来事ではなくデータ変更の通知になっている
+    principle: ドメインイベントは、どの列が変わったかではなく、業務上何が起きたかを表す
+    principles: [ddd.domain-event-as-fact]
+    source: Vernon『Implementing Domain-Driven Design』8章 Domain Events
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain]
+      languages: [typescript, python]
+      requires: [layer_map, aggregate_map]
+    detection:
+      type: llm
+      question: >-
+        このイベントは、業務上意味のある出来事（何が起きたか）を表しているか。
+        それとも、エンティティのどのフィールドが変わったかを伝えるだけのデータ変更通知か。
+    location: イベントのクラス・インターフェース・型の名前がある行
+    criteria:
+      violation: イベントが Updated・Changed のような汎用の名前で、変更前後の全フィールドを運んでいる
+      borderline: 業務上の名前だが、受け手が必要としない全フィールドを運んでいる
+      not_violation: 業務上の出来事を名前で表し、受け手が必要とする事実だけを運んでいる
+    exclusions:
+      - テストコード
+      - CDC（変更データキャプチャ）用の統合イベントで、設定かコメントでそう明示されているもの
+    severity:
+      default: Low
+    fix_patterns:
+      - 業務上の出来事ごとにイベントを分け（OrderUpdated → OrderShippingAddressChanged など）、必要な事実だけを持たせる
+    related: [DDD-EVT-01]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []

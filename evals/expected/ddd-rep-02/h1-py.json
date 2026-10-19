@@ -1,0 +1,23 @@
+{
+  "case": "ddd-rep-02/h1-py",
+  "check": "DDD-REP-02",
+  "label": "violation",
+  "split": "holdout",
+  "description": "モジュラーモノリス（src/inventory/）のアプリケーション層の StockRepo が、sa という別名で import した SQLAlchemy の Connection と、pymongo の Collection をシグネチャに出している。",
+  "findings": [
+    {
+      "id": "DDD-REP-02",
+      "verdict": "violation",
+      "file": "src/inventory/application/stock_repo.py",
+      "start_line": 12,
+      "end_line": 12
+    },
+    {
+      "id": "DDD-REP-02",
+      "verdict": "violation",
+      "file": "src/inventory/application/stock_repo.py",
+      "start_line": 14,
+      "end_line": 14
+    }
+  ]
+}

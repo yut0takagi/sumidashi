@@ -1,0 +1,30 @@
+{
+  "case": "ddd-rep-02/b1-ts",
+  "check": "DDD-REP-02",
+  "label": "borderline",
+  "split": "dev",
+  "description": "リポジトリのメソッドが、検索条件を文字列・SQL・Record で受け取っている。ORM の型は出ないが、永続化の詳細が呼び出し側に漏れている可能性がある。",
+  "findings": [
+    {
+      "id": "DDD-REP-02",
+      "verdict": "borderline",
+      "file": "src/domain/invoice-repository.ts",
+      "start_line": 5,
+      "end_line": 5
+    },
+    {
+      "id": "DDD-REP-02",
+      "verdict": "borderline",
+      "file": "src/domain/invoice-repository.ts",
+      "start_line": 6,
+      "end_line": 6
+    },
+    {
+      "id": "DDD-REP-02",
+      "verdict": "borderline",
+      "file": "src/domain/invoice-repository.ts",
+      "start_line": 7,
+      "end_line": 7
+    }
+  ]
+}

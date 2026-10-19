@@ -1,0 +1,8 @@
+{
+  "case": "ca-dep-01/n1-ts",
+  "check": "CA-DEP-01",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "ドメイン層はドメイン内・共有カーネル・外部パッケージだけを import し、外側の層がドメインを import している（向きは正しい）。",
+  "findings": []
+}

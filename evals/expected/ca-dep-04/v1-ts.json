@@ -1,0 +1,16 @@
+{
+  "case": "ca-dep-04/v1-ts",
+  "check": "CA-DEP-04",
+  "label": "violation",
+  "split": "dev",
+  "description": "domain → application → infrastructure → domain の3ファイルの循環。指摘は1件で、位置は深さの最も浅い層（domain）から出る辺。",
+  "findings": [
+    {
+      "id": "CA-DEP-04",
+      "verdict": "violation",
+      "file": "src/domain/order.ts",
+      "start_line": 1,
+      "end_line": 1
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "case": "ddd-vo-02/v2-py",
+  "check": "DDD-VO-02",
+  "label": "violation",
+  "split": "dev",
+  "description": "Python の値オブジェクトの書き換え。frozen でない @dataclass の Money、メソッドの中で属性を代入する Period、__init__ で公開属性を代入する EmailAddress。frozen な Quantity は対象外。",
+  "findings": [
+    {
+      "id": "DDD-VO-02",
+      "verdict": "violation",
+      "file": "src/shop/domain/money.py",
+      "start_line": 5,
+      "end_line": 5
+    },
+    {
+      "id": "DDD-VO-02",
+      "verdict": "violation",
+      "file": "src/shop/domain/period.py",
+      "start_line": 22,
+      "end_line": 22
+    },
+    {
+      "id": "DDD-VO-02",
+      "verdict": "violation",
+      "file": "src/shop/domain/email_address.py",
+      "start_line": 5,
+      "end_line": 5
+    }
+  ]
+}

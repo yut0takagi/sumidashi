@@ -1,0 +1,23 @@
+{
+  "case": "ca-dep-01/v2-py",
+  "check": "CA-DEP-01",
+  "label": "violation",
+  "split": "dev",
+  "description": "Python のドメイン層が、絶対 import（複数行）でインフラ層を、相対 import でアプリケーション層を読み込んでいる。",
+  "findings": [
+    {
+      "id": "CA-DEP-01",
+      "verdict": "violation",
+      "file": "src/shop/domain/member.py",
+      "start_line": 7,
+      "end_line": 10
+    },
+    {
+      "id": "CA-DEP-01",
+      "verdict": "violation",
+      "file": "src/shop/domain/rank.py",
+      "start_line": 3,
+      "end_line": 3
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "case": "ca-dep-03/n2-py",
+  "check": "CA-DEP-03",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "アプリケーション層はドメイン・同じ層のポート・shared だけを import する。インフラ層がアプリケーション層のポートを実装している（向きは正しい）。",
+  "findings": []
+}

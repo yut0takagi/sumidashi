@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sumidashi:schema:config",
+  "title": "sumidashi project config (.claude/sumidashi.yml)",
+  "description": "すべて省略可能。省略した項目は規模判定と層マップの自動推定で決まる。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "philosophies": {
+      "description": "思想ごとの適用。auto は規模判定に従う",
+      "type": "object",
+      "additionalProperties": { "type": "string", "enum": ["auto", "on", "off"] }
+    },
+    "strictness": { "type": "string", "enum": ["lenient", "standard", "strict"], "default": "standard" },
+    "disabled_checks": { "type": "array", "items": { "type": "string" } },
+    "enabled_checks": {
+      "description": "評価の出荷ゲートを通っていないチェックを、明示的に有効にする",
+      "type": "array", "items": { "type": "string" }
+    },
+    "experimental": {
+      "description": "true で status: draft のチェックも走らせる（精度の保証なし）",
+      "type": "boolean", "default": false
+    },
+    "layers": {
+      "description": "glob → 層。自動推定より優先する",
+      "type": "object",
+      "additionalProperties": { "type": "string", "enum": ["domain", "application", "adapter", "infrastructure", "main", "shared", "ignore"] }
+    },
+    "exclude": { "type": "array", "items": { "type": "string" } },
+    "source_roots": {
+      "description": "Python の import 解決に使うルート。既定は . と src",
+      "type": "array", "items": { "type": "string" }
+    },
+    "adr": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "path": { "type": "string", "default": "docs/adr" } }
+    },
+    "glossary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "path": { "type": "string", "default": "docs/glossary.yml" } }
+    },
+    "business_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "path": { "type": "string", "default": "docs/business-rules.yml" } }
+    },
+    "coverage": {
+      "description": "テストで実行されたかの判定に使うカバレッジ。lcov か Cobertura XML",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "path": { "type": "string" } }
+    },
+    "frameworks": {
+      "description": "フレームワーク・ORM・I/O とみなす外部パッケージの追加と除外",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "add": { "type": "array", "items": { "type": "string" } },
+        "allow": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "onboarding_until": {
+      "description": "この日付までは適合率 0.9 以上のチェックだけを有効にし、strict を使えなくする",
+      "type": "string", "format": "date"
+    },
+    "report": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scores": { "description": "思想ごとの0〜10点を出すか", "type": "boolean", "default": true },
+        "language": { "description": "出力言語。省略時は ja", "type": "string" }
+      }
+    },
+    "hooks": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pre_pr_check": { "description": "gh pr create の前に High のチェックだけを簡易実行して警告する", "type": "boolean", "default": false }
+      }
+    }
+  }
+}

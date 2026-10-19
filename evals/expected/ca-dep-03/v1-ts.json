@@ -1,0 +1,23 @@
+{
+  "case": "ca-dep-03/v1-ts",
+  "check": "CA-DEP-03",
+  "label": "violation",
+  "split": "dev",
+  "description": "ユースケース層（usecases/）がインフラ層の実装クラスとプレゼンテーション層のエラー型を直接 import している。ドメインの import は対象外。",
+  "findings": [
+    {
+      "id": "CA-DEP-03",
+      "verdict": "violation",
+      "file": "src/usecases/place-order.ts",
+      "start_line": 2,
+      "end_line": 2
+    },
+    {
+      "id": "CA-DEP-03",
+      "verdict": "violation",
+      "file": "src/usecases/cancel-order.ts",
+      "start_line": 2,
+      "end_line": 2
+    }
+  ]
+}

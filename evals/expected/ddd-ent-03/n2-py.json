@@ -1,0 +1,8 @@
+{
+  "case": "ddd-ent-03/n2-py",
+  "check": "DDD-ENT-03",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "frozen な dataclass のエンティティ、_ 付きの属性を property で公開するエンティティ（setter はガードつき、コレクションは tuple）。id を持つ MemberDto は名前で除外される。",
+  "findings": []
+}

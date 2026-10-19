@@ -1,0 +1,4496 @@
+{
+  "checks": {
+    "ADR-CMP-01": {
+      "_philosophy": "adr",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "adr"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "Decision の文言が抽象的で、このコードが反しているかを文言だけでは決められない。 または ADR に scope がなく、本文から推定した範囲にこのコードが入るかが確かでない",
+        "not_violation": "Decision に沿った実装。Decision が触れていない事柄の実装",
+        "violation": "Accepted の ADR の scope 内で、Decision に書かれた方針と逆の実装がある （例: 「金額は整数の最小単位で持つ」と決めた範囲で、浮動小数で金額を計算している）"
+      },
+      "detection": {
+        "question": "このコードは、自分を scope に含む Accepted の ADR の Decision に書かれた方針と、 逆の実装になっているか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード",
+        "Status が Accepted でない ADR（Proposed・Deprecated は参照しない。Superseded は置き換え先を辿る）",
+        "見出しから Status・Context・Decision・Consequences を推定できない「形式不明」の ADR"
+      ],
+      "fix_patterns": [
+        "実装を Decision に合わせる",
+        "決定のほうを変えるべきなら、新しい ADR を起票して古い ADR を Superseded にする（/sumidashi:adr-draft で下書き）"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "ADR-CMP-01",
+      "location": "ADR の決定に反している実装の行範囲",
+      "name": "Accepted の ADR の決定に反するコードがある",
+      "principle": "Accepted の ADR の scope 内のコードは、その ADR の Decision に従う",
+      "principles": [
+        "adr.decision-conformance",
+        "adr.decision-record"
+      ],
+      "related": [
+        "ADR-CMP-02",
+        "ADR-CMP-03",
+        "ADR-DOC-05"
+      ],
+      "release": "v1",
+      "severity": {
+        "deescalate": "ADR に scope がなく、本文から適用範囲を推定した場合は Medium",
+        "default": "High"
+      },
+      "source": "Nygard \"Documenting Architecture Decisions\"／MADR（Confirmation）",
+      "status": "draft"
+    },
+    "ADR-CMP-02": {
+      "_philosophy": "adr",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "adr"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "新旧どちらの決定にも当てはまる実装。または ADR が Superseded なのに、 置き換え先（Superseded by）が書かれておらず辿れない",
+        "not_violation": "差分の外にある既存のコード（置き換え前から残っているもの）。置き換え先の決定に沿った実装",
+        "violation": "Superseded の ADR の決定に沿った実装が、差分で新しく追加されている"
+      },
+      "detection": {
+        "question": "この新しく追加されたコードは、置き換え前の ADR の決定に沿っていて、 置き換え先の ADR の決定には沿っていないか。",
+        "static": "Superseded の ADR と、その置き換え先の ADR を辿って組にする。差分で追加された行のうち、 Superseded の ADR の scope に入り、その Decision に出てくる識別子・パッケージ名・パス （バッククォートで囲まれた語）を含むものを候補にする",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード",
+        "置き換え先の ADR が移行期間中の併存を認めている範囲の移行用コード"
+      ],
+      "fix_patterns": [
+        "置き換え先の ADR の決定に沿った実装に書き換える",
+        "古い方式を使い続ける理由があるなら、その範囲を新しい ADR に例外として記録する"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "ADR-CMP-02",
+      "location": "追加された行のうち、置き換え前の決定に沿った実装の行範囲",
+      "name": "Superseded の ADR の決定に沿った実装が新しく追加されている",
+      "principle": "置き換えられた ADR の決定ではなく、置き換え先の ADR の決定に沿って新しいコードを書く",
+      "principles": [
+        "adr.supersede-not-rewrite",
+        "adr.decision-conformance"
+      ],
+      "related": [
+        "ADR-CMP-01",
+        "ADR-DOC-06"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium",
+        "escalate": "置き換え先の ADR が、古い方式の新規利用を禁止すると明記している場合は High"
+      },
+      "source": "Nygard \"Documenting Architecture Decisions\"（Status の superseded）",
+      "status": "draft"
+    },
+    "ADR-CMP-03": {
+      "_philosophy": "adr",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "adr"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "scope の外の違反が、scope のいずれかの glob と同じ親ディレクトリにある （範囲の書き漏れか、例外の拡大かが決まらない）",
+        "not_violation": "scope の中の違反（ADR による例外で Info になる）。exempts に入っていないチェックの違反 （このチェックの対象外で、元のチェックがそのまま指摘する）",
+        "violation": "exempts に挙げたチェックの違反が、その ADR の scope の外でも出ている （scope の中だけで例外にした方式が、範囲の外に広がっている）"
+      },
+      "detection": {
+        "static": "Accepted の ADR のフロントマターから scope（glob）と exempts（チェックID）を読み、 exempts に入ったチェックの指摘のうち、location が scope のどの glob にも入らないものを列挙する",
+        "type": "static"
+      },
+      "exclusions": [
+        "テストコード",
+        "scope を書いていない ADR（例外に使わないため、このチェックの対象にもしない）",
+        "Status が Accepted でない ADR"
+      ],
+      "fix_patterns": [
+        "範囲の外の実装を、原則どおりに直す",
+        "範囲を広げるのが正しいなら、ADR の scope を改訂し、その改訂について合意を取る"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "ADR-CMP-03",
+      "location": "scope の外で出た元の指摘と同じ location",
+      "name": "ADR で例外にしたチェックが scope の外でも破られている",
+      "principle": "ADR による例外は、その ADR の scope の中だけで認め、範囲の外へ広げない",
+      "principles": [
+        "adr.explicit-scope"
+      ],
+      "related": [
+        "ADR-CMP-01",
+        "ADR-DOC-05"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "sumidashi 要件定義「ADRの扱い」（ADR のフロントマターの scope と exempts）",
+      "status": "draft"
+    },
+    "ADR-DOC-01": {
+      "_philosophy": "adr",
+      "applies_when": {
+        "file_kinds": [
+          "adr"
+        ],
+        "languages": [
+          "markdown"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "adr"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "見出しの名前が Nygard 形式とも MADR とも違い、どの項目に当たるかを見出しの文言から推定して対応づけた （推定した対応が正しいかは人が確かめる）",
+        "not_violation": "4項目がすべてあり、それぞれ1文以上ある。MADR で Status をフロントマターの status に持つ場合も、 Status があるとみなす",
+        "violation": "Status・Context・Decision・Consequences のいずれかがない、または本文が1文未満"
+      },
+      "detection": {
+        "static": "ADR ファイルのフロントマターの status と見出しを読み、Status・Context・Decision・Consequences （MADR では Context and Problem Statement・Decision Outcome・Consequences などの対応する見出し）が それぞれあるか、本文が1文以上あるかを調べる",
+        "type": "static"
+      },
+      "exclusions": [
+        "テンプレート（template.md、0000-*.md など番号が 0 の ADR）",
+        "ADR のディレクトリに置かれた README・索引のファイル"
+      ],
+      "fix_patterns": [
+        "欠けている項目を書き足す。Nygard 形式なら Status・Context・Decision・Consequences の4つの見出しを置く"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "ADR-DOC-01",
+      "location": "本文が1文未満の項目は、その見出しの行。見出しごと欠けている項目は、タイトル（最初の",
+      "name": "ADR に必須の項目が欠けている",
+      "principle": "ADR には Status・Context・Decision・Consequences の4項目を、それぞれ1文以上書く",
+      "principles": [
+        "adr.decision-record"
+      ],
+      "related": [
+        "ADR-DOC-02",
+        "ADR-DOC-03"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Nygard \"Documenting Architecture Decisions\"（Title・Context・Decision・Status・Consequences）",
+      "status": "draft"
+    },
+    "ADR-DOC-02": {
+      "_philosophy": "adr",
+      "applies_when": {
+        "file_kinds": [
+          "adr"
+        ],
+        "languages": [
+          "markdown"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "adr"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "代替案は挙げているが、採らなかった理由が「合わない」程度で、何が合わないのかが書かれていない",
+        "not_violation": "代替案が1つ以上あり、それぞれ採らなかった理由が書かれている。または代替案がないことと、 その理由（法令や契約で方式が決まっているなど）が書かれている",
+        "violation": "検討した代替案と、採らなかった理由が書かれていない"
+      },
+      "detection": {
+        "question": "この ADR は、検討した代替案か、それぞれを採らなかった理由のどちらかを欠いているか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テンプレート",
+        "Status が Superseded・Deprecated の ADR（新規・更新のレビューの対象外）"
+      ],
+      "fix_patterns": [
+        "「検討した選択肢」の節を足し、各案の長所・短所と採らなかった理由を書く（MADR の Considered Options と Pros and Cons of the Options）"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "ADR-DOC-02",
+      "location": "代替案の節があればその見出しの行。なければ Decision の見出しの行",
+      "name": "ADR に検討した代替案が書かれていない",
+      "principle": "決定には、検討した代替案と、それを採らなかった理由を書く",
+      "principles": [
+        "adr.considered-options"
+      ],
+      "related": [
+        "ADR-DOC-01",
+        "ADR-DOC-03"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "MADR（Considered Options、Pros and Cons of the Options）",
+      "status": "draft"
+    },
+    "ADR-DOC-03": {
+      "_philosophy": "adr",
+      "applies_when": {
+        "file_kinds": [
+          "adr"
+        ],
+        "languages": [
+          "markdown"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "adr"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "悪い面の欄はあるが、「特になし」としか書かれていない",
+        "not_violation": "良い面と、失うもの・制約・リスクの両方が書かれている",
+        "violation": "Consequences に良い面しか書かれていない"
+      },
+      "detection": {
+        "question": "この ADR の Consequences は、良い面だけを書き、失うもの・新たに生じる制約・リスクを 1つも書いていないか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テンプレート",
+        "Status が Superseded・Deprecated の ADR"
+      ],
+      "fix_patterns": [
+        "この決定で失うもの、増える作業、将来の変更を難しくする点を書き足す"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "ADR-DOC-03",
+      "location": "Consequences の見出しの行",
+      "name": "ADR の帰結に良い面しか書かれていない",
+      "principle": "帰結には、この決定で得るものに加えて、失うもの・新たに生じる制約・リスクを書く",
+      "principles": [
+        "adr.balanced-consequences"
+      ],
+      "related": [
+        "ADR-DOC-02",
+        "ADR-DOC-04"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Low"
+      },
+      "source": "Nygard \"Documenting Architecture Decisions\"（Consequences）",
+      "status": "draft"
+    },
+    "ADR-DOC-04": {
+      "_philosophy": "adr",
+      "applies_when": {
+        "file_kinds": [
+          "adr"
+        ],
+        "languages": [
+          "markdown"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "adr"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "原則から外れることには触れているが、どの原則・チェックかを特定できない書き方になっている",
+        "not_violation": "外れる原則（またはチェックID）と理由が書かれている。決定がどのチェックにも当たらない。 決定の良し悪しそのものは、このチェックでは判定しない",
+        "violation": "決定内容が v1 のチェックに当たるのに、どの原則から外れるかと理由が書かれていない"
+      },
+      "detection": {
+        "question": "この ADR の決定は sumidashi の v1 のチェック（CA-BND-01 など）が違反とする方式を採っているのに、 どの原則から外れるかと、その理由を書いていないか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テンプレート",
+        "Status が Superseded・Deprecated の ADR"
+      ],
+      "fix_patterns": [
+        "外れる原則とチェックIDを本文に書き、フロントマターの exempts にチェックIDを、scope に対象のパスを書く",
+        "決定が v1 のチェックに当たる場合だけ、該当するチェックIDと「この判断で失うもの」を添える"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "ADR-DOC-04",
+      "location": "Decision の見出しの行",
+      "name": "ADR が原則から外れることを明示していない",
+      "principle": "設計原則から外れる決定は、どの原則（チェックID）から外れるかと、その理由を書く",
+      "principles": [
+        "adr.explicit-deviation",
+        "adr.explicit-scope"
+      ],
+      "related": [
+        "ADR-DOC-05",
+        "ADR-CMP-03",
+        "ADR-DOC-03"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "sumidashi 要件定義「ADRの扱い」（ADR-DOC 系）",
+      "status": "draft"
+    },
+    "ADR-DOC-05": {
+      "_philosophy": "adr",
+      "applies_when": {
+        "file_kinds": [
+          "adr"
+        ],
+        "languages": [
+          "markdown"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "adr"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "本文から範囲の候補は取れるが、1つに絞れない",
+        "not_violation": "フロントマターに scope がある。またはリポジトリ全体に適用する決定であることが本文に書かれている",
+        "violation": "フロントマターに scope がなく、本文からも適用範囲を特定できない"
+      },
+      "detection": {
+        "question": "この ADR は、本文を読んでも、決定が適用されるコードの範囲（パス・モジュール）を特定できないか。",
+        "static": "ADR のフロントマターに scope があるかを調べる。ない ADR の本文から、パス・モジュール名・パッケージ名 （バッククォートで囲まれた語と、リポジトリに実在するディレクトリ名）を抜き出して候補にする",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テンプレート",
+        "Status が Superseded・Deprecated の ADR"
+      ],
+      "fix_patterns": [
+        "フロントマターに scope（対象のパスの glob）を書く。原則から外れる決定なら exempts も書く"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "ADR-DOC-05",
+      "location": "タイトル（最初の",
+      "name": "ADR の適用範囲が書かれていない",
+      "principle": "ADR には、決定が適用されるコードの範囲を、機械が読める scope として書く",
+      "principles": [
+        "adr.explicit-scope"
+      ],
+      "related": [
+        "ADR-CMP-03",
+        "ADR-DOC-04",
+        "ADR-CMP-01"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Low"
+      },
+      "source": "sumidashi 要件定義「ADRの扱い」（ADR の読み込み）",
+      "status": "draft"
+    },
+    "ADR-DOC-06": {
+      "_philosophy": "adr",
+      "applies_when": {
+        "file_kinds": [
+          "adr"
+        ],
+        "languages": [
+          "markdown"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "adr"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "2つの ADR の範囲が一部だけ重なり、重なる部分で両立するかが本文だけでは決まらない",
+        "not_violation": "範囲が重ならない。または Supersedes で置き換えを明記し、古い ADR の Status を Superseded にしている",
+        "violation": "Accepted の別の ADR と決定内容が矛盾し、Supersedes の記載もない"
+      },
+      "detection": {
+        "question": "この ADR の決定は、Accepted の別の ADR の決定と同じ範囲で両立しないのに、 その ADR を置き換える（Supersedes）と書いていないか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テンプレート",
+        "Status が Superseded・Deprecated の ADR どうしの組"
+      ],
+      "fix_patterns": [
+        "古い ADR を置き換えるなら、新しい ADR に Supersedes を書き、古い ADR の Status を Superseded にする",
+        "両立させるなら、範囲を分けてそれぞれの scope を書き直す"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "ADR-DOC-06",
+      "location": "Decision の見出しの行",
+      "name": "ADR が既存の Accepted の ADR と矛盾している",
+      "principle": "Accepted の ADR どうしは矛盾させず、置き換えるときは Supersedes で明示する",
+      "principles": [
+        "adr.supersede-not-rewrite",
+        "adr.decision-record"
+      ],
+      "related": [
+        "ADR-CMP-02",
+        "ADR-DOC-05"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "High"
+      },
+      "source": "Nygard \"Documenting Architecture Decisions\"（Status の superseded）",
+      "status": "draft"
+    },
+    "BIZ-01": {
+      "_philosophy": "business",
+      "applies_when": {
+        "file_kinds": [
+          "business-rules"
+        ],
+        "languages": [
+          "yaml"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "business_rules"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "implemented_in のファイルは存在するが、ルールの文に出る数値と用語集の語が、そのファイルに1つも出てこない （ファイルの移動・分割で、指す先がずれた可能性がある）",
+        "not_violation": "implemented_in が実在するファイル（とシンボル）を指している",
+        "violation": "台帳のルールに実装箇所が書かれていない、または implemented_in が指す箇所がコードに存在しない"
+      },
+      "detection": {
+        "static": "業務ルール台帳（docs/business-rules.yml）の各ルールの implemented_in を読み、空のもの、 指すファイルが存在しないもの（シンボルの指定があれば、そのシンボルが存在しないもの）を列挙する",
+        "type": "static"
+      },
+      "exclusions": [
+        "台帳で廃止と明記されたルール",
+        "台帳で未実装と明記し、チケットを紐づけたルール"
+      ],
+      "fix_patterns": [
+        "実装箇所を台帳の implemented_in に書く",
+        "実装がまだなら、台帳のルールに未実装と明記してチケットを紐づける"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "BIZ-01",
+      "location": "台帳の、そのルールの id の行",
+      "name": "台帳の業務ルールと実装が辿れない",
+      "principle": "台帳の業務ルールには、実在する実装箇所を書く",
+      "principles": [
+        "biz.rule-traceability"
+      ],
+      "related": [
+        "BIZ-04",
+        "BIZ-07"
+      ],
+      "release": "v1.5",
+      "severity": {
+        "default": "High"
+      },
+      "source": "Ross『Principles of the Business Rule Approach』",
+      "status": "draft"
+    },
+    "BIZ-02": {
+      "_philosophy": "business",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "business_rules"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "食い違いが、ルールの適用時期の違い（旧ルールからの移行期間など）によるものかもしれない",
+        "not_violation": "複数箇所の実装が、同じ関数・同じ定数を共有している",
+        "violation": "1つのルールが複数箇所で実装され、条件か値が食い違っている"
+      },
+      "detection": {
+        "question": "これらの実装は同じ業務ルールを実装しているのに、条件（境界を含むか、対象の範囲）か値が 食い違っているか。",
+        "static": "implemented_in に2か所以上を挙げたルールと、ルールの文に出る数値・用語を含む条件式がコードの2か所以上にある ルールを列挙し、各箇所の条件式の比較演算子と定数を並べる",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "実装を1か所にまとめ（MDL-02 と同じ直し方）、台帳の implemented_in を1つにする"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "BIZ-02",
+      "location": "台帳の implemented_in の先頭の実装と食い違う側の、条件式の行範囲",
+      "name": "同じ業務ルールの実装どうしで条件や値が食い違っている",
+      "principle": "1つの業務ルールは1か所で実装し、複数の実装の間で条件や値を食い違わせない",
+      "principles": [
+        "mdl.single-source-of-knowledge",
+        "biz.rule-traceability"
+      ],
+      "related": [
+        "MDL-02",
+        "BIZ-01"
+      ],
+      "release": "v1.5",
+      "severity": {
+        "default": "High"
+      },
+      "source": "Ross『Principles of the Business Rule Approach』",
+      "status": "draft"
+    },
+    "BIZ-03": {
+      "_philosophy": "business",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "business_rules"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "数値は名前付きの定数になっているが、その定数がコードの中にある （設定やマスタに出すべきかは、変える頻度と、変える人が誰かによる）",
+        "not_violation": "設定・マスタデータ・ルールエンジンなど、コードを変えずに変えられる場所から読んでいる。change_frequency が low のルール",
+        "violation": "change_frequency が high のルールの閾値・率・期間が、コードの中に数値リテラルとして直書きされている"
+      },
+      "detection": {
+        "question": "この数値リテラルは、変わりやすい業務ルールの閾値・率・期間そのもので、 値を変えるたびにコードの修正とデプロイが要る置き方になっているか。",
+        "static": "台帳で change_frequency が high のルールについて、implemented_in のファイルから、 ルールの文に出る数値と同じ数値リテラル（率・金額・日数など）を列挙する",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "値を名前付きの設定かマスタに出し、ルールID をコメントか名前で紐づける"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "BIZ-03",
+      "location": "数値リテラルの行",
+      "name": "変わりやすい業務ルールの値がコードに直書きされている",
+      "principle": "変わりやすい業務ルールの閾値・率・期間は、コードを変えずに変えられる1か所に置く",
+      "principles": [
+        "biz.externalized-volatile-rules"
+      ],
+      "related": [
+        "BIZ-01",
+        "MDL-04"
+      ],
+      "release": "v1.5",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Ross『Principles of the Business Rule Approach』",
+      "status": "draft"
+    },
+    "BIZ-04": {
+      "_philosophy": "business",
+      "applies_when": {
+        "file_kinds": [
+          "business-rules"
+        ],
+        "languages": [
+          "yaml"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "business_rules"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "テストに境界値は出るが、境界の片側（以上と未満のどちらか）の値しか出てこない",
+        "not_violation": "境界値とその前後の値で、ルールの条件をテストしている",
+        "violation": "重要度が high のルールに、テストがない。またはテストに条件の境界値が1つも出てこない"
+      },
+      "detection": {
+        "static": "台帳で重要度（importance）が high のルールについて、tests が空のもの、指すテストファイルが存在しないもの、 テストファイルにルールの文の境界値（閾値の数値）が1つも出てこないものを列挙する",
+        "type": "static"
+      },
+      "exclusions": [
+        "台帳で廃止と明記されたルール",
+        "重要度が high でないルール"
+      ],
+      "fix_patterns": [
+        "境界値とその前後の値（以上・未満の両側）でルールを確かめるテストを書き、台帳の tests に登録する"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "BIZ-04",
+      "location": "台帳の、そのルールの id の行",
+      "name": "重要な業務ルールに境界のテストがない",
+      "principle": "重要度の高い業務ルールは、条件の境界値とその前後の値でテストする",
+      "principles": [
+        "biz.rule-boundary-tests",
+        "biz.rule-traceability"
+      ],
+      "related": [
+        "BIZ-01",
+        "BIZ-05"
+      ],
+      "release": "v1.5",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Myers『The Art of Software Testing』Boundary-Value Analysis",
+      "status": "draft"
+    },
+    "BIZ-05": {
+      "_philosophy": "business",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "ticket"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "受け入れ条件の文が曖昧で、満たしているかを判断できない。 または条件を満たすかが、差分の外のコードや設定にかかっている",
+        "not_violation": "受け入れ条件を満たす実装がある。その条件が今回の差分の範囲外だと PR 本文に書かれている",
+        "violation": "チケットの受け入れ条件のうち、コードで満たされていないもの、または逆の動きをするものがある"
+      },
+      "detection": {
+        "question": "チケットの受け入れ条件のこの項目について、差分のコードは条件を満たしていないか、 または逆の動きをするか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "PR 本文にチケットへのリンクがない場合（チェックを走らせない）",
+        "受け入れ条件の欄がないチケット"
+      ],
+      "fix_patterns": [
+        "満たしていない条件を実装し、その条件を確かめるテストを足す",
+        "条件のほうが変わったなら、チケットの受け入れ条件を更新する"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "BIZ-05",
+      "location": "条件に反する実装の行範囲。実装が見当たらない場合は、関連する変更の最初の行",
+      "name": "チケットの受け入れ条件をコードが満たしていない",
+      "principle": "差分のコードは、紐づくチケットの受け入れ条件を満たし、逆の動きをしない",
+      "principles": [
+        "biz.acceptance-criteria"
+      ],
+      "related": [
+        "BIZ-04"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "High"
+      },
+      "source": "Adzic『Specification by Example』",
+      "status": "draft"
+    },
+    "BIZ-06": {
+      "_philosophy": "business",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "any"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "丸めの規則が台帳にもコードのコメントにもなく、正しい丸めかを決められない。 TypeScript の number で整数の金額だけを扱っている（今は誤差が出ないが、率の掛け算が入ると出る）",
+        "not_violation": "十進の型（Decimal・decimal.js・big.js など）か整数の最小単位で計算し、丸めを明示している。 タイムゾーン付きの日時で判定している",
+        "violation": "金額を浮動小数で計算している。台帳に書かれた丸めと違う丸めをしている。 タイムゾーンを持たない日時で締め日や期限を判定している"
+      },
+      "detection": {
+        "question": "このコードは、金額・数量を誤差の出る型で計算しているか、台帳と違う丸めをしているか、 またはタイムゾーンを決めずに締め日や期限を判定しているか。",
+        "static": "名前が金額・数量を表す変数・フィールド・引数（amount・price・total・fee・tax・quantity など）について、 浮動小数の型注釈（float）、parseFloat・float() による変換、小数のリテラルとの乗除算、丸めの呼び出し （Math.round・toFixed・round など）を列挙する。あわせて、名前が締め日・期限を表す値 （deadline・closing・due・cutoff・expires など）との比較に、タイムゾーンのない現在時刻 （Python の datetime.now() の引数なし・datetime.utcnow()・date.today()、TypeScript の new Date() と getDate() など ローカル時刻のメソッド）が使われる箇所を列挙する",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード",
+        "表示用の書式化だけを行う箇所（計算結果を変えないもの）"
+      ],
+      "fix_patterns": [
+        "金額は十進の型か整数の最小単位で持ち、丸め（方式と桁）を Money 型の1か所に置く",
+        "締め日・期限の判定は、業務上のタイムゾーンを明示した日時で行う"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "BIZ-06",
+      "location": "誤差の出る演算・丸め・日時の判定の行",
+      "name": "金額・数量・日時の扱いに誤りがある",
+      "principle": "金額と数量は誤差の出ない型と明示した丸めで計算し、締め日や期限はタイムゾーンを決めた日時で判定する",
+      "principles": [
+        "biz.money-and-time-types"
+      ],
+      "related": [
+        "DDD-VO-01",
+        "DDD-VO-03",
+        "MDL-02"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "High"
+      },
+      "source": "Fowler『Patterns of Enterprise Application Architecture』Money",
+      "status": "draft"
+    },
+    "BIZ-07": {
+      "_philosophy": "business",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain",
+          "application"
+        ],
+        "requires": [
+          "business_rules"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "業務上のルールか、技術的な分岐（キャッシュ・リトライ・入力形式の検証など）かがコードだけでは決まらない",
+        "not_violation": "台帳のルールに対応する分岐（そのルールの implemented_in がこのファイルを指す）。技術的な分岐",
+        "violation": "業務上の条件分岐がコードにあるが、台帳に対応するルールがない"
+      },
+      "detection": {
+        "question": "この条件分岐は業務上のルール（誰に・何を・いつ許すか、いくらにするか）で、 台帳のどのルールにも対応していないか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "台帳にルールを追加し（/sumidashi:rules-draft で下書き）、根拠（規約・契約・法令・社内決定）を書く"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "BIZ-07",
+      "location": "条件分岐の行範囲",
+      "name": "台帳にない業務ルールがコードにある",
+      "principle": "コードにある業務上の条件分岐は、台帳のいずれかのルールに対応させる",
+      "principles": [
+        "biz.rule-traceability"
+      ],
+      "related": [
+        "BIZ-01"
+      ],
+      "release": "v1.5",
+      "severity": {
+        "default": "Low"
+      },
+      "source": "Ross『Principles of the Business Rule Approach』",
+      "status": "draft"
+    },
+    "BIZ-08": {
+      "_philosophy": "business",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain",
+          "application"
+        ],
+        "requires": [
+          "business_rules"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "台帳にサブドメインの分類がない領域",
+        "not_violation": "core の領域に業務ルールを表すドメインモデルがあり、generic の領域が単純な構造（既製品の利用・CRUD）になっている",
+        "violation": "generic の領域に重い設計をしている。または core の領域が、トランザクションスクリプトのまま複雑になっている"
+      },
+      "detection": {
+        "question": "この領域の設計の重さは、台帳のサブドメインの分類と食い違っているか （generic なのに集約やドメインイベントなどの重い構造を持つ、または core なのに長い手続きの関数に 業務ルールが詰まっている）。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "generic の領域は、既製品の利用か CRUD に寄せる",
+        "core の領域は、手続きの中の業務ルールをドメインモデルに移す"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "BIZ-08",
+      "location": "その領域の代表となる型（集約ルートかアプリケーションサービス）の宣言の行",
+      "name": "設計の重さが業務上の重要度と合っていない",
+      "principle": "コアドメインには業務ルールを表すモデルを置き、汎用の領域には重い設計を持ち込まない",
+      "principles": [
+        "biz.core-domain-investment",
+        "ddd.rich-domain-model"
+      ],
+      "related": [
+        "DDD-ENT-02",
+        "PLC-03"
+      ],
+      "release": "v1.5",
+      "severity": {
+        "default": "Info"
+      },
+      "source": "Evans『Domain-Driven Design』15章 Distillation（Core Domain、Generic Subdomains）／Fowler『Patterns of Enterprise Application Architecture』Transaction Script、Domain Model",
+      "status": "draft"
+    },
+    "CA-BND-01": {
+      "_philosophy": "clean-architecture",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "application",
+          "adapter"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "ORM の生成型から型を導出している（Pick や Omit で切り出しただけの型など）",
+        "not_violation": "ORM のモデルをインフラ層の中だけで使い、リポジトリ実装がドメインの型に変換して返している",
+        "violation": "ユースケースの入出力の型が ORM のモデルそのもので、変換されずに境界を越えている"
+      },
+      "detection": {
+        "implementation": "ca_bnd_01",
+        "question": "この型は ORM の永続化モデルそのもので、変換されずにユースケースの入力か出力として 境界を越えているか。",
+        "static": "アプリケーション層の公開関数・公開メソッドの引数と戻り値、アダプタ層からユースケースへ渡す値の型を列挙し、 ORM のモデル（@Entity を付けたクラス、Model・DeclarativeBase の継承、Prisma の生成型など）に当たるものを候補にする",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード",
+        "読み取り専用のクエリサービス（CQRS の参照側）で、設定かコメントでそう明示されているもの"
+      ],
+      "fix_patterns": [
+        "ユースケースの入出力用の型（DTO）をアプリケーション層に定義し、ORM モデルとの変換をリポジトリ実装に置く"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "CA-BND-01",
+      "location": "関数・メソッドの名前がある行",
+      "name": "ORM のモデルがそのまま境界を越えている",
+      "principle": "ユースケースの入出力には、ORM の永続化モデルではなく、内側で定義したデータ構造を使う",
+      "principles": [
+        "ca.boundary-data"
+      ],
+      "related": [
+        "CA-BND-02",
+        "DDD-REP-02"
+      ],
+      "release": "v1",
+      "severity": {
+        "deescalate": "規模判定で小規模とされたプロジェクトでは Info（design-router の衝突ルール）",
+        "default": "Medium"
+      },
+      "source": "Martin『Clean Architecture』22章 What Data Crosses the Boundaries",
+      "status": "draft"
+    },
+    "CA-BND-02": {
+      "_philosophy": "clean-architecture",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "application"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "Web フレームワークの型を import しているが、公開シグネチャには出さず、本体の中だけで使っている",
+        "not_violation": "アダプタ層（コントローラ）が Web フレームワークの型を受け取り、ユースケース用の入力に変換して渡している",
+        "violation": "アプリケーション層の公開関数・公開メソッドの引数か戻り値の型に、Web フレームワークの型（Request・Response・Context など）が使われている"
+      },
+      "detection": {
+        "implementation": "ca_bnd_02",
+        "static": "アプリケーション層の公開関数・公開メソッドの引数と戻り値の型注釈に、 Web フレームワーク（express・fastify・koa・next・@nestjs/common・hono・FastAPI・Flask・Django・Starlette など） から import した名前が出るものを列挙する",
+        "type": "static"
+      },
+      "exclusions": [
+        "テストコード",
+        "非公開の関数・メソッド（TypeScript の private・protected、Python の _ 始まり）"
+      ],
+      "fix_patterns": [
+        "ユースケースの入力と出力の型をアプリケーション層に定義し、Request からの変換と Response の組み立てをコントローラに移す"
+      ],
+      "fixtures": {
+        "borderline": [
+          "ca-bnd-02/b1-ts"
+        ],
+        "not_violation": [
+          "ca-bnd-02/n1-ts",
+          "ca-bnd-02/n2-py"
+        ],
+        "violation": [
+          "ca-bnd-02/v1-ts",
+          "ca-bnd-02/v2-py",
+          "ca-bnd-02/h1-py"
+        ]
+      },
+      "id": "CA-BND-02",
+      "location": "関数・メソッドの名前がある行",
+      "name": "ユースケースの入出力に HTTP・Web フレームワークの型を使っている",
+      "principle": "ユースケースは配送の仕組み（HTTP・CLI・キュー）を知らず、入出力は内側で定義したデータ構造で受け渡す",
+      "principles": [
+        "ca.boundary-data",
+        "ca.framework-independence"
+      ],
+      "related": [
+        "CA-BND-01",
+        "CA-UC-01"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Martin『Clean Architecture』22章 What Data Crosses the Boundaries、20章 Use Cases",
+      "status": "ready"
+    },
+    "CA-BND-03": {
+      "_philosophy": "clean-architecture",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "application"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "トランザクション管理・ロガーなど、横断的な仕組みのライブラリを直接使っている（プロジェクトの方針次第）",
+        "not_violation": "アプリケーション層がポートのインターフェースを受け取り（依存性注入）、それを通して外部を呼んでいる",
+        "violation": "アプリケーション層が外部 I/O ライブラリのクライアントを生成するか、直接呼び出している"
+      },
+      "detection": {
+        "implementation": "ca_bnd_03",
+        "question": "このアプリケーション層のコードは、外部 I/O のライブラリを、アプリケーション層かドメイン層で 定義したインターフェースを介さずに直接呼んでいるか。",
+        "static": "アプリケーション層のファイルが、HTTP クライアント・DB ドライバ・ORM・クラウド SDK・メール送信などの 外部 I/O ライブラリを import している箇所と、そのクライアントを生成・呼び出している箇所を列挙する",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "外部 I/O の操作をアプリケーション層のポート（インターフェース）として定義し、ライブラリを使う実装をインフラ層に移す"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "CA-BND-03",
+      "location": "外部 I/O ライブラリの import 文",
+      "name": "アプリケーション層が外部 I/O をポートを介さずに直接使っている",
+      "principle": "内側の層が外部 I/O を使うときは、内側で定義したインターフェース（ポート）を通し、具象は外側に置く",
+      "principles": [
+        "ca.ports-and-adapters",
+        "ca.dependency-rule"
+      ],
+      "related": [
+        "CA-DEP-02",
+        "CA-DEP-03",
+        "CA-MAIN-01"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "High"
+      },
+      "source": "Martin『Clean Architecture』11章 DIP、22章 Crossing Boundaries／Cockburn \"Hexagonal Architecture\"",
+      "status": "draft"
+    },
+    "CA-DEP-01": {
+      "_philosophy": "clean-architecture",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [
+        "MDL-01"
+      ],
+      "criteria": {
+        "borderline": "外側の層を型だけで参照している（TypeScript の import type、Python の if TYPE_CHECKING の中の import）。実行時の依存はないが、ソースの依存は残る",
+        "not_violation": "ドメイン層の中、共有カーネル、標準ライブラリへの import",
+        "violation": "ドメイン層のファイルが、外側の層に属するファイルを実行時に読み込む import を持つ"
+      },
+      "detection": {
+        "implementation": "ca_dep_01",
+        "static": "ドメイン層のファイルの import を解決し、解決先がアプリケーション層・アダプタ層・ インフラ層・Main に属するファイルになるものを列挙する",
+        "type": "static"
+      },
+      "exclusions": [
+        "テストコード（tests/・__tests__/・*.spec.*・*.test.*・test_*.py・*_test.py・conftest.py）",
+        "生成コード（*.d.ts、generated/ 配下）",
+        "設定の layers で ignore にしたパス"
+      ],
+      "fix_patterns": [
+        "依存している外側の機能を、ドメイン層のインターフェース（ポート）として定義し直し、外側の層に実装させる",
+        "外側の型が単なるデータなら、ドメインの値オブジェクトとして定義し直し、変換は外側の層で行う"
+      ],
+      "fixtures": {
+        "borderline": [
+          "ca-dep-01/b1-ts"
+        ],
+        "not_violation": [
+          "ca-dep-01/n1-ts",
+          "ca-dep-01/n2-py"
+        ],
+        "violation": [
+          "ca-dep-01/v1-ts",
+          "ca-dep-01/v2-py",
+          "ca-dep-01/h1-ts"
+        ]
+      },
+      "id": "CA-DEP-01",
+      "location": "import 文（複数行にわたる場合はその範囲）",
+      "name": "ドメイン層が外側の層に依存している",
+      "principle": "ドメイン層は、アプリケーション層・アダプタ層・インフラ層・Main のモジュールを import しない",
+      "principles": [
+        "ca.dependency-rule"
+      ],
+      "related": [
+        "CA-DEP-02",
+        "CA-DEP-04"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "High"
+      },
+      "source": "Martin『Clean Architecture』22章 The Clean Architecture（The Dependency Rule）",
+      "status": "ready"
+    },
+    "CA-DEP-02": {
+      "_philosophy": "clean-architecture",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "台帳で validation に分類したライブラリ（zod・class-validator・pydantic など）を import している。 業務ルールの表現に使っているのか、外部入力の検証に使っているのかはコードだけでは決まらない",
+        "not_violation": "I/O を伴わない標準ライブラリ（日付・数値・コレクション・uuid など）、ユーティリティ （lodash・date-fns・decimal.js など）、台帳にないパッケージ",
+        "violation": "ドメイン層のファイルが、台帳で web・orm・db・http・cloud・messaging・di・ui・io に 分類したパッケージかモジュールを import している"
+      },
+      "detection": {
+        "implementation": "ca_dep_02",
+        "static": "ドメイン層のファイルが import する外部パッケージと標準モジュールを、 フレームワーク台帳（tools/sumidashi/frameworks.py）と突き合わせる。台帳にないパッケージは指摘しない",
+        "type": "static"
+      },
+      "exclusions": [
+        "テストコード",
+        "生成コード",
+        "設定の frameworks.allow に挙げたパッケージ"
+      ],
+      "fix_patterns": [
+        "ORM のデコレータ・基底クラスをドメインの型から外し、永続化モデルをインフラ層に分けてマッピングする",
+        "I/O が必要な処理はドメイン層にポートを定義し、実装をインフラ層に置く"
+      ],
+      "fixtures": {
+        "borderline": [
+          "ca-dep-02/b1-ts",
+          "ca-dep-02/b2-py"
+        ],
+        "not_violation": [
+          "ca-dep-02/n1-ts",
+          "ca-dep-02/n2-py"
+        ],
+        "violation": [
+          "ca-dep-02/v1-ts",
+          "ca-dep-02/v2-py",
+          "ca-dep-02/h1-py"
+        ]
+      },
+      "id": "CA-DEP-02",
+      "location": "import 文（複数行にわたる場合はその範囲）",
+      "name": "ドメイン層がフレームワーク・ORM・I/O ライブラリに依存している",
+      "principle": "ドメイン層は、フレームワーク・ORM・HTTP・DB ドライバ・クラウド SDK・I/O を行う標準モジュールを import しない",
+      "principles": [
+        "ca.dependency-rule",
+        "ca.framework-independence"
+      ],
+      "related": [
+        "CA-DEP-01",
+        "DDD-REP-02",
+        "CA-BND-03"
+      ],
+      "release": "v1",
+      "severity": {
+        "deescalate": "型だけの import（import type、TYPE_CHECKING の中）なら Medium",
+        "default": "High"
+      },
+      "source": "Martin『Clean Architecture』22章 Frameworks and Drivers、32章 Frameworks Are Details",
+      "status": "ready"
+    },
+    "CA-DEP-03": {
+      "_philosophy": "clean-architecture",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "application"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [
+        "MDL-01"
+      ],
+      "criteria": {
+        "borderline": "外側の層を型だけで参照している（import type、TYPE_CHECKING の中）",
+        "not_violation": "アプリケーション層からドメイン層・共有カーネルへの import。アプリケーション層が定義した ポートをインフラ層が実装している（依存の向きはインフラ層からアプリケーション層）",
+        "violation": "アプリケーション層のファイルが、アダプタ層・インフラ層・Main のファイルを実行時に読み込む import を持つ"
+      },
+      "detection": {
+        "implementation": "ca_dep_03",
+        "static": "アプリケーション層のファイルの import を解決し、解決先がアダプタ層・インフラ層・ Main に属するファイルになるものを列挙する",
+        "type": "static"
+      },
+      "exclusions": [
+        "テストコード",
+        "生成コード"
+      ],
+      "fix_patterns": [
+        "使っている実装クラスの代わりに、アプリケーション層にポート（インターフェース）を定義し、コンストラクタで受け取る",
+        "具象の生成は Main（コンポジションルート）に移す"
+      ],
+      "fixtures": {
+        "borderline": [
+          "ca-dep-03/b1-py"
+        ],
+        "not_violation": [
+          "ca-dep-03/n1-ts",
+          "ca-dep-03/n2-py"
+        ],
+        "violation": [
+          "ca-dep-03/v1-ts",
+          "ca-dep-03/v2-py",
+          "ca-dep-03/h1-ts"
+        ]
+      },
+      "id": "CA-DEP-03",
+      "location": "import 文（複数行にわたる場合はその範囲）",
+      "name": "アプリケーション層がアダプタ層・インフラ層に依存している",
+      "principle": "アプリケーション層は、アダプタ層・インフラ層・Main のモジュールを import しない",
+      "principles": [
+        "ca.dependency-rule"
+      ],
+      "related": [
+        "CA-DEP-04",
+        "CA-BND-03",
+        "CA-MAIN-01"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "High"
+      },
+      "source": "Martin『Clean Architecture』22章 The Clean Architecture（The Dependency Rule）",
+      "status": "ready"
+    },
+    "CA-DEP-04": {
+      "_philosophy": "clean-architecture",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "循環が型だけの import を含むときにだけ成り立つ（実行時には循環しない）",
+        "not_violation": "同じ層の中だけで閉じた循環。このチェックでは扱わない",
+        "violation": "2つ以上の層にまたがる循環があり、型だけの import を除いても循環が残る"
+      },
+      "detection": {
+        "implementation": "ca_dep_04",
+        "static": "モジュール依存グラフの強連結成分のうち、2つ以上の層のファイルを含むものを列挙する。 型だけの import の辺を除いても循環が残るかを併せて調べる",
+        "type": "static"
+      },
+      "exclusions": [
+        "テストコード",
+        "生成コード"
+      ],
+      "fix_patterns": [
+        "循環の中で内側から外側へ向かう import を、内側に定義したインターフェースへの依存に置き換える（依存性逆転）",
+        "両方が使う型を、内側の層か共有カーネルへ移す"
+      ],
+      "fixtures": {
+        "borderline": [
+          "ca-dep-04/b1-ts"
+        ],
+        "not_violation": [
+          "ca-dep-04/n1-ts",
+          "ca-dep-04/n2-py"
+        ],
+        "violation": [
+          "ca-dep-04/v1-ts",
+          "ca-dep-04/v2-py",
+          "ca-dep-04/v3-py",
+          "ca-dep-04/h1-ts"
+        ]
+      },
+      "id": "CA-DEP-04",
+      "location": "循環の中で、内側の層から外側の層へ向かう import 文。複数あれば、内側の層を優先し、 同じ層ならパスと行の昇順で最初のもの。内側から外側へ向かう import がなければ（同じ深さの層どうしの循環）、 層をまたぐ import のうちパスと行の昇順で最初のもの。循環1つにつき指摘1件。 層の深さは domain・shared が0、application が1、adapter・infrastructure が2、main が3",
+      "name": "層をまたぐ循環依存がある",
+      "principle": "層をまたいでモジュールの依存を循環させない",
+      "principles": [
+        "ca.acyclic-dependencies",
+        "ca.dependency-rule"
+      ],
+      "related": [
+        "CA-DEP-01",
+        "CA-DEP-03"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "High"
+      },
+      "source": "Martin『Clean Architecture』14章 Component Coupling（The Acyclic Dependencies Principle）",
+      "status": "ready"
+    },
+    "CA-HUM-01": {
+      "_philosophy": "clean-architecture",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain",
+          "application"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "I/O を先頭でまとめて取得し、その後で判断しているが、同じ関数の中にある",
+        "not_violation": "I/O を取得する関数と、取得結果を引数に受ける判断の関数に分かれている",
+        "violation": "判断の途中で I/O を呼び、その結果でさらに判断する形が、分離されずに1つの関数に入っている"
+      },
+      "detection": {
+        "question": "この関数は、外部 I/O（DB・API・現在時刻・乱数）の呼び出しと業務の判断が交互に混ざっていて、 判断の部分だけを I/O なしで呼び出せない構造か。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード",
+        "判断を含まない単純な取得・保存"
+      ],
+      "fix_patterns": [
+        "I/O で得た値を引数に受ける純粋な関数（またはドメインのメソッド）に判断を切り出し、元の関数は取得・判断の呼び出し・保存の順に並べるだけにする"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "CA-HUM-01",
+      "location": "関数名がある行",
+      "name": "I/O と業務の判断が分離されていない",
+      "principle": "外部 I/O（DB・API・時刻・乱数）を扱う部分と業務の判断を分け、判断を I/O なしでテストできるようにする",
+      "principles": [
+        "ca.humble-object"
+      ],
+      "related": [
+        "PLC-01",
+        "PLC-03"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Martin『Clean Architecture』23章 Presenters and Humble Objects",
+      "status": "draft"
+    },
+    "CA-MAIN-01": {
+      "_philosophy": "clean-architecture",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain",
+          "application"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "内側の層でファクトリを通して生成しているが、そのファクトリが具象を返す",
+        "not_violation": "値オブジェクト・エンティティ・ドメインイベントの生成（具象の組み立てではない）",
+        "violation": "ユースケースやドメインサービスの中で、リポジトリ実装や外部クライアントの具象を生成している"
+      },
+      "detection": {
+        "implementation": "ca_main_01",
+        "question": "このコードは、どの実装を使うかの決定（依存の組み立て）を内側の層で行っているか。",
+        "static": "ドメイン層・アプリケーション層で、インフラ層・アダプタ層に属するクラスを生成している箇所と、 サービスロケータ的な取得（container.get・resolve など）を列挙する",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード",
+        "Main に当たるファイル（main.ts・main.py・composition root・DI 設定）"
+      ],
+      "fix_patterns": [
+        "具象をコンストラクタ引数で受け取るように変え、生成を Main に移す"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "CA-MAIN-01",
+      "location": "生成か取得を行っている行",
+      "name": "具象の組み立てがコンポジションルートの外に散らばっている",
+      "principle": "具象クラスの生成と依存の組み立ては Main（コンポジションルート）に集め、内側の層は具象を生成しない",
+      "principles": [
+        "ca.main-component",
+        "ca.ports-and-adapters"
+      ],
+      "related": [
+        "CA-DEP-03",
+        "CA-BND-03"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Low"
+      },
+      "source": "Martin『Clean Architecture』26章 The Main Component",
+      "status": "draft"
+    },
+    "CA-UC-01": {
+      "_philosophy": "clean-architecture",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "adapter"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "入力検証のうち、業務ルールと区別しにくいもの（注文数量の上限チェックなど）",
+        "not_violation": "リクエストの形式検証、認証情報の取り出し、ユースケースの結果に応じた HTTP ステータスの選択",
+        "violation": "コントローラ・ハンドラが、状態による可否判断や金額・数量の計算といった業務ルールを実装している"
+      },
+      "detection": {
+        "implementation": "ca_uc_01",
+        "question": "このハンドラの条件分岐や計算は、業務上のルール（何が許されるか、いくらになるか）を決めているか。 入力形式の検証や応答の組み立てだけではないか。",
+        "static": "アダプタ層（コントローラ・ハンドラ・ルート定義）の関数で、ドメインの型の状態や値に基づく条件分岐、 算術計算、リポジトリの直接呼び出しを含むものを列挙する。入力形式の検証と HTTP ステータスの分岐は除く",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "業務判断をユースケースかドメインのメソッドに移し、コントローラは入力の変換とユースケースの呼び出しだけにする"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "CA-UC-01",
+      "location": "業務ルールを実装している条件分岐か計算の行範囲",
+      "name": "コントローラ・ハンドラに業務ロジックがある",
+      "principle": "業務の判断はユースケースとドメインに置き、コントローラは入力の変換と結果の提示だけを行う",
+      "principles": [
+        "ca.use-case-responsibility"
+      ],
+      "related": [
+        "PLC-03",
+        "DDD-ENT-02"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Martin『Clean Architecture』22章 Interface Adapters、20章 Business Rules",
+      "status": "draft"
+    },
+    "CA-UC-02": {
+      "_philosophy": "clean-architecture",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "application"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "同じ目的だが、権限によって返す項目だけが変わる",
+        "not_violation": "同じアクターの同じ目的で、入力に応じて結果が変わるだけ",
+        "violation": "呼び出し元の種類（管理者と顧客、画面とバッチなど）ごとに分岐し、それぞれ別の業務手順を実行している"
+      },
+      "detection": {
+        "question": "このユースケースは、異なる利用者（アクター）の別々の目的を、フラグや呼び出し元による分岐で 1つにまとめているか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "アクターごとにユースケースを分け、共通の業務ルールはドメインに置く"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "CA-UC-02",
+      "location": "ユースケースのクラス名か関数名がある行",
+      "name": "1つのユースケースが複数のアクターの目的を抱えている",
+      "principle": "ユースケースは1つのアクターの1つの目的に対応させ、別のアクターの変更理由を混ぜない",
+      "principles": [
+        "ca.use-case-responsibility"
+      ],
+      "related": [
+        "CA-UC-01"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Low"
+      },
+      "source": "Martin『Clean Architecture』7章 SRP、20章 Use Cases",
+      "status": "draft"
+    },
+    "CA-UC-03": {
+      "_philosophy": "clean-architecture",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "application"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "ログやエラーメッセージの文言を組み立てている",
+        "not_violation": "業務上の値（金額・日付・状態）を構造化したデータとして返している",
+        "violation": "ユースケースの中で、表示用の文字列・書式・HTML を組み立てて返している"
+      },
+      "detection": {
+        "question": "このユースケースは、画面やメッセージ向けの表示の形式（HTML、表示用の文字列、日付や金額の書式、 画面の項目名）を組み立てているか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "出力用のデータ構造を返し、書式化をアダプタ層のプレゼンタに移す"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "CA-UC-03",
+      "location": "表示の形式を組み立てている行範囲",
+      "name": "ユースケースが表示の形式を組み立てている",
+      "principle": "ユースケースは表示の形式を知らず、出力データを返して整形はプレゼンタに任せる",
+      "principles": [
+        "ca.use-case-responsibility",
+        "ca.humble-object"
+      ],
+      "related": [
+        "CA-BND-02"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Low"
+      },
+      "source": "Martin『Clean Architecture』22章 Interface Adapters、23章 Presenters and Humble Objects",
+      "status": "draft"
+    },
+    "DDD-AGG-01": {
+      "_philosophy": "ddd-tactical",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain",
+          "application"
+        ],
+        "requires": [
+          "layer_map",
+          "aggregate_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "ルートが内部エンティティの参照を返し、呼び出し側が読み取りのみ行っている",
+        "not_violation": "ルートの中、または集約内のエンティティ同士での変更",
+        "violation": "集約外のコードが内部エンティティの状態を書き換え、ルートのメソッドを通らない"
+      },
+      "detection": {
+        "implementation": "ddd_agg_01",
+        "question": "この変更は集約ルートを経由せずに内部エンティティの状態を変えているか。 ルートの不変条件チェックを迂回しているか。",
+        "static": "集約外のファイルから、内部エンティティの setter 呼び出し・フィールド代入・ コレクションへの push/remove を列挙",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード（tests/, *.spec.*, *_test.py）",
+        "集約を組み立てるファクトリ・再構築用のリポジトリ実装"
+      ],
+      "fix_patterns": [
+        "変更操作を集約ルートのメソッドに移し、内部コレクションは読み取り専用で公開する"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "DDD-AGG-01",
+      "location": "内部エンティティを変更している文の行",
+      "name": "集約の外から内部エンティティを直接変更している",
+      "principle": "集約内部の状態は集約ルートのメソッド経由でのみ変更する",
+      "principles": [
+        "ddd.aggregate-root-access",
+        "ddd.aggregate-invariants"
+      ],
+      "related": [
+        "DDD-AGG-02",
+        "DDD-ENT-03"
+      ],
+      "release": "v1",
+      "severity": {
+        "deescalate": "対象の内部エンティティに不変条件が1つも定義されていない場合は Medium",
+        "default": "High"
+      },
+      "source": "Evans『Domain-Driven Design』6章 Aggregates",
+      "status": "draft"
+    },
+    "DDD-AGG-02": {
+      "_philosophy": "ddd-tactical",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "application",
+          "domain"
+        ],
+        "requires": [
+          "layer_map",
+          "aggregate_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "集約の外と中の両方で同じ条件を検証している（重複しているが、正しさは保たれている）",
+        "not_violation": "入力の形式検証や認可など、集約の不変条件ではない検証",
+        "violation": "アプリケーションサービスなど集約の外で不変条件を検証し、集約のメソッドは検証せずに状態を変える"
+      },
+      "detection": {
+        "question": "この検証は、集約が常に満たすべき条件（合計の上限、状態遷移の可否、明細の数など）か。 そして集約のメソッドの側では同じ検証をしていないか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "検証を集約ルートの状態変更メソッドに移し、条件を満たさなければドメインの例外を投げる"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "DDD-AGG-02",
+      "location": "集約の外で不変条件を検証している条件分岐の行範囲",
+      "name": "集約の不変条件を集約の外で検証している",
+      "principle": "集約が常に満たすべき条件は、集約自身が状態を変えるメソッドの中で検証する",
+      "principles": [
+        "ddd.aggregate-invariants",
+        "ddd.rich-domain-model"
+      ],
+      "related": [
+        "DDD-AGG-01",
+        "PLC-03",
+        "CA-UC-01"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "High"
+      },
+      "source": "Evans『Domain-Driven Design』6章 Aggregates／Vernon『Implementing Domain-Driven Design』10章 Aggregates",
+      "status": "draft"
+    },
+    "DDD-AGG-03": {
+      "_philosophy": "ddd-tactical",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "application"
+        ],
+        "requires": [
+          "layer_map",
+          "aggregate_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "即時の一貫性が要るかどうかが、コードの外（業務ルール台帳の consistency）にしか書かれていない",
+        "not_violation": "同じ集約を1回だけ更新している。または別集約の更新をドメインイベント経由で後から行っている",
+        "violation": "即時の一貫性が要らない複数の集約を、1つのトランザクションで更新している"
+      },
+      "detection": {
+        "implementation": "ddd_agg_03",
+        "question": "これらの集約の更新は、業務上その場で同時に一貫している必要があるか。結果整合では足りないか。",
+        "static": "1つのユースケースの関数、またはトランザクション境界（transaction・atomic・unit of work）の中で、 異なる集約ルートのリポジトリの保存・更新が2回以上呼ばれる箇所を列挙する",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード",
+        "データ移行・バッチの一括処理で、設定かコメントでそう明示されているもの"
+      ],
+      "fix_patterns": [
+        "2つ目以降の集約の更新を、ドメインイベントを受けた別のハンドラ（別トランザクション）に移す"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "DDD-AGG-03",
+      "location": "トランザクション境界かユースケースの関数名がある行",
+      "name": "1つのトランザクションで複数の集約を更新している",
+      "principle": "1つのトランザクションで変更する集約は1つにし、集約をまたぐ整合は結果整合で取る",
+      "principles": [
+        "ddd.one-aggregate-per-transaction"
+      ],
+      "related": [
+        "SCL-02"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Vernon『Implementing Domain-Driven Design』10章 Aggregates（Modify One Aggregate per Transaction）",
+      "status": "draft"
+    },
+    "DDD-AGG-04": {
+      "_philosophy": "ddd-tactical",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain"
+        ],
+        "requires": [
+          "layer_map",
+          "aggregate_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "別の集約の一部の値を、読み取り専用のスナップショット（値オブジェクト）として保持している",
+        "not_violation": "集約内部のエンティティ、値オブジェクト、他の集約の ID の保持",
+        "violation": "集約ルートが、別の集約ルートのオブジェクトをフィールドに保持している"
+      },
+      "detection": {
+        "implementation": "ddd_agg_04",
+        "question": "このフィールドの型は、独立したライフサイクルを持つ別の集約のルートか。",
+        "static": "集約ルートのフィールドのうち、型が別の集約ルート（またはそのコレクション）であるものを列挙する",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード",
+        "読み取りモデル（クエリ用の型）"
+      ],
+      "fix_patterns": [
+        "フィールドを相手の集約の ID（値オブジェクト）に置き換え、必要なときにリポジトリから取得する"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "DDD-AGG-04",
+      "location": "フィールドの宣言の行",
+      "name": "他の集約をオブジェクト参照で保持している",
+      "principle": "他の集約は識別子で参照し、オブジェクトとして抱え込まない",
+      "principles": [
+        "ddd.reference-by-id"
+      ],
+      "related": [
+        "GLO-04"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Vernon『Implementing Domain-Driven Design』10章 Aggregates（Reference Other Aggregates by Identity）",
+      "status": "draft"
+    },
+    "DDD-ENT-01": {
+      "_philosophy": "ddd-tactical",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "識別子と版番号（version）など、同一性の一部とみなせる属性を組み合わせて比較している",
+        "not_violation": "識別子だけで比較している。または等価比較を定義していない（参照の同一性）",
+        "violation": "エンティティの等価比較が、識別子以外の属性を含めて行われる"
+      },
+      "detection": {
+        "implementation": "ddd_ent_01",
+        "question": "このクラスは、属性が変わっても同じものとして扱うべきエンティティか（値オブジェクトとして扱うべきものではないか）。",
+        "static": "識別子を持つドメイン層のクラスで、equals・__eq__ が識別子以外の属性を比較しているもの、 または eq が既定のままの dataclass（全属性で比較される）を列挙する",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "equals・__eq__ を識別子の比較だけにし、dataclass なら eq=False にして __eq__ を明示する"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "DDD-ENT-01",
+      "location": "equals・__eq__ の定義の行、または dataclass のデコレータの行",
+      "name": "エンティティの等価性が識別子で決まっていない",
+      "principle": "エンティティの等価性は識別子だけで決め、属性の値では比べない",
+      "principles": [
+        "ddd.entity-identity"
+      ],
+      "related": [
+        "DDD-VO-02"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Evans『Domain-Driven Design』5章 Entities",
+      "status": "draft"
+    },
+    "DDD-ENT-02": {
+      "_philosophy": "ddd-tactical",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain",
+          "application"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "業務ルールがほとんどない単純なマスタデータ",
+        "not_violation": "状態遷移・計算・検証をエンティティのメソッドとして持っている",
+        "violation": "エンティティがフィールドとアクセサだけを持ち、そのデータに関する業務ルールが外のサービスにある"
+      },
+      "detection": {
+        "question": "このエンティティは、自身のデータに関する業務ルール（状態遷移、計算、検証）をメソッドとして持たず、 外のサービスがフィールドを読み書きして処理しているか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード",
+        "DTO・ORM モデル・読み取りモデル"
+      ],
+      "fix_patterns": [
+        "サービスにある業務ルールを、データを持つエンティティのメソッドに移す（ロジック配置の判定手順 Q2）"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "DDD-ENT-02",
+      "location": "エンティティのクラス名がある行",
+      "name": "エンティティが貧血ドメインモデルになっている",
+      "principle": "エンティティ自身のデータに関する業務ルールは、そのエンティティのメソッドとして置く",
+      "principles": [
+        "ddd.rich-domain-model"
+      ],
+      "related": [
+        "DDD-SRV-01",
+        "PLC-03",
+        "CA-UC-01"
+      ],
+      "release": "v1",
+      "severity": {
+        "deescalate": "business 台帳で generic に分類された領域では Low",
+        "default": "Medium"
+      },
+      "source": "Fowler \"AnemicDomainModel\"／Evans『Domain-Driven Design』5章",
+      "status": "draft"
+    },
+    "DDD-ENT-03": {
+      "_philosophy": "ddd-tactical",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "書き換えはできないが、内部の可変なコレクションをそのまま公開している（readonly な配列・list のフィールド、 内部コレクションをそのまま返す getter・property）",
+        "not_violation": "フィールドが private・protected・readonly・# 付き・_ 始まりで、状態は意図を表すメソッドから変える。 検証（条件分岐・例外）を含む setter",
+        "violation": "エンティティに、外から状態を書き換えられる公開の書き込み口がある（公開で readonly でないフィールド、 検証のない公開 setter、代入するだけの setXxx メソッド、Python の公開属性）"
+      },
+      "detection": {
+        "implementation": "ddd_ent_03",
+        "static": "識別子（id・<クラス名>Id）を持つドメイン層のクラスについて、公開かつ readonly でないフィールド、 検証のない公開 setter（set アクセサ・@x.setter）、代入1文だけの setXxx・set_xxx メソッド、 Python の公開属性と frozen でない dataclass の公開フィールドを列挙する",
+        "type": "static"
+      },
+      "exclusions": [
+        "テストコード",
+        "名前が Dto・DTO・Props・Input・Output・Command・Query・Event・Error・Exception で終わるクラス",
+        "ORM のモデル（インフラ層に置かれたもの）"
+      ],
+      "fix_patterns": [
+        "フィールドを private（Python は _ 始まり）にし、状態の変更を「何をするか」を表すメソッド（approve・changeAddress など）に置き換える",
+        "公開が必要なら readonly にし、コレクションは読み取り専用のコピーかビューを返す"
+      ],
+      "fixtures": {
+        "borderline": [
+          "ddd-ent-03/b1-ts"
+        ],
+        "not_violation": [
+          "ddd-ent-03/n1-ts",
+          "ddd-ent-03/n2-py"
+        ],
+        "violation": [
+          "ddd-ent-03/v1-ts",
+          "ddd-ent-03/v2-py",
+          "ddd-ent-03/h1-py"
+        ]
+      },
+      "id": "DDD-ENT-03",
+      "location": "フィールド・setter・setXxx メソッドの名前がある行。Python の公開属性は __init__ 内の最初の代入の行、 dataclass の公開フィールドはフィールドの宣言の行",
+      "name": "エンティティの状態を外から直接書き換えられる",
+      "principle": "エンティティの状態は意図を表すメソッドからだけ変えられるようにし、公開の書き込み口を作らない",
+      "principles": [
+        "ddd.intention-revealing-mutation",
+        "ddd.aggregate-invariants"
+      ],
+      "related": [
+        "DDD-AGG-01",
+        "DDD-VO-02"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium",
+        "escalate": "対象のクラスが集約ルートと推定され、そのフィールドが不変条件の検証に使われているなら High"
+      },
+      "source": "Evans『Domain-Driven Design』10章 Supple Design（Intention-Revealing Interfaces）／Vernon『Implementing Domain-Driven Design』5章 Entities",
+      "status": "ready"
+    },
+    "DDD-EVT-01": {
+      "_philosophy": "ddd-tactical",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain"
+        ],
+        "requires": [
+          "layer_map",
+          "aggregate_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "事実を表す名詞形になっている（OrderCancellation、PaymentApproval など -ion・-ment・-al・-ure・-ance で終わる）",
+        "not_violation": "過去分詞を含む（OrderPlaced、ItemAddedToCart、UserLoggedIn など）。基底クラス（DomainEvent など）",
+        "violation": "イベント名に過去分詞がなく、命令形・現在形・進行形になっている（PlaceOrder、OrderCancel、OrderShipping など）"
+      },
+      "detection": {
+        "implementation": "ddd_evt_01",
+        "static": "ドメイン層で、名前が Event で終わるクラス・インターフェース・型、または DomainEvent などを継承・実装するクラスを列挙し、 名前（末尾の Event を除く）の2語目以降に過去分詞（-ed または不規則変化）があるかを調べる",
+        "type": "static"
+      },
+      "exclusions": [
+        "テストコード",
+        "名前が Handler・Listener・Subscriber・Bus・Dispatcher・Publisher・Emitter・Store・Queue で終わるもの",
+        "基底の型（Event・DomainEvent・BaseEvent・IntegrationEvent・AbstractEvent）"
+      ],
+      "fix_patterns": [
+        "「何が起きたか」を過去形で表す名前に変える（PlaceOrderEvent → OrderPlaced）"
+      ],
+      "fixtures": {
+        "borderline": [
+          "ddd-evt-01/b1-ts"
+        ],
+        "not_violation": [
+          "ddd-evt-01/n1-ts",
+          "ddd-evt-01/n2-py"
+        ],
+        "violation": [
+          "ddd-evt-01/v1-ts",
+          "ddd-evt-01/v2-py",
+          "ddd-evt-01/h1-ts"
+        ]
+      },
+      "id": "DDD-EVT-01",
+      "location": "イベントのクラス・インターフェース・型の名前がある行",
+      "name": "ドメインイベントの名前が過去形になっていない",
+      "principle": "ドメインイベントは、業務上起きた事実を過去形の名前（OrderPlaced など）で表す",
+      "principles": [
+        "ddd.domain-event-as-fact"
+      ],
+      "related": [
+        "DDD-EVT-02"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Low"
+      },
+      "source": "Vernon『Implementing Domain-Driven Design』8章 Domain Events",
+      "status": "ready"
+    },
+    "DDD-EVT-02": {
+      "_philosophy": "ddd-tactical",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain"
+        ],
+        "requires": [
+          "layer_map",
+          "aggregate_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "業務上の名前だが、受け手が必要としない全フィールドを運んでいる",
+        "not_violation": "業務上の出来事を名前で表し、受け手が必要とする事実だけを運んでいる",
+        "violation": "イベントが Updated・Changed のような汎用の名前で、変更前後の全フィールドを運んでいる"
+      },
+      "detection": {
+        "question": "このイベントは、業務上意味のある出来事（何が起きたか）を表しているか。 それとも、エンティティのどのフィールドが変わったかを伝えるだけのデータ変更通知か。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード",
+        "CDC（変更データキャプチャ）用の統合イベントで、設定かコメントでそう明示されているもの"
+      ],
+      "fix_patterns": [
+        "業務上の出来事ごとにイベントを分け（OrderUpdated → OrderShippingAddressChanged など）、必要な事実だけを持たせる"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "DDD-EVT-02",
+      "location": "イベントのクラス・インターフェース・型の名前がある行",
+      "name": "ドメインイベントが業務上の出来事ではなくデータ変更の通知になっている",
+      "principle": "ドメインイベントは、どの列が変わったかではなく、業務上何が起きたかを表す",
+      "principles": [
+        "ddd.domain-event-as-fact"
+      ],
+      "related": [
+        "DDD-EVT-01"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Low"
+      },
+      "source": "Vernon『Implementing Domain-Driven Design』8章 Domain Events",
+      "status": "draft"
+    },
+    "DDD-REP-01": {
+      "_philosophy": "ddd-tactical",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain",
+          "application"
+        ],
+        "requires": [
+          "layer_map",
+          "aggregate_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "読み取り専用のクエリサービスとして、内部エンティティを一覧で取得している（CQRS の参照側）",
+        "not_violation": "集約ルートごとに1つのリポジトリがあり、集約を丸ごと取得・保存する",
+        "violation": "集約の内部エンティティ専用のリポジトリがあり、ルートを通さずに取得・保存できる"
+      },
+      "detection": {
+        "question": "このリポジトリが扱う型は集約ルートか。集約の内部エンティティを単独で取得・保存していないか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "内部エンティティのリポジトリを削り、集約ルートのリポジトリから集約ごと取得してルートのメソッドで操作する"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "DDD-REP-01",
+      "location": "リポジトリのインターフェースかクラスの名前がある行",
+      "name": "リポジトリが集約単位になっていない",
+      "principle": "リポジトリは集約ルートごとに置き、集約の内部エンティティを単独で取得・保存しない",
+      "principles": [
+        "ddd.repository-per-aggregate"
+      ],
+      "related": [
+        "DDD-AGG-01",
+        "DDD-REP-02"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Evans『Domain-Driven Design』6章 Repositories",
+      "status": "draft"
+    },
+    "DDD-REP-02": {
+      "_philosophy": "ddd-tactical",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain",
+          "application"
+        ],
+        "requires": [
+          "layer_map",
+          "aggregate_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "引数に SQL 文字列や生のクエリ条件を受け取る（sql・query・where・filter という名前の string・dict・Record 型の引数）",
+        "not_violation": "ドメインの型・識別子・値オブジェクト・仕様（Specification）オブジェクトだけを受け渡している",
+        "violation": "リポジトリのメソッドの引数か戻り値に ORM・DB ドライバの型（TypeORM の FindOptionsWhere・EntityManager・QueryRunner、 Prisma の生成型、SQLAlchemy の Session・Select、Django の QuerySet など）が出る。または ORM の Repository 型を継承している"
+      },
+      "detection": {
+        "implementation": "ddd_rep_02",
+        "static": "ドメイン層・アプリケーション層にある、名前が Repository・Repo で終わるインターフェース・抽象クラス・クラスについて、 公開メソッドの引数と戻り値の型に ORM・DB ドライバから import した名前が出るもの、 ORM の Repository 型を継承しているもの、SQL 文字列や生のクエリ条件を受け取る引数を列挙する",
+        "type": "static"
+      },
+      "exclusions": [
+        "テストコード",
+        "インフラ層にあるリポジトリ実装（実装が ORM を使うのは正しい）"
+      ],
+      "fix_patterns": [
+        "インターフェースはドメインの型と識別子だけで定義し、ORM の型への変換はインフラ層の実装の中で行う",
+        "検索条件が複雑なら、ドメインの言葉で書いた仕様（Specification）オブジェクトを受け取る"
+      ],
+      "fixtures": {
+        "borderline": [
+          "ddd-rep-02/b1-ts"
+        ],
+        "not_violation": [
+          "ddd-rep-02/n1-ts",
+          "ddd-rep-02/n2-py"
+        ],
+        "violation": [
+          "ddd-rep-02/v1-ts",
+          "ddd-rep-02/v2-py",
+          "ddd-rep-02/h1-py"
+        ]
+      },
+      "id": "DDD-REP-02",
+      "location": "メソッドの名前がある行。ORM の型を継承している場合はインターフェース・クラスの名前がある行",
+      "name": "リポジトリのインターフェースが永続化の技術を表に出している",
+      "principle": "ドメインから見たリポジトリのインターフェースは、ドメインの型だけを受け渡し、ORM・DB の型を表に出さない",
+      "principles": [
+        "ddd.persistence-ignorance",
+        "ca.dependency-rule"
+      ],
+      "related": [
+        "CA-DEP-02",
+        "CA-BND-01",
+        "DDD-REP-01"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Evans『Domain-Driven Design』6章 Repositories／Vernon『Implementing Domain-Driven Design』12章 Repositories",
+      "status": "ready"
+    },
+    "DDD-SRV-01": {
+      "_philosophy": "ddd-tactical",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain",
+          "application"
+        ],
+        "requires": [
+          "layer_map",
+          "aggregate_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "判断は1つのエンティティで決まるが、設定値や現在時刻を外から受け取っている",
+        "not_violation": "複数の集約にまたがる判断、または外部の情報（為替レートなど）を要する計算",
+        "violation": "サービスのメソッドが、1つのエンティティの状態だけを読んで判断・計算し、結果をそのエンティティに書き戻している"
+      },
+      "detection": {
+        "question": "このサービスのメソッドの判断は、1つのエンティティ（またはその集約）の状態だけで決まるか。 複数の集約や外部の情報を必要としていないか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "判断をエンティティのメソッドに移し、サービスはそのメソッドを呼ぶだけにする（ロジック配置の判定手順 Q2）"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "DDD-SRV-01",
+      "location": "サービスのメソッド名がある行",
+      "name": "1つのエンティティで完結する判断がサービスにある",
+      "principle": "単一のエンティティの状態だけで決まる判断は、サービスではなくそのエンティティのメソッドに置く",
+      "principles": [
+        "ddd.domain-service-scope",
+        "ddd.rich-domain-model"
+      ],
+      "related": [
+        "DDD-ENT-02",
+        "PLC-02",
+        "PLC-03"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Evans『Domain-Driven Design』5章 Services",
+      "status": "draft"
+    },
+    "DDD-VO-01": {
+      "_philosophy": "ddd-tactical",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "検証を生成元（ファクトリ・パーサ）に置き、コンストラクタを非公開にしている",
+        "not_violation": "制約のない値（任意の文字列のラベルなど）、または生成時に検証している",
+        "violation": "業務上の制約がある値オブジェクトが、生成時に検証せずに値を受け入れる"
+      },
+      "detection": {
+        "implementation": "ddd_vo_01",
+        "question": "この値オブジェクトには、業務上取りうる値の制約（範囲・形式・組み合わせ）があるのに、 生成時に検証していないか。",
+        "static": "値オブジェクトのコンストラクタ・ファクトリ・__post_init__ で、引数を検証せずに （条件分岐・例外送出・検証関数の呼び出しがなく）フィールドへ代入しているものを列挙する",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "コンストラクタ（またはファクトリ）で制約を検証し、違反したらドメインの例外を投げる"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "DDD-VO-01",
+      "location": "コンストラクタ（__init__・__post_init__）の名前がある行",
+      "name": "値オブジェクトが生成時に自分を検証していない",
+      "principle": "値オブジェクトは生成時に値の制約を検証し、不正な値のまま存在させない",
+      "principles": [
+        "ddd.self-validating-value"
+      ],
+      "related": [
+        "DDD-VO-02",
+        "DDD-VO-03",
+        "BIZ-06"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "High"
+      },
+      "source": "Vernon『Implementing Domain-Driven Design』6章 Value Objects",
+      "status": "draft"
+    },
+    "DDD-VO-02": {
+      "_philosophy": "ddd-tactical",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "フィールドは readonly・frozen だが、中身が可変なコレクション（配列・list・dict・Map）になっている",
+        "not_violation": "すべてのフィールドが readonly・frozen で、変更系のメソッドは新しいインスタンスを返す",
+        "violation": "値オブジェクトの状態を、生成後に書き換えられる（公開の可変フィールド、setter、コンストラクタ以外での代入、frozen でない dataclass）"
+      },
+      "detection": {
+        "implementation": "ddd_vo_02",
+        "static": "値オブジェクト（ValueObject を継承・実装するクラス、識別子を持たず equals・__eq__ を持つクラス、 識別子を持たないドメイン層の dataclass）について、公開で readonly でないフィールド、公開 setter、 コンストラクタ以外での this・self への代入、frozen でない dataclass を列挙する",
+        "type": "static"
+      },
+      "exclusions": [
+        "テストコード",
+        "名前が Dto・Props・Command・Query・Event・Error・Exception・Config・Settings で終わるクラス"
+      ],
+      "fix_patterns": [
+        "フィールドを readonly（Python は @dataclass(frozen=True)）にし、変更系のメソッドは新しいインスタンスを返す",
+        "コレクションは ReadonlyArray・tuple・frozenset など不変の型にする"
+      ],
+      "fixtures": {
+        "borderline": [
+          "ddd-vo-02/b1-py"
+        ],
+        "not_violation": [
+          "ddd-vo-02/n1-ts",
+          "ddd-vo-02/n2-py"
+        ],
+        "violation": [
+          "ddd-vo-02/v1-ts",
+          "ddd-vo-02/v2-py",
+          "ddd-vo-02/h1-ts"
+        ]
+      },
+      "id": "DDD-VO-02",
+      "location": "フィールドの宣言・setter の名前・代入文の行。frozen でない dataclass はデコレータの行、 Python の公開属性は __init__ 内の代入の行",
+      "name": "値オブジェクトが可変になっている",
+      "principle": "値オブジェクトは生成後に状態を変えられないようにし、変更は新しいインスタンスを返して表す",
+      "principles": [
+        "ddd.value-object-immutability"
+      ],
+      "related": [
+        "DDD-VO-01",
+        "DDD-ENT-01",
+        "DDD-ENT-03"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Evans『Domain-Driven Design』5章 Value Objects",
+      "status": "ready"
+    },
+    "DDD-VO-03": {
+      "_philosophy": "ddd-tactical",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "制約はあるが、使われているのが1か所だけ",
+        "not_violation": "制約も振る舞いもない値（表示名、自由記述のメモなど）",
+        "violation": "制約か振る舞いがある業務上の値が、プリミティブ型のまま複数の場所で受け渡されている"
+      },
+      "detection": {
+        "implementation": "ddd_vo_03",
+        "question": "この値には業務上の制約か振る舞い（単位、範囲、形式、計算）があり、専用の型にすべきか。",
+        "static": "ドメイン層の公開シグネチャとフィールドで、業務上の意味を持つ名前（amount・price・email・quantity・rate・ *_id・*Id など）が string・number・int・float・Decimal などのプリミティブ型になっているものを列挙する",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード",
+        "DTO・ORM モデル・外部 API の型"
+      ],
+      "fix_patterns": [
+        "値と制約を持つ値オブジェクト（Money・EmailAddress・Quantity など）を定義し、シグネチャの型を置き換える"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "DDD-VO-03",
+      "location": "フィールドか引数の宣言の行",
+      "name": "業務上の値をプリミティブ型のまま扱っている",
+      "principle": "業務上の意味と制約を持つ値は、プリミティブ型ではなく専用の値オブジェクトで表す",
+      "principles": [
+        "ddd.explicit-domain-types"
+      ],
+      "related": [
+        "MDL-03",
+        "DDD-VO-01"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Low"
+      },
+      "source": "Vernon『Implementing Domain-Driven Design』6章 Value Objects／Fowler『Refactoring』Replace Primitive with Object",
+      "status": "draft"
+    },
+    "GLO-01": {
+      "_philosophy": "glossary",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain"
+        ],
+        "requires": [
+          "glossary",
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "業務上の語か一般的な語かが、名前だけでは決まらない（status・type・item・info など）",
+        "not_violation": "用語集の code_names にある語。技術的な語。DDD の構成要素の名前",
+        "violation": "ドメイン層の公開型・公開メソッドの名前に、用語集にない業務上の語が使われている"
+      },
+      "detection": {
+        "question": "この語は業務上の概念を表す言葉か（技術用語や一般的な動詞・形容詞ではないか）。",
+        "static": "ドメイン層の公開型・公開メソッドの名前を語に分け、用語集の term・code_names・synonyms_deprecated の どれにも当たらない語を列挙する。言語の予約語と、技術的な語（get・set・create・find・list・id・dto、 Repository・Factory・Service・Event などの構成要素の名前）は除く",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード",
+        "非公開の型・メソッド（TypeScript の private・protected・#、Python の _ 始まり）",
+        "外部ライブラリ・外部 API から取り込んだ名前"
+      ],
+      "fix_patterns": [
+        "業務の言葉なら用語集に追加し、定義と code_names を書く",
+        "既存の用語の言い換えなら、用語集の code_names の名前に揃える"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "GLO-01",
+      "location": "その語を含む型かメソッドの名前がある行",
+      "name": "ドメイン層の名前に用語集にない業務用語が使われている",
+      "principle": "ドメイン層の公開された型とメソッドの名前は、用語集に登録した業務の言葉で付ける",
+      "principles": [
+        "glo.ubiquitous-language"
+      ],
+      "related": [
+        "GLO-02",
+        "GLO-05"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Low"
+      },
+      "source": "Evans『Domain-Driven Design』2章 Communication and the Use of Language（Ubiquitous Language）",
+      "status": "draft"
+    },
+    "GLO-02": {
+      "_philosophy": "glossary",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain",
+          "application"
+        ],
+        "requires": [
+          "glossary",
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "用語集の code_names に複数の名前があり、同じコンテキストで両方使われている （意図した使い分けか、用語集の書き方の問題かは人が判断する）",
+        "not_violation": "別のコンテキスト（用語集の context が違う）で別の名前が使われている。code_names の名前だけが使われている",
+        "violation": "同じ概念について、code_names の名前と synonyms_deprecated の名前が、同じコンテキストのコードに両方出る"
+      },
+      "detection": {
+        "static": "用語集の各用語について、code_names と synonyms_deprecated（英字のもの）の名前を、 同じコンテキストのコードの型名・メソッド名・変数名から探す。コンテキストは用語集の context と、 同じ名前のディレクトリで対応づける。1つの用語に対して2つ以上の名前がコードに出るものを列挙する",
+        "type": "static"
+      },
+      "exclusions": [
+        "テストコード",
+        "外部ライブラリ・外部 API の型の名前をそのまま使っている箇所",
+        "旧名から新名へ変換する変換層（アンチコラプション層）で、そう明示されているもの"
+      ],
+      "fix_patterns": [
+        "code_names の名前に統一し、非推奨の名前を使っている型・メソッド・変数の名前を変える"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "GLO-02",
+      "location": "非推奨の側（synonyms_deprecated）の名前が最初に出る宣言の行。code_names どうしの場合は、 パスと行の昇順で2つ目の名前が最初に出る宣言の行",
+      "name": "同じ概念が同じコンテキストの中で別々の名前で呼ばれている",
+      "principle": "1つのコンテキストの中では、1つの概念を1つの名前（用語集の code_names）で呼ぶ",
+      "principles": [
+        "glo.one-term-one-concept",
+        "glo.ubiquitous-language"
+      ],
+      "related": [
+        "GLO-03",
+        "GLO-05",
+        "MDL-01"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Evans『Domain-Driven Design』2章 Communication and the Use of Language／W3C SKOS Reference（prefLabel と altLabel）",
+      "status": "draft"
+    },
+    "GLO-03": {
+      "_philosophy": "glossary",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain",
+          "application"
+        ],
+        "requires": [
+          "glossary",
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "同じ概念のライフサイクルの段階（見積中の注文と確定した注文など）を、同じ名前で呼んでいる。 段階を別の概念とみなすかは業務の判断",
+        "not_violation": "別のコンテキストで、同じ名前が別の意味で使われている（コンテキストが分かれていれば正しい）",
+        "violation": "同じ名前が、同じコンテキストの中で定義の違う概念を指して使われている"
+      },
+      "detection": {
+        "question": "同じコンテキストの中で、この名前は定義の異なる2つ以上の概念を指して使われているか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード",
+        "外部ライブラリ・外部 API の名前"
+      ],
+      "fix_patterns": [
+        "意味ごとに名前を分け、それぞれを用語集に登録する",
+        "別のコンテキストとして扱うべきなら、モジュールを分けて用語集の context も分ける"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "GLO-03",
+      "location": "2つ目の意味で使われている型・メソッドの宣言の行",
+      "name": "同じ名前が同じコンテキストの中で別の概念を指している",
+      "principle": "1つのコンテキストの中では、1つの名前で1つの概念だけを指す",
+      "principles": [
+        "glo.one-term-one-concept"
+      ],
+      "related": [
+        "GLO-02",
+        "MDL-05"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Evans『Domain-Driven Design』2章 Communication and the Use of Language",
+      "status": "draft"
+    },
+    "GLO-04": {
+      "_philosophy": "glossary",
+      "also_accept": [
+        "DDD-AGG-04"
+      ],
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain"
+        ],
+        "requires": [
+          "glossary",
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "has_part の相手を ID で持っている（別の集約として切り出した設計判断の可能性があり、 用語集のほうが古いかもしれない）",
+        "not_violation": "has_part の相手を集約の内部として所有し、refers_to の相手を ID で参照している",
+        "violation": "has_part の関係が集約内部の所有になっていない。または refers_to の相手をオブジェクトとして参照している"
+      },
+      "detection": {
+        "question": "このコード上の関係は、用語集の関係（has_part なら集約内部の所有、refers_to なら ID 参照）と 食い違っているか。",
+        "static": "用語集の has_part と refers_to の各組について、code_names で両方の型を引き、 コード上の関係（フィールドの型が相手の型そのもの・そのコレクションか、相手の ID の型か、関係がないか）を列挙する",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード",
+        "読み取りモデル（クエリ用の型）"
+      ],
+      "fix_patterns": [
+        "refers_to の相手は、オブジェクトではなく ID（値オブジェクト）で持つ",
+        "用語集とコードのどちらが正しいかを決め、用語集の関係かコードの構造のどちらかを直す"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "GLO-04",
+      "location": "関係を表すフィールドの宣言の行",
+      "name": "用語集の関係とコードの構造が食い違っている",
+      "principle": "用語集の has_part は集約内部の所有として、refers_to は ID 参照としてコードに表す",
+      "principles": [
+        "glo.model-reflects-relations",
+        "ddd.reference-by-id"
+      ],
+      "related": [
+        "DDD-AGG-04",
+        "DDD-AGG-01"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Evans『Domain-Driven Design』2章 Communication and the Use of Language、6章 Aggregates",
+      "status": "draft"
+    },
+    "GLO-05": {
+      "_philosophy": "glossary",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "glossary"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "非推奨の語が、より長い語の一部として出る（Purchase が Purchaser に含まれるなど、 語の区切りが一致しない）",
+        "not_violation": "差分の外の既存コード（GLO-02 の対象）。外部ライブラリ・外部 API から import した名前。 文字列リテラルとコメントの中",
+        "violation": "synonyms_deprecated の語が、差分で追加された識別子の1語としてそのまま使われている"
+      },
+      "detection": {
+        "static": "差分で追加された行の識別子（型名・メソッド名・変数名・引数名）を語に分け、 用語集の synonyms_deprecated（英字のもの）と照合する",
+        "type": "static"
+      },
+      "exclusions": [
+        "テストコード",
+        "旧スキーマ・旧 API との変換コードで、そう明示されているもの"
+      ],
+      "fix_patterns": [
+        "用語集の code_names の名前に置き換える"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "GLO-05",
+      "location": "非推奨の語を含む識別子がある行",
+      "name": "非推奨の用語が新しいコードに使われている",
+      "principle": "用語集で非推奨とした言葉は、新しく書くコードの名前に使わない",
+      "principles": [
+        "glo.one-term-one-concept",
+        "glo.ubiquitous-language"
+      ],
+      "related": [
+        "GLO-02",
+        "GLO-01"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Low"
+      },
+      "source": "W3C SKOS Reference（altLabel・hiddenLabel）／Evans『Domain-Driven Design』2章",
+      "status": "draft"
+    },
+    "GLO-06": {
+      "_philosophy": "glossary",
+      "applies_when": {
+        "file_kinds": [
+          "glossary"
+        ],
+        "languages": [
+          "yaml"
+        ],
+        "layers": [
+          "any"
+        ],
+        "requires": [
+          "glossary"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "code_names が別のコンテキストの用語と重複している（コンテキストが分かれていれば正しいが、 取り違えの可能性がある）",
+        "not_violation": "定義の中でほかの用語を参照しているが、それ以外の説明もある （注文明細の定義に「注文」が出るなど）",
+        "violation": "定義が空。定義が別の用語の言い換えだけで、辿ると元の用語に戻る（循環した定義）。同じコンテキストの中で code_names が重複している"
+      },
+      "detection": {
+        "static": "用語集（docs/glossary.yml）を読み、definition が空の用語、定義文が別の用語の term だけでできていて （助詞と「のこと」などを除くと語が残らない）その参照を辿ると元の用語に戻るもの、 同じコンテキストの中で同じ code_names を持つ用語の組を列挙する",
+        "type": "static"
+      },
+      "exclusions": [
+        "用語集の中で、作成中であると明示された用語"
+      ],
+      "fix_patterns": [
+        "空の定義を書く。業務上の条件（いつ、何を満たすと）まで書く",
+        "循環している定義の片方を、ほかの用語に頼らない説明に書き直す",
+        "重複した code_names を、どちらかの用語に寄せる"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "GLO-06",
+      "location": "用語集の、該当する用語の term の行",
+      "name": "用語集そのものに欠陥がある",
+      "principle": "用語集の各用語は、空でなく循環しない定義と、重複しない code_names を持つ",
+      "principles": [
+        "glo.well-formed-glossary"
+      ],
+      "related": [
+        "GLO-02",
+        "GLO-03"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Low"
+      },
+      "source": "W3C SKOS Reference（Documentation Properties、Integrity Conditions）",
+      "status": "draft"
+    },
+    "MDL-01": {
+      "_philosophy": "model-commonality",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain",
+          "application"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [
+        "MDL-05",
+        "CA-DEP-01",
+        "CA-DEP-03"
+      ],
+      "criteria": {
+        "borderline": "用語集がなく、LLM が書き出した2つの型の定義文が一致するかを言い回しだけでは決められない。 または片方が読み取り専用の投影（クエリモデル）として、意図して分けられた可能性がある",
+        "not_violation": "別のコンテキストの同名・同形の型。DTO とドメインの型のように、層の違いで役割が分かれた型。 形が同じでも変更理由が違う型（偶然の重複）",
+        "violation": "同じコンテキストで、同じ概念を表す型が2つ以上ある（フィールド名の集合の Jaccard 係数が 0.7 以上で、 同じコンテキスト・同じ概念・同じ変更理由の3条件を満たす）"
+      },
+      "detection": {
+        "question": "この2つの型は同じ業務概念を表し、同じ業務ルールの変更で両方を直す必要があるか （形が似ているだけの別の概念ではないか）。",
+        "static": "同じコンテキスト（ディレクトリで対応づける）のドメイン層・アプリケーション層の型について、 フィールド名の集合の Jaccard 係数が 0.7 以上の型の組を候補にする。用語集があれば、 両方の型名が同じ用語の code_names・synonyms_deprecated に入るかを併せて調べる",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード",
+        "生成コード",
+        "DTO・ORM モデル・外部 API の型と、ドメインの型との組"
+      ],
+      "fix_patterns": [
+        "一方の型に寄せ、もう一方の利用箇所を置き換える",
+        "片方が投影なら、投影であることを名前（〜View・〜Summary など）とコメントで明示する"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "MDL-01",
+      "location": "型の組のうち、パスと行の昇順で2つ目の型の宣言の行",
+      "name": "同じ概念を表す型が重複して定義されている",
+      "principle": "同じコンテキストの同じ概念は1つの型で表し、写しの型を作らない",
+      "principles": [
+        "mdl.single-source-of-knowledge"
+      ],
+      "related": [
+        "MDL-05",
+        "MDL-06",
+        "GLO-02"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Hunt & Thomas『The Pragmatic Programmer』DRY／Evans『Domain-Driven Design』14章 Maintaining Model Integrity",
+      "status": "draft"
+    },
+    "MDL-02": {
+      "_philosophy": "model-commonality",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "any"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "計算式は同じだが、業務上同じ計算か（2つの「手数料」が同じ規約に基づくかなど）が、 コードの外にしか書かれていない",
+        "not_violation": "一方が他方を呼んでいる（実装は1か所）。式の形が同じでも、業務上の意味が違う計算（偶然の重複）",
+        "violation": "同じ業務計算が2か所以上で別々に実装されている"
+      },
+      "detection": {
+        "question": "この2つのコードは、同じ業務上の計算（同じ業務ルールの変更で両方を直すべき計算）を、 それぞれ別々に実装しているか。",
+        "static": "コードクローン検出（jscpd など）で、算術演算・丸め・条件分岐を含むクローンの組を候補にする。 あわせて、同じ数値リテラル（税率・手数料率など）を使う計算式の組を候補にする",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード（期待値を計算する式）",
+        "生成コード"
+      ],
+      "fix_patterns": [
+        "計算をドメインの1か所（値オブジェクトのメソッドかドメインサービス）にまとめ、両方の利用箇所からそれを呼ぶ"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "MDL-02",
+      "location": "実装の組のうち、パスと行の昇順で2つ目の実装の行範囲",
+      "name": "同じ業務計算が複数の場所で別々に実装されている",
+      "principle": "1つの業務計算（税込金額、ポイント付与、手数料など）は1か所で実装し、ほかの場所はそれを呼ぶ",
+      "principles": [
+        "mdl.single-source-of-knowledge"
+      ],
+      "related": [
+        "BIZ-02",
+        "MDL-03",
+        "DDD-VO-03"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "High"
+      },
+      "source": "Hunt & Thomas『The Pragmatic Programmer』DRY",
+      "status": "draft"
+    },
+    "MDL-03": {
+      "_philosophy": "model-commonality",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain",
+          "application"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "3か所以上に出るが、そのうち一部は外部 API の型や DTO で、ドメインの中で組として扱っているのは2か所以下",
+        "not_violation": "組がすでに値オブジェクトになっている。名前は並ぶが組としての制約がない（偶然同じ引数が並ぶだけ）",
+        "violation": "金額と通貨、開始日と終了日など、いつも一緒に扱う値の組が、バラの引数かフィールドで3か所以上に出る"
+      },
+      "detection": {
+        "question": "この値の組は業務上いつも一緒に扱われ、組としての制約（通貨が同じこと、開始が終了より前であることなど） を持つか。",
+        "static": "関数・メソッドの引数とクラスのフィールドから、同じ名前の組（amount と currency、start と end、 from と to、lat と lng など2つ以上の名前の組）が3か所以上に出るものを列挙する",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード",
+        "外部 API・ORM の型の定義そのもの"
+      ],
+      "fix_patterns": [
+        "組を値オブジェクト（Money・DateRange・Coordinates など）にまとめ、組の制約をコンストラクタで検証する"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "MDL-03",
+      "location": "組が出る箇所のうち、パスと行の昇順で最初の関数・フィールドの宣言の行（ほかの箇所は evidence に並べる）",
+      "name": "値オブジェクトにすべき値の組がバラの引数で散らばっている",
+      "principle": "いつも一緒に扱い、組としての制約を持つ値は、値オブジェクトにまとめる",
+      "principles": [
+        "mdl.cohesive-value-types",
+        "ddd.explicit-domain-types"
+      ],
+      "related": [
+        "DDD-VO-03",
+        "DDD-VO-01",
+        "MDL-02"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Fowler『Refactoring』Data Clumps、Introduce Parameter Object／Fowler『Patterns of Enterprise Application Architecture』Money",
+      "status": "draft"
+    },
+    "MDL-04": {
+      "_philosophy": "model-commonality",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "any"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "3か所以上で比較されているが、すべて1つのファイルの中にある（1つのモジュールに閉じた区分）",
+        "not_violation": "列挙型（TypeScript の enum、Python の Enum）・定数で比較している。比較する変数がリテラル型の ユニオンとして宣言されている（TypeScript で網羅性の検査が効くもの）。比較が2か所以下",
+        "violation": "状態や区分が文字列・数値リテラルのまま、2つ以上のファイルの3か所以上で比較されている"
+      },
+      "detection": {
+        "static": "同じ文字列リテラル・数値リテラルが、比較（===・==・!==・in・switch の case・match の case）の相手として 3か所以上に出るものを列挙する。比較の相手の識別子の名前が status・state・type・kind・category・role・ phase を含むものに限る",
+        "type": "static"
+      },
+      "exclusions": [
+        "テストコード",
+        "HTTP ステータス・環境名など、業務の区分ではない値（比較の相手の名前で判定する）",
+        "外部 API の応答を、アダプタ層で一度だけ内部の区分に変換している箇所"
+      ],
+      "fix_patterns": [
+        "区分を列挙型か値オブジェクトにし、状態による判断をその型のメソッドにまとめる"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "MDL-04",
+      "location": "同じリテラルの比較のうち、パスと行の昇順で最初の比較の行（ほかの箇所は evidence に並べる）",
+      "name": "状態・区分が文字列や数値のリテラルのまま散らばっている",
+      "principle": "状態や区分は列挙型か値オブジェクトとして定義し、リテラルの比較を各所に書かない",
+      "principles": [
+        "mdl.cohesive-value-types",
+        "mdl.single-source-of-knowledge"
+      ],
+      "related": [
+        "MDL-03",
+        "DDD-VO-03",
+        "BIZ-03"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Fowler『Refactoring』Primitive Obsession、Replace Primitive with Object",
+      "status": "draft"
+    },
+    "MDL-05": {
+      "_philosophy": "model-commonality",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain",
+          "application"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [
+        "MDL-01",
+        "MDL-06"
+      ],
+      "criteria": {
+        "borderline": "種別による分岐はあるが、それが同じ概念のバリエーション（ポリモーフィズムで表すもの）か、 別の概念の混在かがコードだけでは決まらない",
+        "not_violation": "共通化した型のフィールドと振る舞いを、すべての利用者が同じ意味で使っている",
+        "violation": "別のコンテキストか別の概念を1つの型にまとめた結果、片方の都合だけのフィールドや種別の分岐が増えている"
+      },
+      "detection": {
+        "question": "この型は、別のコンテキストか別の概念を1つにまとめたために、一部の利用者しか使わないフィールドや、 利用者の種類による分岐を抱えているか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード",
+        "共有カーネルとして合意済みであることが ADR か設定に書かれた型"
+      ],
+      "fix_patterns": [
+        "コンテキストか概念ごとに型を分け、本当に共通する部分だけを値オブジェクトとして共有する",
+        "分けた型どうしの変換を、コンテキストの境界（アンチコラプション層）に置く"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "MDL-05",
+      "location": "型の宣言の行",
+      "name": "別の概念を1つの型にまとめた誤った共通化がある",
+      "principle": "別のコンテキスト・別の概念は、形が似ていても1つの型にまとめない",
+      "principles": [
+        "mdl.no-false-unification"
+      ],
+      "related": [
+        "MDL-01",
+        "MDL-06",
+        "GLO-03"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Metz \"The Wrong Abstraction\"／Evans『Domain-Driven Design』14章 Maintaining Model Integrity（Bounded Context）",
+      "status": "draft"
+    },
+    "MDL-06": {
+      "_philosophy": "model-commonality",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain",
+          "application",
+          "adapter",
+          "infrastructure"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [
+        "MDL-05"
+      ],
+      "criteria": {
+        "borderline": "名前は同じだがフィールド名の集合が一致しない（別の意味の同名の型か、古くなった写しかが決まらない）",
+        "not_violation": "共有カーネルの型を import して使っている。共有カーネルの型をフィールドに持ち、 別の振る舞いを足した別名の型",
+        "violation": "共有カーネルの型と、名前とフィールド名の集合が一致する型、またはフィールド名の集合が完全に一致する型を、ほかの層で定義している"
+      },
+      "detection": {
+        "static": "共有カーネル（層マップで shared の層）にある型の名前とフィールド名の集合を集め、ほかの層にある型のうち、 名前とフィールド名の集合が両方一致するもの、または名前が違ってもフィールド名の集合が完全に一致するものを列挙する",
+        "type": "static"
+      },
+      "exclusions": [
+        "テストコード",
+        "外部 API の型の定義（生成コードを含む）",
+        "アンチコラプション層で外部の型を写し取っていることが、コメントか設定で明示された型"
+      ],
+      "fix_patterns": [
+        "再定義した型を削り、共有カーネルの型を import して使う"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "MDL-06",
+      "location": "再定義した側の型の宣言の行",
+      "name": "共有カーネルにある型を再定義している",
+      "principle": "共有カーネルとして定義した型は、再定義せずに import して使う",
+      "principles": [
+        "mdl.shared-kernel",
+        "mdl.single-source-of-knowledge"
+      ],
+      "related": [
+        "MDL-01",
+        "MDL-05"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Low"
+      },
+      "source": "Evans『Domain-Driven Design』14章 Maintaining Model Integrity（Shared Kernel）",
+      "status": "draft"
+    },
+    "PLC-01": {
+      "_philosophy": "logic-placement",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "引数で受け取ったドメイン層のインターフェース（名前が Service・Policy・Calculator で終わるもの）を呼んでいる （判断を外へ委ねるダブルディスパッチで、中身が I/O かはその実装次第）",
+        "not_violation": "自身のフィールドと引数だけで判断している。発生したドメインイベントを内部のリストに積むだけ",
+        "violation": "エンティティ・値オブジェクトのメソッドが、リポジトリ・外部 API のクライアント・DB・ファイルなどの I/O を呼んでいる"
+      },
+      "detection": {
+        "static": "エンティティ・値オブジェクトのメソッドの本体で、名前が Repository・Repo・Client・Gateway・Api で終わる型の値 （フィールド・引数・ローカル変数）のメソッド呼び出しと、フレームワーク台帳で db・orm・http・cloud・messaging・io に 分類されるパッケージから import した名前の呼び出しを、呼び出し1つにつき1件列挙する",
+        "type": "static"
+      },
+      "exclusions": [
+        "テストコード",
+        "ファクトリ（名前が Factory で終わるクラス）"
+      ],
+      "fix_patterns": [
+        "外部から得る値はアプリケーションサービスで取得し、エンティティのメソッドには引数で渡す",
+        "外部の判断が要るなら、ドメイン層にインターフェースを置き、メソッドの引数で受け取る"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "PLC-01",
+      "location": "呼び出しの行",
+      "name": "エンティティ・値オブジェクトが外部を呼んでいる",
+      "principle": "エンティティと値オブジェクトは、リポジトリや外部サービスを呼ばず、自身の状態と引数だけで判断する",
+      "principles": [
+        "plc.domain-object-purity",
+        "ca.humble-object"
+      ],
+      "related": [
+        "CA-HUM-01",
+        "CA-DEP-02",
+        "PLC-02"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "High"
+      },
+      "source": "Vernon『Implementing Domain-Driven Design』10章 Aggregates（Avoid Dependency Injection into an Aggregate）",
+      "status": "draft"
+    },
+    "PLC-02": {
+      "_philosophy": "logic-placement",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "判断に必要な参照データ（料金表など）をリポジトリから読むだけで、保存・通知・トランザクションの制御はしていない",
+        "not_violation": "必要な集約や値を引数で受け取り、判断の結果を返すだけ",
+        "violation": "ドメインサービスが、集約の取得と保存、トランザクションの制御、外部への通知を自分で行っている"
+      },
+      "detection": {
+        "question": "このドメインサービスのメソッドは、取得・保存・通知・トランザクションの制御という手順の調整 （配置の判定手順で Q6 にあたる、アプリケーションサービスの仕事）をしているか。",
+        "static": "ドメイン層の、名前が Service で終わるクラスのメソッドの本体で、リポジトリ（名前が Repository・Repo で終わる型の値）の save・find・get・update・delete・add・remove 系の呼び出し、transaction・commit・rollback・atomic・unitOfWork 系の呼び出し、 send・publish・notify・emit 系の呼び出しを列挙する",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "取得・保存・通知・トランザクションの制御をアプリケーションサービスへ移し、ドメインサービスは引数を受けて判断を返すだけにする（Q6）"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "PLC-02",
+      "location": "呼び出しの行",
+      "name": "ドメインサービスが手順を調整している",
+      "principle": "ドメインサービスは複数の集約にまたがる業務の判断だけを持ち、取得・保存・通知・トランザクションの制御はアプリケーションサービスに任せる",
+      "principles": [
+        "plc.domain-service-no-orchestration",
+        "plc.application-service-orchestrates"
+      ],
+      "related": [
+        "PLC-01",
+        "PLC-03",
+        "DDD-SRV-01",
+        "CA-HUM-01"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Vernon『Implementing Domain-Driven Design』7章 Services",
+      "status": "draft"
+    },
+    "PLC-03": {
+      "_philosophy": "logic-placement",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "application"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "分岐が業務の判断か、手順上の分岐（見つからなければ 404、権限がなければ拒否など）かが、コードだけでは決まらない",
+        "not_violation": "取得・ドメインオブジェクトのメソッドの呼び出し・保存・通知を並べるだけ。手順上の分岐",
+        "violation": "アプリケーションサービスが、ドメインオブジェクトのフィールドを読んで業務上の条件分岐や金額などの計算をしている"
+      },
+      "detection": {
+        "question": "このアプリケーションサービスのメソッドは、ドメインオブジェクトの状態を読んで業務上の分岐・計算をしているか （配置の判定手順で Q2〜Q4 のどこかで結論が出る、内側の型の仕事か）。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "判定手順で結論の出た Q の置き場所へ移す（Q2 なら単一のエンティティのメソッド、Q3 なら集約ルートのメソッド）。 指摘には、どの Q で結論が出たかを添える"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "PLC-03",
+      "location": "業務上の分岐・計算の行範囲",
+      "name": "アプリケーションサービスに業務判断がある",
+      "principle": "アプリケーションサービスは手順を並べるだけにし、ドメインオブジェクトの状態による業務上の分岐・計算は内側の型に置く",
+      "principles": [
+        "plc.application-service-orchestrates",
+        "plc.innermost-placement"
+      ],
+      "related": [
+        "DDD-ENT-02",
+        "DDD-SRV-01",
+        "DDD-AGG-02",
+        "CA-UC-01",
+        "PLC-02"
+      ],
+      "release": "v1",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Vernon『Implementing Domain-Driven Design』14章 Application／Evans『Domain-Driven Design』4章 Isolating the Domain",
+      "status": "draft"
+    },
+    "SCL-01": {
+      "_philosophy": "logic-placement",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "application",
+          "domain"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "起動後に一度だけ読み込む読み取り専用のキャッシュ（台ごとに食い違っても害がないかは、データの性質による）。 インスタンスの寿命がリクエストスコープかシングルトンかが、DI の設定などコードの外にしかない",
+        "not_violation": "コンストラクタで受け取った依存の保持。リクエストスコープで作られるインスタンスの中の状態",
+        "violation": "サービスのインスタンス変数やモジュール変数に、リクエストをまたいで残る値（キャッシュ、カウンタ、直前の処理結果）を書き込んでいる"
+      },
+      "detection": {
+        "question": "この状態は、リクエストをまたいで残る可変な状態で、サーバーを複数台に増やすと台ごとに値が食い違うか。",
+        "static": "名前が Service・UseCase・Handler で終わるクラスの、コンストラクタ（Python は __init__）以外のメソッドの中の this・self のフィールドへの代入・複合代入とコレクションの変更（push・set・append・update など）、 およびモジュールの最上位で宣言した変数への書き込みを列挙する",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード",
+        "Main（組み立て）のコード"
+      ],
+      "fix_patterns": [
+        "状態をデータストアや外部のキャッシュ（Redis など）に移し、サービスは毎回そこから読む",
+        "リクエストの間だけ要る値は、ローカル変数か引数で受け渡す"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "SCL-01",
+      "location": "代入・変更の行",
+      "name": "サービスがリクエストをまたぐ状態を持っている",
+      "principle": "サービスはリクエストをまたいで可変な状態を持たず、状態はデータストアなど外部の仕組みに置く",
+      "principles": [
+        "scl.stateless-services"
+      ],
+      "related": [
+        "SCL-05"
+      ],
+      "release": "v1.5",
+      "severity": {
+        "default": "High"
+      },
+      "source": "The Twelve-Factor App VI. Processes／Kleppmann『Designing Data-Intensive Applications』1章",
+      "status": "draft"
+    },
+    "SCL-02": {
+      "_philosophy": "logic-placement",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "application"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "業務ルール台帳がない、または台帳にその処理の consistency の記載がない （即時に反映が要るかはコードから決められない）",
+        "not_violation": "台帳で consistency が immediate とされた処理。ドメインイベントやキューを通して後から実行している",
+        "violation": "台帳で consistency が eventual とされた処理が、同じトランザクションの中で同期的に実行されている"
+      },
+      "detection": {
+        "question": "このトランザクションの中の処理（通知、集計、他の集約の更新）は、業務ルール台帳で consistency が eventual とされた処理で、 同じトランザクションの中で同期的に実行されているか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "即時でなくてよい処理をドメインイベントの購読側やジョブキューへ移し、トランザクションの外で実行する"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "SCL-02",
+      "location": "即時でなくてよい処理の呼び出しの行",
+      "name": "即時でなくてよい処理を同じトランザクションで同期的に実行している",
+      "principle": "同じトランザクションで即時に揃える範囲は、業務上すぐに反映が要るものだけに絞る",
+      "principles": [
+        "scl.minimal-immediate-consistency",
+        "ddd.one-aggregate-per-transaction"
+      ],
+      "related": [
+        "DDD-AGG-03"
+      ],
+      "release": "v1.5",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Vernon『Implementing Domain-Driven Design』10章 Aggregates（Use Eventual Consistency Outside the Boundary）／Kleppmann『Designing Data-Intensive Applications』",
+      "status": "draft"
+    },
+    "SCL-03": {
+      "_philosophy": "logic-placement",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "application",
+          "domain"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "ループの回数に上限があるが、その上限がコードの外（業務の仕様や設定）にしか書かれていない （常に数件なら問題にならない）",
+        "not_violation": "findByIds などでまとめて取得している。集約の不変条件を守るために、更新の前に集約全体を読み込んでいる",
+        "violation": "ループの中でリポジトリから1件ずつ取得している。判断に1つのフィールドしか使わないのに、集約全体を読み込んでいる"
+      },
+      "detection": {
+        "question": "この読み込みは、ループの回数だけ取得を繰り返している（N+1）か、判断に要らない集約全体を読み込んでいるか。",
+        "static": "ループ（for・while・map・forEach・内包表記）の本体の中にある、リポジトリ（名前が Repository・Repo で終わる型の値）の 取得メソッドの呼び出しを列挙する。あわせて、集約全体を取得した直後に、その集約のフィールドを1つしか読まない箇所を列挙する",
+        "type": "hybrid"
+      },
+      "exclusions": [
+        "テストコード",
+        "バッチ処理で、1件ずつのコミットを意図していると明示されたもの"
+      ],
+      "fix_patterns": [
+        "ループの前に ID をまとめ、1回の取得で読み込む",
+        "判断に必要な値だけを返す問い合わせを、読み取り用に用意する"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "SCL-03",
+      "location": "取得の呼び出しの行",
+      "name": "ドメインロジックのために過剰に読み込んでいる",
+      "principle": "判断に必要なデータだけを、ループの中で1件ずつではなくまとめて読み込む",
+      "principles": [
+        "scl.load-what-you-need"
+      ],
+      "related": [
+        "SCL-04",
+        "DDD-AGG-04"
+      ],
+      "release": "v1.5",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Fowler『Patterns of Enterprise Application Architecture』Lazy Load／Kleppmann『Designing Data-Intensive Applications』",
+      "status": "draft"
+    },
+    "SCL-04": {
+      "_philosophy": "logic-placement",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "application",
+          "adapter"
+        ],
+        "requires": [
+          "layer_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "読み込む件数が少ないことが、コードの外（業務の量）にしか根拠がない",
+        "not_violation": "読み取り用の問い合わせ（クエリサービス、ビュー、読み取りモデル）で組み立てている。件数に上限がある",
+        "violation": "一覧・集計のために更新用の集約を件数の上限なく読み込み、メモリ上で絞り込み・並べ替え・集計している"
+      },
+      "detection": {
+        "question": "この一覧・集計の処理は、更新用の集約を大量に読み込み、アプリケーション側で絞り込み・集計して 読み取り専用の結果を組み立てているか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "読み取り用の問い合わせ（クエリサービス）を設け、必要な列だけを DB 側で絞り込み・集計して返す"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "SCL-04",
+      "location": "集約を読み込んで組み立てる処理の行範囲",
+      "name": "読み取り専用の画面を集約経由で組み立てている",
+      "principle": "一覧・集計などの読み取りは、更新用の集約を大量に読まず、読み取り用のモデルで組み立てる",
+      "principles": [
+        "scl.separate-read-models"
+      ],
+      "related": [
+        "SCL-03",
+        "CA-BND-01"
+      ],
+      "release": "v1.5",
+      "severity": {
+        "default": "Low"
+      },
+      "source": "Fowler \"CQRS\"（martinfowler.com/bliki）",
+      "status": "draft"
+    },
+    "SCL-05": {
+      "_philosophy": "logic-placement",
+      "applies_when": {
+        "languages": [
+          "typescript",
+          "python"
+        ],
+        "layers": [
+          "domain",
+          "application"
+        ],
+        "requires": [
+          "layer_map",
+          "aggregate_map"
+        ]
+      },
+      "conflicts_with": [],
+      "criteria": {
+        "borderline": "同時更新の頻度が業務の量次第で、コードからは決まらない",
+        "not_violation": "更新されるインスタンスが利用者ごと・注文ごとなどに分かれている。追記だけで更新が衝突しない",
+        "violation": "複数のユースケースが、固定の ID や単一の行で表される同じ集約インスタンスを更新する"
+      },
+      "detection": {
+        "question": "この集約は、多くのユースケースが同じ1つのインスタンス（グローバルなカウンタ、在庫の単一行など）を更新する構造で、 同時の更新が競合の焦点になるか。",
+        "type": "llm"
+      },
+      "exclusions": [
+        "テストコード"
+      ],
+      "fix_patterns": [
+        "集約を分割し、競合する更新を別々のインスタンスに分ける",
+        "単一の値の上書きをやめ、追記型の記録（イベント）にして、合計は読み取り側で求める"
+      ],
+      "fixtures": {
+        "borderline": [],
+        "not_violation": [],
+        "violation": []
+      },
+      "id": "SCL-05",
+      "location": "集約ルートの型の宣言の行",
+      "name": "更新が1つの集約インスタンスに集中している",
+      "principle": "多くの処理が同じ1つのインスタンスを更新する構造を避け、更新の競合を分散させる",
+      "principles": [
+        "scl.avoid-contention-hotspots",
+        "ddd.aggregate-invariants"
+      ],
+      "related": [
+        "SCL-01",
+        "DDD-AGG-03"
+      ],
+      "release": "v1.5",
+      "severity": {
+        "default": "Medium"
+      },
+      "source": "Vernon『Implementing Domain-Driven Design』10章 Aggregates（Design Small Aggregates）／Kleppmann『Designing Data-Intensive Applications』7章 Transactions",
+      "status": "draft"
+    }
+  },
+  "conflicts": [
+    {
+      "checks": [
+        "MDL-01",
+        "MDL-05"
+      ],
+      "note": "どちらかが High に上がっていれば R1-HIGH で決まる。同じ重大度なら変更ファイル数の少ない案を採り、 負けた側は held にする",
+      "ruling": "R3-FEWER-FILES",
+      "when": "同じ型について、MDL-01 は重複した型を1つにまとめよと言い、MDL-05 はその共通化は誤りだから分けよと言う"
+    },
+    {
+      "checks": [
+        "CA-DEP-01",
+        "MDL-01"
+      ],
+      "note": "外側の型に寄せてまとめると依存の向きが逆転するため、CA-DEP-01 を採り、ドメイン層の型を残す",
+      "ruling": "R2-DEPENDENCY",
+      "when": "ドメイン層が外側の層の型を import し、同じ形の型をドメイン層にも持っている。MDL-01 は型を1つにまとめよと言い、 CA-DEP-01 は外側への依存を切れと言う"
+    },
+    {
+      "checks": [
+        "CA-DEP-03",
+        "MDL-01"
+      ],
+      "note": "CA-DEP-01 との組と同じ理由で、CA-DEP-03 を採る",
+      "ruling": "R2-DEPENDENCY",
+      "when": "アプリケーション層が外側の層の型を import し、同じ形の型をアプリケーション層にも持っている。 MDL-01 は型を1つにまとめよと言い、CA-DEP-03 は外側への依存を切れと言う"
+    },
+    {
+      "checks": [
+        "MDL-05",
+        "MDL-06"
+      ],
+      "note": "分けるか共有するかは文脈の境界の設計判断なので、繰り返し保留になるなら /sumidashi:adr-draft で ADR を勧める",
+      "ruling": "R3-FEWER-FILES",
+      "when": "共有カーネルの型について、MDL-05 は別の概念をまとめた共通化だから文脈ごとに分けよと言い、 MDL-06 は再定義せずに共有カーネルの型を import して使えと言う"
+    }
+  ],
+  "philosophies": {
+    "adr": {
+      "check_ids": [
+        "ADR-CMP-01",
+        "ADR-CMP-02",
+        "ADR-CMP-03",
+        "ADR-DOC-01",
+        "ADR-DOC-02",
+        "ADR-DOC-03",
+        "ADR-DOC-04",
+        "ADR-DOC-05",
+        "ADR-DOC-06"
+      ],
+      "file": "skills/adr/checks.yml",
+      "id": "adr",
+      "id_prefixes": [
+        "ADR"
+      ],
+      "name": "ADR（Architecture Decision Record）",
+      "release": "v1",
+      "skill": "adr",
+      "summary": "ADR による例外、コードと ADR の整合、ADR 自体のレビュー"
+    },
+    "business": {
+      "check_ids": [
+        "BIZ-01",
+        "BIZ-02",
+        "BIZ-03",
+        "BIZ-04",
+        "BIZ-05",
+        "BIZ-06",
+        "BIZ-07",
+        "BIZ-08"
+      ],
+      "file": "skills/business/checks.yml",
+      "id": "business",
+      "id_prefixes": [
+        "BIZ"
+      ],
+      "name": "ビジネス視点",
+      "release": "v1",
+      "skill": "business",
+      "summary": "業務ルール台帳・受け入れ条件とコードの整合"
+    },
+    "clean-architecture": {
+      "check_ids": [
+        "CA-DEP-01",
+        "CA-DEP-02",
+        "CA-DEP-03",
+        "CA-DEP-04",
+        "CA-BND-01",
+        "CA-BND-02",
+        "CA-BND-03",
+        "CA-UC-01",
+        "CA-UC-02",
+        "CA-UC-03",
+        "CA-HUM-01",
+        "CA-MAIN-01"
+      ],
+      "file": "skills/clean-architecture/checks.yml",
+      "id": "clean-architecture",
+      "id_prefixes": [
+        "CA"
+      ],
+      "name": "クリーンアーキテクチャ",
+      "release": "v1",
+      "skill": "clean-architecture",
+      "summary": "依存性ルール、境界の越え方、ユースケースの責務"
+    },
+    "ddd-tactical": {
+      "check_ids": [
+        "DDD-AGG-01",
+        "DDD-AGG-02",
+        "DDD-AGG-03",
+        "DDD-AGG-04",
+        "DDD-ENT-01",
+        "DDD-ENT-02",
+        "DDD-ENT-03",
+        "DDD-VO-01",
+        "DDD-VO-02",
+        "DDD-VO-03",
+        "DDD-REP-01",
+        "DDD-REP-02",
+        "DDD-SRV-01",
+        "DDD-EVT-01",
+        "DDD-EVT-02"
+      ],
+      "file": "skills/ddd-tactical/checks.yml",
+      "id": "ddd-tactical",
+      "id_prefixes": [
+        "DDD"
+      ],
+      "name": "DDD 戦術設計",
+      "release": "v1",
+      "skill": "ddd-tactical",
+      "summary": "集約・エンティティ・値オブジェクト・リポジトリ・ドメインサービス・ドメインイベント"
+    },
+    "glossary": {
+      "check_ids": [
+        "GLO-01",
+        "GLO-02",
+        "GLO-03",
+        "GLO-04",
+        "GLO-05",
+        "GLO-06"
+      ],
+      "file": "skills/glossary/checks.yml",
+      "id": "glossary",
+      "id_prefixes": [
+        "GLO"
+      ],
+      "name": "ドメイン用語",
+      "release": "v1",
+      "skill": "glossary",
+      "summary": "ドメイン用語オントロジー（用語集）とコードの照合"
+    },
+    "logic-placement": {
+      "check_ids": [
+        "PLC-01",
+        "PLC-02",
+        "PLC-03",
+        "SCL-01",
+        "SCL-02",
+        "SCL-03",
+        "SCL-04",
+        "SCL-05"
+      ],
+      "file": "skills/logic-placement/checks.yml",
+      "id": "logic-placement",
+      "id_prefixes": [
+        "PLC",
+        "SCL"
+      ],
+      "name": "ロジックの配置とスケール",
+      "release": "v1",
+      "skill": "logic-placement",
+      "summary": "ロジックの置き場所の判定と、水平スケールを妨げる構造"
+    },
+    "model-commonality": {
+      "check_ids": [
+        "MDL-01",
+        "MDL-02",
+        "MDL-03",
+        "MDL-04",
+        "MDL-05",
+        "MDL-06"
+      ],
+      "file": "skills/model-commonality/checks.yml",
+      "id": "model-commonality",
+      "id_prefixes": [
+        "MDL"
+      ],
+      "name": "モデルの共通化",
+      "release": "v1",
+      "skill": "model-commonality",
+      "summary": "共通化すべきモデルの見落としと、誤った共通化"
+    }
+  },
+  "principles": {
+    "adr.balanced-consequences": {
+      "id": "adr.balanced-consequences",
+      "philosophy": "adr",
+      "sources": [
+        "nygard-2011",
+        "madr"
+      ],
+      "statement": "帰結には良い面だけでなく、失うものと新たに生じる制約も書く"
+    },
+    "adr.considered-options": {
+      "id": "adr.considered-options",
+      "philosophy": "adr",
+      "sources": [
+        "madr"
+      ],
+      "statement": "決定には、検討した代替案と、それを採らなかった理由を残す"
+    },
+    "adr.decision-conformance": {
+      "id": "adr.decision-conformance",
+      "philosophy": "adr",
+      "sources": [
+        "madr",
+        "nygard-2011"
+      ],
+      "statement": "Accepted の ADR の決定は、その適用範囲のコードで守り、守られているかを確かめられるようにする"
+    },
+    "adr.decision-record": {
+      "id": "adr.decision-record",
+      "philosophy": "adr",
+      "sources": [
+        "nygard-2011"
+      ],
+      "statement": "重要な設計判断は、背景・決定・帰結を ADR に記録し、チームが合意した判断の拠り所にする"
+    },
+    "adr.explicit-deviation": {
+      "id": "adr.explicit-deviation",
+      "philosophy": "adr",
+      "sources": [
+        "sumidashi-requirements"
+      ],
+      "statement": "設計原則から外れる決定は、どの原則から外れるかと、その理由を明示する"
+    },
+    "adr.explicit-scope": {
+      "id": "adr.explicit-scope",
+      "philosophy": "adr",
+      "sources": [
+        "sumidashi-requirements"
+      ],
+      "statement": "ADR による例外は、適用範囲（scope）と外れてよいチェック（exempts）を明示し、その範囲の外へ広げない"
+    },
+    "adr.supersede-not-rewrite": {
+      "id": "adr.supersede-not-rewrite",
+      "philosophy": "adr",
+      "sources": [
+        "nygard-2011"
+      ],
+      "statement": "判断を覆すときは古い ADR を消さずに Superseded とし、置き換え先の ADR から参照する"
+    },
+    "biz.acceptance-criteria": {
+      "id": "biz.acceptance-criteria",
+      "philosophy": "business",
+      "sources": [
+        "adzic-2011"
+      ],
+      "statement": "実装は、チケットに書かれた受け入れ条件を満たす"
+    },
+    "biz.core-domain-investment": {
+      "id": "biz.core-domain-investment",
+      "philosophy": "business",
+      "sources": [
+        "evans-2003",
+        "vernon-2013"
+      ],
+      "statement": "設計の手間はコアドメインにかけ、汎用の領域は単純な構造に保つ"
+    },
+    "biz.externalized-volatile-rules": {
+      "id": "biz.externalized-volatile-rules",
+      "philosophy": "business",
+      "sources": [
+        "ross-2003"
+      ],
+      "statement": "変わりやすい業務ルールの閾値・率・期間は、コードに直書きせず、コードを変えずに変えられる1か所に置く"
+    },
+    "biz.money-and-time-types": {
+      "id": "biz.money-and-time-types",
+      "philosophy": "business",
+      "sources": [
+        "fowler-2002"
+      ],
+      "statement": "金額は丸めを明示した十進の型か整数の最小単位で扱い、締め日や期限はタイムゾーンを決めた日時で判定する"
+    },
+    "biz.rule-boundary-tests": {
+      "id": "biz.rule-boundary-tests",
+      "philosophy": "business",
+      "sources": [
+        "myers-1979"
+      ],
+      "statement": "業務ルールの条件の境界は、境界値とその前後の値でテストする"
+    },
+    "biz.rule-traceability": {
+      "id": "biz.rule-traceability",
+      "philosophy": "business",
+      "sources": [
+        "ross-2003"
+      ],
+      "statement": "業務ルールは、台帳の1行と、それを実装したコード・確かめるテストとを互いに辿れるようにする"
+    },
+    "ca.acyclic-dependencies": {
+      "id": "ca.acyclic-dependencies",
+      "philosophy": "clean-architecture",
+      "sources": [
+        "martin-2017"
+      ],
+      "statement": "モジュールの依存グラフに循環を作らない"
+    },
+    "ca.boundary-data": {
+      "id": "ca.boundary-data",
+      "philosophy": "clean-architecture",
+      "sources": [
+        "martin-2017"
+      ],
+      "statement": "境界を越えるデータは、内側の都合で定義した単純なデータ構造にする"
+    },
+    "ca.dependency-rule": {
+      "id": "ca.dependency-rule",
+      "philosophy": "clean-architecture",
+      "sources": [
+        "martin-2017"
+      ],
+      "statement": "ソースコードの依存は内側の方針へだけ向け、内側の層は外側の層の名前を一切知らない"
+    },
+    "ca.framework-independence": {
+      "id": "ca.framework-independence",
+      "philosophy": "clean-architecture",
+      "sources": [
+        "martin-2017"
+      ],
+      "statement": "業務ルールはフレームワーク・データベース・UI から独立させ、それらを交換可能な詳細として扱う"
+    },
+    "ca.humble-object": {
+      "id": "ca.humble-object",
+      "philosophy": "clean-architecture",
+      "sources": [
+        "martin-2017"
+      ],
+      "statement": "テストしにくい振る舞い（I/O）とテストしやすい振る舞い（判断）を分ける"
+    },
+    "ca.main-component": {
+      "id": "ca.main-component",
+      "philosophy": "clean-architecture",
+      "sources": [
+        "martin-2017"
+      ],
+      "statement": "具象の生成と依存の組み立ては、最も外側の Main に閉じ込める"
+    },
+    "ca.ports-and-adapters": {
+      "id": "ca.ports-and-adapters",
+      "philosophy": "clean-architecture",
+      "sources": [
+        "martin-2017",
+        "cockburn-2005"
+      ],
+      "statement": "内側が外部を使うときは、内側で定義したインターフェースを外側が実装する"
+    },
+    "ca.use-case-responsibility": {
+      "id": "ca.use-case-responsibility",
+      "philosophy": "clean-architecture",
+      "sources": [
+        "martin-2017"
+      ],
+      "statement": "アプリケーション固有の業務ルールはユースケースに置き、配送の仕組みや表示の形式を持ち込まない"
+    },
+    "ddd.aggregate-invariants": {
+      "id": "ddd.aggregate-invariants",
+      "philosophy": "ddd-tactical",
+      "sources": [
+        "evans-2003",
+        "vernon-2013"
+      ],
+      "statement": "集約の不変条件は、集約自身が状態を変えるたびに守る"
+    },
+    "ddd.aggregate-root-access": {
+      "id": "ddd.aggregate-root-access",
+      "philosophy": "ddd-tactical",
+      "sources": [
+        "evans-2003"
+      ],
+      "statement": "集約内部の状態は、集約ルートのメソッドを通してのみ変更する"
+    },
+    "ddd.domain-event-as-fact": {
+      "id": "ddd.domain-event-as-fact",
+      "philosophy": "ddd-tactical",
+      "sources": [
+        "vernon-2013"
+      ],
+      "statement": "ドメインイベントは、業務上起きた事実を過去形の名前で表す"
+    },
+    "ddd.domain-service-scope": {
+      "id": "ddd.domain-service-scope",
+      "philosophy": "ddd-tactical",
+      "sources": [
+        "evans-2003"
+      ],
+      "statement": "ドメインサービスには、単一のエンティティや値オブジェクトに自然に属さない操作だけを置く"
+    },
+    "ddd.entity-identity": {
+      "id": "ddd.entity-identity",
+      "philosophy": "ddd-tactical",
+      "sources": [
+        "evans-2003"
+      ],
+      "statement": "エンティティは属性ではなく、ライフサイクルを通じた同一性で区別する"
+    },
+    "ddd.explicit-domain-types": {
+      "id": "ddd.explicit-domain-types",
+      "philosophy": "ddd-tactical",
+      "sources": [
+        "vernon-2013",
+        "fowler-2018"
+      ],
+      "statement": "業務上の意味と制約を持つ値は、プリミティブ型ではなく専用の型で表す"
+    },
+    "ddd.intention-revealing-mutation": {
+      "id": "ddd.intention-revealing-mutation",
+      "philosophy": "ddd-tactical",
+      "sources": [
+        "evans-2003",
+        "vernon-2013"
+      ],
+      "statement": "エンティティの状態は、意図を表すメソッドからだけ変えられるようにし、不変条件を迂回する書き込み口を作らない"
+    },
+    "ddd.one-aggregate-per-transaction": {
+      "id": "ddd.one-aggregate-per-transaction",
+      "philosophy": "ddd-tactical",
+      "sources": [
+        "vernon-2013"
+      ],
+      "statement": "1つのトランザクションで変更する集約は1つにし、集約をまたぐ整合は結果整合にする"
+    },
+    "ddd.persistence-ignorance": {
+      "id": "ddd.persistence-ignorance",
+      "philosophy": "ddd-tactical",
+      "sources": [
+        "evans-2003",
+        "vernon-2013"
+      ],
+      "statement": "ドメインから見たリポジトリは、永続化の技術を表に出さないコレクションとしてふるまう"
+    },
+    "ddd.reference-by-id": {
+      "id": "ddd.reference-by-id",
+      "philosophy": "ddd-tactical",
+      "sources": [
+        "vernon-2013"
+      ],
+      "statement": "他の集約はオブジェクトではなく識別子で参照する"
+    },
+    "ddd.repository-per-aggregate": {
+      "id": "ddd.repository-per-aggregate",
+      "philosophy": "ddd-tactical",
+      "sources": [
+        "evans-2003",
+        "vernon-2013"
+      ],
+      "statement": "リポジトリは集約ルートごとに置き、集約を丸ごと取得・保存する"
+    },
+    "ddd.rich-domain-model": {
+      "id": "ddd.rich-domain-model",
+      "philosophy": "ddd-tactical",
+      "sources": [
+        "evans-2003",
+        "fowler-2003-anemic"
+      ],
+      "statement": "データに関する業務ルールは、そのデータを持つドメインオブジェクトのふるまいとして置く"
+    },
+    "ddd.self-validating-value": {
+      "id": "ddd.self-validating-value",
+      "philosophy": "ddd-tactical",
+      "sources": [
+        "vernon-2013"
+      ],
+      "statement": "値オブジェクトは生成時に自分の正しさを検証し、不正な値のまま存在させない"
+    },
+    "ddd.value-object-immutability": {
+      "id": "ddd.value-object-immutability",
+      "philosophy": "ddd-tactical",
+      "sources": [
+        "evans-2003"
+      ],
+      "statement": "値オブジェクトは不変にし、属性の値で等価性を決める"
+    },
+    "glo.model-reflects-relations": {
+      "id": "glo.model-reflects-relations",
+      "philosophy": "glossary",
+      "sources": [
+        "evans-2003"
+      ],
+      "statement": "用語集に書いた概念どうしの関係（部分・全体、参照）を、コードの構造（集約内部の所有、ID 参照）と一致させる"
+    },
+    "glo.one-term-one-concept": {
+      "id": "glo.one-term-one-concept",
+      "philosophy": "glossary",
+      "sources": [
+        "evans-2003",
+        "skos-2009"
+      ],
+      "statement": "1つのコンテキストの中では、1つの概念を1つの名前で呼び、1つの名前で1つの概念だけを指す"
+    },
+    "glo.ubiquitous-language": {
+      "id": "glo.ubiquitous-language",
+      "philosophy": "glossary",
+      "sources": [
+        "evans-2003"
+      ],
+      "statement": "1つのコンテキストの中では、業務の言葉とコードの名前を揃え、用語集にない言葉で業務を表さない"
+    },
+    "glo.well-formed-glossary": {
+      "id": "glo.well-formed-glossary",
+      "philosophy": "glossary",
+      "sources": [
+        "skos-2009"
+      ],
+      "statement": "用語集の各用語は、空でなく循環しない定義と、ほかの用語と重ならないコード上の名前を持つ"
+    },
+    "mdl.cohesive-value-types": {
+      "id": "mdl.cohesive-value-types",
+      "philosophy": "model-commonality",
+      "sources": [
+        "fowler-2018",
+        "fowler-2002"
+      ],
+      "statement": "いつも一緒に扱う値の組と、取りうる値が決まった区分には、型として名前を付ける"
+    },
+    "mdl.no-false-unification": {
+      "id": "mdl.no-false-unification",
+      "philosophy": "model-commonality",
+      "sources": [
+        "metz-2016",
+        "evans-2003"
+      ],
+      "statement": "形が同じでも、意味・コンテキスト・変更理由が違うものは1つにまとめない"
+    },
+    "mdl.shared-kernel": {
+      "id": "mdl.shared-kernel",
+      "philosophy": "model-commonality",
+      "sources": [
+        "evans-2003"
+      ],
+      "statement": "共有カーネルとして合意した型は、各所で再定義せずにそれを使う"
+    },
+    "mdl.single-source-of-knowledge": {
+      "id": "mdl.single-source-of-knowledge",
+      "philosophy": "model-commonality",
+      "sources": [
+        "hunt-thomas-1999"
+      ],
+      "statement": "同じ業務知識（概念・計算・ルール）は、1つのコンテキストの中で1か所にだけ表す"
+    },
+    "plc.application-service-orchestrates": {
+      "id": "plc.application-service-orchestrates",
+      "philosophy": "logic-placement",
+      "sources": [
+        "vernon-2013",
+        "evans-2003"
+      ],
+      "statement": "アプリケーションサービスは取得・ドメインの呼び出し・保存・通知を並べるだけにし、業務の判断を持たない"
+    },
+    "plc.domain-object-purity": {
+      "id": "plc.domain-object-purity",
+      "philosophy": "logic-placement",
+      "sources": [
+        "vernon-2013"
+      ],
+      "statement": "エンティティと値オブジェクトは、自身の状態と引数だけで判断し、リポジトリや外部サービスを呼ばない"
+    },
+    "plc.domain-service-no-orchestration": {
+      "id": "plc.domain-service-no-orchestration",
+      "philosophy": "logic-placement",
+      "sources": [
+        "vernon-2013"
+      ],
+      "statement": "ドメインサービスは複数の集約にまたがる業務の判断だけを持ち、取得・保存・通知・トランザクションの制御をしない"
+    },
+    "plc.innermost-placement": {
+      "id": "plc.innermost-placement",
+      "philosophy": "logic-placement",
+      "sources": [
+        "evans-2003",
+        "vernon-2013"
+      ],
+      "statement": "判断は、それに必要なデータを持つ最も内側の型に置き、内側に置けるものを外側に置かない"
+    },
+    "scl.avoid-contention-hotspots": {
+      "id": "scl.avoid-contention-hotspots",
+      "philosophy": "logic-placement",
+      "sources": [
+        "vernon-2013",
+        "kleppmann-2017"
+      ],
+      "statement": "多くの処理が同じ1つのインスタンスを更新する構造を避け、更新の競合を分散させる"
+    },
+    "scl.load-what-you-need": {
+      "id": "scl.load-what-you-need",
+      "philosophy": "logic-placement",
+      "sources": [
+        "fowler-2002",
+        "kleppmann-2017"
+      ],
+      "statement": "判断に必要なデータだけを、まとめて読み込む"
+    },
+    "scl.minimal-immediate-consistency": {
+      "id": "scl.minimal-immediate-consistency",
+      "philosophy": "logic-placement",
+      "sources": [
+        "vernon-2013",
+        "kleppmann-2017"
+      ],
+      "statement": "同じトランザクションで即時に揃える範囲は、業務上すぐに反映が要るものだけに絞る"
+    },
+    "scl.separate-read-models": {
+      "id": "scl.separate-read-models",
+      "philosophy": "logic-placement",
+      "sources": [
+        "fowler-cqrs-2011"
+      ],
+      "statement": "一覧・集計などの読み取りは、更新用の集約を経由せず、読み取り用のモデルで組み立てる"
+    },
+    "scl.stateless-services": {
+      "id": "scl.stateless-services",
+      "philosophy": "logic-placement",
+      "sources": [
+        "twelve-factor-2011",
+        "kleppmann-2017"
+      ],
+      "statement": "サービスはリクエストをまたぐ可変な状態を持たず、状態はデータストアなど外部の仕組みに置く"
+    }
+  },
+  "rulings": [
+    {
+      "id": "R0-ADR",
+      "order": 0,
+      "statement": "Accepted の ADR の scope に入り exempts に当たる指摘を、ほかの裁定より先に Info にする。 ただし DDD-AGG-01・DDD-AGG-02・DDD-VO-01 は Low に留め、毎回表示する"
+    },
+    {
+      "id": "R0-SCALE",
+      "order": 1,
+      "statement": "適用判定（規模・複雑さ）を、層や型を増やす指摘より優先する。 例: 小規模判定のとき、CA-BND-01（変換層を足す）を Info に下げる"
+    },
+    {
+      "id": "R1-HIGH",
+      "order": 2,
+      "statement": "重大度 High の指摘を優先する"
+    },
+    {
+      "id": "R2-DEPENDENCY",
+      "order": 3,
+      "statement": "CA-DEP 系の指摘を、内部構造の指摘（DDD-AGG 系の分割、MDL 系の統合・分離）より優先する"
+    },
+    {
+      "id": "R3-FEWER-FILES",
+      "order": 4,
+      "statement": "変更ファイル数が少ない修正案を採る"
+    },
+    {
+      "id": "R4-HOLD",
+      "order": 5,
+      "statement": "採らなかった側の指摘は消さず、status を held にして、勝った側のチェックIDと裁定の id を添えて残す"
+    }
+  ],
+  "schema_version": 1,
+  "sources": {
+    "adzic-2011": {
+      "author": "Gojko Adzic",
+      "id": "adzic-2011",
+      "title": "Specification by Example: How Successful Teams Deliver the Right Software",
+      "year": 2011
+    },
+    "cockburn-2005": {
+      "author": "Alistair Cockburn",
+      "id": "cockburn-2005",
+      "title": "Hexagonal Architecture (Ports and Adapters)",
+      "url": "https://alistair.cockburn.us/hexagonal-architecture/",
+      "year": 2005
+    },
+    "evans-2003": {
+      "author": "Eric Evans",
+      "id": "evans-2003",
+      "title": "Domain-Driven Design: Tackling Complexity in the Heart of Software",
+      "year": 2003
+    },
+    "fowler-2002": {
+      "author": "Martin Fowler",
+      "id": "fowler-2002",
+      "title": "Patterns of Enterprise Application Architecture",
+      "year": 2002
+    },
+    "fowler-2003-anemic": {
+      "author": "Martin Fowler",
+      "id": "fowler-2003-anemic",
+      "title": "AnemicDomainModel",
+      "url": "https://martinfowler.com/bliki/AnemicDomainModel.html",
+      "year": 2003
+    },
+    "fowler-2018": {
+      "author": "Martin Fowler",
+      "id": "fowler-2018",
+      "title": "Refactoring: Improving the Design of Existing Code (2nd Edition)",
+      "year": 2018
+    },
+    "fowler-cqrs-2011": {
+      "author": "Martin Fowler",
+      "id": "fowler-cqrs-2011",
+      "title": "CQRS",
+      "url": "https://martinfowler.com/bliki/CQRS.html",
+      "year": 2011
+    },
+    "hunt-thomas-1999": {
+      "author": "Andrew Hunt, David Thomas",
+      "id": "hunt-thomas-1999",
+      "title": "The Pragmatic Programmer: From Journeyman to Master",
+      "year": 1999
+    },
+    "kleppmann-2017": {
+      "author": "Martin Kleppmann",
+      "id": "kleppmann-2017",
+      "title": "Designing Data-Intensive Applications",
+      "year": 2017
+    },
+    "madr": {
+      "author": "Oliver Kopp ほか（adr.github.io）",
+      "id": "madr",
+      "title": "MADR: Markdown Architectural Decision Records",
+      "url": "https://adr.github.io/madr/"
+    },
+    "martin-2017": {
+      "author": "Robert C. Martin",
+      "id": "martin-2017",
+      "title": "Clean Architecture: A Craftsman's Guide to Software Structure and Design",
+      "year": 2017
+    },
+    "metz-2016": {
+      "author": "Sandi Metz",
+      "id": "metz-2016",
+      "title": "The Wrong Abstraction",
+      "url": "https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction",
+      "year": 2016
+    },
+    "myers-1979": {
+      "author": "Glenford J. Myers",
+      "id": "myers-1979",
+      "title": "The Art of Software Testing",
+      "year": 1979
+    },
+    "nygard-2011": {
+      "author": "Michael Nygard",
+      "id": "nygard-2011",
+      "title": "Documenting Architecture Decisions",
+      "url": "https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions",
+      "year": 2011
+    },
+    "ross-2003": {
+      "author": "Ronald G. Ross",
+      "id": "ross-2003",
+      "title": "Principles of the Business Rule Approach",
+      "year": 2003
+    },
+    "skos-2009": {
+      "author": "Alistair Miles, Sean Bechhofer（編）",
+      "id": "skos-2009",
+      "title": "SKOS Simple Knowledge Organization System Reference（W3C Recommendation）",
+      "url": "https://www.w3.org/TR/skos-reference/",
+      "year": 2009
+    },
+    "sumidashi-requirements": {
+      "author": "Ytkg",
+      "id": "sumidashi-requirements",
+      "title": "sumidashi 要件定義「ADRの扱い」",
+      "year": 2026
+    },
+    "twelve-factor-2011": {
+      "author": "Adam Wiggins",
+      "id": "twelve-factor-2011",
+      "title": "The Twelve-Factor App",
+      "url": "https://12factor.net/",
+      "year": 2011
+    },
+    "vernon-2013": {
+      "author": "Vaughn Vernon",
+      "id": "vernon-2013",
+      "title": "Implementing Domain-Driven Design",
+      "year": 2013
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "case": "ca-dep-04/h1-ts",
+  "check": "CA-DEP-04",
+  "label": "violation",
+  "split": "holdout",
+  "description": "モジュラーモノリス（src/checkout/）で、application のユースケースと presentation のプレゼンターが互いに import している。位置は application から presentation への辺。",
+  "findings": [
+    {
+      "id": "CA-DEP-04",
+      "verdict": "violation",
+      "file": "src/checkout/application/checkout.ts",
+      "start_line": 2,
+      "end_line": 2
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "case": "ca-dep-03/n1-ts",
+  "check": "CA-DEP-03",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "アプリケーション層はドメインと自分のポートだけを import し、インフラ層がポートを実装し、プレゼンテーション層と main.ts が組み立てる（向きは正しい）。",
+  "findings": []
+}

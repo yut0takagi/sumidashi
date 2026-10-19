@@ -1,0 +1,8 @@
+{
+  "case": "ca-bnd-02/n1-ts",
+  "check": "CA-BND-02",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "express はプレゼンテーション層のコントローラーだけが使い、アプリケーション層は自前の QuoteRequest 型を受け取る。名前に Request を含むが express の型ではない。",
+  "findings": []
+}

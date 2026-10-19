@@ -1,0 +1,23 @@
+{
+  "case": "ca-dep-01/b1-ts",
+  "check": "CA-DEP-01",
+  "label": "borderline",
+  "split": "dev",
+  "description": "ドメイン層が外側の層を型だけで参照している。import type と、すべての指定子に type が付いた import の2通り。",
+  "findings": [
+    {
+      "id": "CA-DEP-01",
+      "verdict": "borderline",
+      "file": "src/domain/inventory.ts",
+      "start_line": 1,
+      "end_line": 1
+    },
+    {
+      "id": "CA-DEP-01",
+      "verdict": "borderline",
+      "file": "src/domain/reorder-rule.ts",
+      "start_line": 1,
+      "end_line": 1
+    }
+  ]
+}

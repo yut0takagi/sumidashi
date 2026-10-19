@@ -1,0 +1,58 @@
+{
+  "case": "ddd-ent-03/v2-py",
+  "check": "DDD-ENT-03",
+  "label": "violation",
+  "split": "dev",
+  "description": "Python のエンティティ。Member は __init__ で公開属性を代入し、ガードのない setter と代入だけの set_points を持つ。Coupon は frozen でない dataclass で、_ で始まらないフィールドが外から書き換えられる。",
+  "findings": [
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "violation",
+      "file": "src/shop/domain/member.py",
+      "start_line": 3,
+      "end_line": 3
+    },
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "violation",
+      "file": "src/shop/domain/member.py",
+      "start_line": 4,
+      "end_line": 4
+    },
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "violation",
+      "file": "src/shop/domain/member.py",
+      "start_line": 12,
+      "end_line": 14
+    },
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "violation",
+      "file": "src/shop/domain/member.py",
+      "start_line": 16,
+      "end_line": 17
+    },
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "violation",
+      "file": "src/shop/domain/coupon.py",
+      "start_line": 7,
+      "end_line": 7
+    },
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "violation",
+      "file": "src/shop/domain/coupon.py",
+      "start_line": 8,
+      "end_line": 8
+    },
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "violation",
+      "file": "src/shop/domain/coupon.py",
+      "start_line": 9,
+      "end_line": 9
+    }
+  ]
+}

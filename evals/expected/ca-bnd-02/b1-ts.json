@@ -1,0 +1,16 @@
+{
+  "case": "ca-bnd-02/b1-ts",
+  "check": "CA-BND-02",
+  "label": "borderline",
+  "split": "dev",
+  "description": "NestJS のアプリケーション層で、@nestjs/common の例外クラスを本体でだけ使っている（公開シグネチャには出ない）。Injectable だけの import は DI 用なので出さない。",
+  "findings": [
+    {
+      "id": "CA-BND-02",
+      "verdict": "borderline",
+      "file": "src/application/redeem-coupon.ts",
+      "start_line": 2,
+      "end_line": 2
+    }
+  ]
+}
