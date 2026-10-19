@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.13"]
+    env:
+      RUN: uv run --no-project --with-requirements tools/requirements.txt
+      DEV: --with jsonschema --with rdflib --with pyshacl --with pytest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+
+      # checks.yml・principles.yml・conflicts.yml から作る生成物が、コミットされたものと一致するか
+      - name: 設計知識の生成物が最新か
+        run: $RUN $DEV python tools/dev/build_knowledge.py --check
+
+      # 要件「グラフに SHACL の形状制約を掛け、CI で毎回検証する。合わなければビルドを落とす」
+      - name: SHACL 検証
+        run: $RUN $DEV python tools/dev/validate_knowledge.py
+
+      # ready のチェックが出荷ゲート（適合率・再現率 0.85 以上）を通るか。
+      # 実行時にチェックを有効にする根拠の evals/results/latest.json が、今回の結果と食い違っていないかも見る
+      - name: 出荷ゲート
+        run: $RUN python tools/dev/run_evals.py --check --runs 3
+
+      - name: pytest
+        run: $RUN $DEV python -m pytest tests -q
