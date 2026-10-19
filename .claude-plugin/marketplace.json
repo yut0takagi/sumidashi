@@ -1,0 +1,19 @@
+{
+  "name": "sumidashi",
+  "owner": {
+    "name": "Ytkg"
+  },
+  "metadata": {
+    "description": "設計思想をチェック項目カタログに束ねたレビュー・設計相談プラグイン",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "sumidashi",
+      "description": "クリーンアーキテクチャと DDD 戦術設計のチェックを、重大度とエビデンス付きで出すレビュー・設計相談プラグイン",
+      "version": "0.1.0",
+      "source": "./",
+      "category": "development"
+    }
+  ]
+}

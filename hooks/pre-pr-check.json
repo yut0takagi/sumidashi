@@ -1,0 +1,17 @@
+{
+  "description": "gh pr create の前に、重大度 High の static チェックだけを差分に簡易実行して警告する。ブロックはしない。設定の hooks.pre_pr_check が true のときだけ動く",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/sumidashi\" hook pre-pr",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}
