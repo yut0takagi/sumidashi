@@ -39,3 +39,13 @@ jobs:
 
       - name: pytest
         run: $RUN $DEV python -m pytest tests -q
+
+  # main の保護はこのジョブだけを必須にする。matrix の Python のバージョンを変えても、必須のチェックの名前は変わらない。
+  # check が失敗・中止しても動かして落とす（条件で飛ばされたジョブは、必須のチェックとしては通ったとみなされるため）
+  ci-passed:
+    if: always()
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - name: すべての check が通ったか
+        run: test "${{ needs.check.result }}" = success

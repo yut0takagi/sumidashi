@@ -2,6 +2,8 @@
 
 sumidashi に Issue や PR を出すときの手順。開発用のコマンドと CI の中身は [実装の設計](docs/architecture.md) の「開発」に、評価のケースの書き方は [evals/README.md](evals/README.md) にある。
 
+参加する人は [行動規範](CODE_OF_CONDUCT.md) に従う。脆弱性は Issue に書かず、[SECURITY.md](SECURITY.md) の手順で非公開で報告する。
+
 ## Issue を出す
 
 いちばん助かるのは、誤検知と見逃しの報告だ。Issue のテンプレート「判定の誤り」に、次の3つを書いてもらえれば再現できる。
