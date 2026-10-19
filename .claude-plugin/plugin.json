@@ -1,0 +1,17 @@
+{
+  "name": "sumidashi",
+  "version": "0.1.0",
+  "description": "クリーンアーキテクチャと DDD 戦術設計を、共通のチェック項目カタログで設計相談とコードレビューに使うプラグイン。静的解析で事実を確定し、解釈が要る判定だけを LLM に任せる。",
+  "author": {
+    "name": "Ytkg"
+  },
+  "keywords": [
+    "design",
+    "architecture",
+    "clean-architecture",
+    "ddd",
+    "code-review",
+    "adr"
+  ],
+  "hooks": "./hooks/pre-pr-check.json"
+}
