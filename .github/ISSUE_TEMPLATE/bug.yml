@@ -1,0 +1,27 @@
+name: 動作の不具合
+description: 解析器が落ちる、コマンドが動かないなど、判定以外の不具合を報告する
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: 起きたこと
+      description: 実行したコマンドと、出たエラー
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現の手順
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: 環境
+      description: OS・Python のバージョン・uv のバージョン
+  - type: input
+    id: version
+    attributes:
+      label: バージョン
+      description: plugin.json の version か、コミットのハッシュ

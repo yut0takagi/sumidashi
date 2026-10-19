@@ -5,6 +5,8 @@
   "author": {
     "name": "Ytkg"
   },
+  "repository": "https://github.com/yut0takagi/sumidashi",
+  "license": "Apache-2.0",
   "keywords": [
     "design",
     "architecture",

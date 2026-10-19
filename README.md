@@ -1,5 +1,7 @@
 # sumidashi
 
+[![ci](https://github.com/yut0takagi/sumidashi/actions/workflows/ci.yml/badge.svg)](https://github.com/yut0takagi/sumidashi/actions/workflows/ci.yml)
+
 クリーンアーキテクチャと DDD 戦術設計を、1つのチェック項目カタログに束ねた Claude Code プラグイン。新機能の設計相談と、PR・差分のレビューの両方で使う。
 
 - 指摘には必ずチェックID・重大度・ファイルと行・原則と出典が付く。一般論だけの指摘は出さない
@@ -18,9 +20,11 @@
 ## インストール
 
 ```text
-/plugin marketplace add <このリポジトリの URL かローカルのパス>
+/plugin marketplace add yut0takagi/sumidashi
 /plugin install sumidashi@sumidashi
 ```
+
+手元に clone したものを使うときは、`yut0takagi/sumidashi` の代わりにそのパスを渡す。
 
 導入したら、対象のリポジトリで1回だけ次を実行する。層マップ・用語集・業務ルール台帳の下書きをコードから作り、確認のうえで書き込む。
 
@@ -170,3 +174,8 @@ docs/               要件定義・実装の設計・判断の記録
 - [static チェックの判定規則](docs/static-checks.md)
 - [実装で決めたこと](docs/decisions.md): 要件定義の未決事項の扱いと、要件にない判断
 - [チェック一覧](docs/check-catalog.md): checks.yml から生成した一覧と評価の状態
+- [開発に参加する](CONTRIBUTING.md): Issue・PR の出し方と、static チェックの足し方
+
+## ライセンス
+
+[Apache License 2.0](LICENSE)

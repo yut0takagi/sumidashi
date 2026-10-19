@@ -1,0 +1,10 @@
+# GitHub Actions のバージョンを月1回確かめ、上がっていれば1本の PR にまとめて出す
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
