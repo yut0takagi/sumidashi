@@ -10,7 +10,7 @@
 | 一次対応言語 | TypeScript と Python | 要件の案のまま。言語を足すときは `parse_<言語>.py` と `resolve.py` の解決規則を足し、fixtures を言語ごとに用意する |
 | 衝突の優先順位を設定で変えられるか | 固定（R0-ADR → R0-SCALE → R1-HIGH → R2-DEPENDENCY → R3-FEWER-FILES、負けた側は R4-HOLD で held） | 設定で変えられると、同じコードでもリポジトリごとに結論が変わり、評価の正解データが作れない。変えたい箇所は ADR の例外で個別に外す |
 | OSS のスキルを fork するか | ゼロから書いた。外部のスキルのコードや文章は取り込んでいない | fork しないのでライセンスの確認は要らない。書籍などの原典は checks.yml の sources で ID と書名を挙げるだけで、本文は引用しない |
-| 社内配布か OSS 公開か | 決めていない。plugin.json に license を書いていない | 社内の仕組みに依存するコードは入れていないので、どちらにも進める。公開するなら license を決めて plugin.json と README に書く |
+| 社内配布か OSS 公開か | GitHub（yut0takagi/sumidashi）で公開し、ライセンスは Apache License 2.0 | 条文を LICENSE に置き、plugin.json の license と README にも書いた。社内の仕組みに依存するコードは入れていない |
 | 採点を出すか | 既定で出す。`.claude/sumidashi.yml` の `report.scores: false` で消せる | 点数が独り歩きしないよう、report.md では指摘一覧の後ろに置く。走らせたチェックがない思想には点を付けない |
 
 ## 重大度の調整
