@@ -1,0 +1,23 @@
+{
+  "case": "ddd-vo-02/b1-py",
+  "check": "DDD-VO-02",
+  "label": "borderline",
+  "split": "dev",
+  "description": "frozen な dataclass の値オブジェクトだが、フィールドの型が list・Set なので中身は書き換えられる。tuple・frozenset のフィールドは対象外。",
+  "findings": [
+    {
+      "id": "DDD-VO-02",
+      "verdict": "borderline",
+      "file": "src/shop/domain/shipping_rule.py",
+      "start_line": 8,
+      "end_line": 8
+    },
+    {
+      "id": "DDD-VO-02",
+      "verdict": "borderline",
+      "file": "src/shop/domain/product_tags.py",
+      "start_line": 7,
+      "end_line": 7
+    }
+  ]
+}

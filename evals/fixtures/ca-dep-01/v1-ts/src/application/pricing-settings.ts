@@ -1,0 +1,2 @@
+export const MEMBER_DISCOUNT_RATE = 0.05;
+export const CAMPAIGN_DISCOUNT_RATE = 0.1;

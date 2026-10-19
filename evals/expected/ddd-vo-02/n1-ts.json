@@ -1,0 +1,8 @@
+{
+  "case": "ddd-vo-02/n1-ts",
+  "check": "DDD-VO-02",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "値オブジェクトはすべて readonly・ReadonlyArray で、変更は新しいインスタンスを返す。PriceDto は名前で除外され、id を持つ Menu はエンティティなので対象外。",
+  "findings": []
+}

@@ -1,0 +1,8 @@
+{
+  "case": "ca-dep-04/n1-ts",
+  "check": "CA-DEP-04",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "domain の中だけで order.ts と order-line.ts が循環している。層をまたがないので対象外。",
+  "findings": []
+}

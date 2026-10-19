@@ -1,0 +1,8 @@
+{
+  "case": "ca-bnd-02/n2-py",
+  "check": "CA-BND-02",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "FastAPI のルーターはアダプター層にあり、アプリケーション層は dataclass のコマンドを受け取る。",
+  "findings": []
+}

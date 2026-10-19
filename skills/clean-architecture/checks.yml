@@ -1,0 +1,496 @@
+# クリーンアーキテクチャのチェック項目（12個）
+# 1チェック=1エントリ。id は一度振ったら変えない。
+# スキーマ: schemas/checks-file.schema.json
+
+philosophy:
+  id: clean-architecture
+  name: クリーンアーキテクチャ
+  summary: 依存性ルール、境界の越え方、ユースケースの責務
+  release: v1
+  id_prefixes: [CA]
+
+sources:
+  - id: martin-2017
+    title: "Clean Architecture: A Craftsman's Guide to Software Structure and Design"
+    author: Robert C. Martin
+    year: 2017
+  - id: cockburn-2005
+    title: Hexagonal Architecture (Ports and Adapters)
+    author: Alistair Cockburn
+    year: 2005
+    url: https://alistair.cockburn.us/hexagonal-architecture/
+
+principles:
+  - id: ca.dependency-rule
+    statement: ソースコードの依存は内側の方針へだけ向け、内側の層は外側の層の名前を一切知らない
+    sources: [martin-2017]
+  - id: ca.framework-independence
+    statement: 業務ルールはフレームワーク・データベース・UI から独立させ、それらを交換可能な詳細として扱う
+    sources: [martin-2017]
+  - id: ca.acyclic-dependencies
+    statement: モジュールの依存グラフに循環を作らない
+    sources: [martin-2017]
+  - id: ca.boundary-data
+    statement: 境界を越えるデータは、内側の都合で定義した単純なデータ構造にする
+    sources: [martin-2017]
+  - id: ca.ports-and-adapters
+    statement: 内側が外部を使うときは、内側で定義したインターフェースを外側が実装する
+    sources: [martin-2017, cockburn-2005]
+  - id: ca.use-case-responsibility
+    statement: アプリケーション固有の業務ルールはユースケースに置き、配送の仕組みや表示の形式を持ち込まない
+    sources: [martin-2017]
+  - id: ca.humble-object
+    statement: テストしにくい振る舞い（I/O）とテストしやすい振る舞い（判断）を分ける
+    sources: [martin-2017]
+  - id: ca.main-component
+    statement: 具象の生成と依存の組み立ては、最も外側の Main に閉じ込める
+    sources: [martin-2017]
+
+checks:
+  # ---------------------------------------------------------------- DEP: 依存方向
+  - id: CA-DEP-01
+    name: ドメイン層が外側の層に依存している
+    principle: ドメイン層は、アプリケーション層・アダプタ層・インフラ層・Main のモジュールを import しない
+    principles: [ca.dependency-rule]
+    source: Martin『Clean Architecture』22章 The Clean Architecture（The Dependency Rule）
+    status: ready
+    release: v1
+    applies_when:
+      layers: [domain]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: static
+      static: >-
+        ドメイン層のファイルの import を解決し、解決先がアプリケーション層・アダプタ層・
+        インフラ層・Main に属するファイルになるものを列挙する
+      implementation: ca_dep_01
+    location: import 文（複数行にわたる場合はその範囲）
+    criteria:
+      violation: ドメイン層のファイルが、外側の層に属するファイルを実行時に読み込む import を持つ
+      borderline: >-
+        外側の層を型だけで参照している（TypeScript の import type、Python の
+        if TYPE_CHECKING の中の import）。実行時の依存はないが、ソースの依存は残る
+      not_violation: ドメイン層の中、共有カーネル、標準ライブラリへの import
+    exclusions:
+      - テストコード（tests/・__tests__/・*.spec.*・*.test.*・test_*.py・*_test.py・conftest.py）
+      - 生成コード（*.d.ts、generated/ 配下）
+      - 設定の layers で ignore にしたパス
+    severity:
+      default: High
+    fix_patterns:
+      - 依存している外側の機能を、ドメイン層のインターフェース（ポート）として定義し直し、外側の層に実装させる
+      - 外側の型が単なるデータなら、ドメインの値オブジェクトとして定義し直し、変換は外側の層で行う
+    related: [CA-DEP-02, CA-DEP-04]
+    fixtures:
+      violation: [ca-dep-01/v1-ts, ca-dep-01/v2-py, ca-dep-01/h1-ts]
+      borderline: [ca-dep-01/b1-ts]
+      not_violation: [ca-dep-01/n1-ts, ca-dep-01/n2-py]
+
+  - id: CA-DEP-02
+    name: ドメイン層がフレームワーク・ORM・I/O ライブラリに依存している
+    principle: ドメイン層は、フレームワーク・ORM・HTTP・DB ドライバ・クラウド SDK・I/O を行う標準モジュールを import しない
+    principles: [ca.dependency-rule, ca.framework-independence]
+    source: Martin『Clean Architecture』22章 Frameworks and Drivers、32章 Frameworks Are Details
+    status: ready
+    release: v1
+    applies_when:
+      layers: [domain]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: static
+      static: >-
+        ドメイン層のファイルが import する外部パッケージと標準モジュールを、
+        フレームワーク台帳（tools/sumidashi/frameworks.py）と突き合わせる。台帳にないパッケージは指摘しない
+      implementation: ca_dep_02
+    location: import 文（複数行にわたる場合はその範囲）
+    criteria:
+      violation: >-
+        ドメイン層のファイルが、台帳で web・orm・db・http・cloud・messaging・di・ui・io に
+        分類したパッケージかモジュールを import している
+      borderline: >-
+        台帳で validation に分類したライブラリ（zod・class-validator・pydantic など）を import している。
+        業務ルールの表現に使っているのか、外部入力の検証に使っているのかはコードだけでは決まらない
+      not_violation: >-
+        I/O を伴わない標準ライブラリ（日付・数値・コレクション・uuid など）、ユーティリティ
+        （lodash・date-fns・decimal.js など）、台帳にないパッケージ
+    exclusions:
+      - テストコード
+      - 生成コード
+      - 設定の frameworks.allow に挙げたパッケージ
+    severity:
+      default: High
+      deescalate: 型だけの import（import type、TYPE_CHECKING の中）なら Medium
+    fix_patterns:
+      - ORM のデコレータ・基底クラスをドメインの型から外し、永続化モデルをインフラ層に分けてマッピングする
+      - I/O が必要な処理はドメイン層にポートを定義し、実装をインフラ層に置く
+    related: [CA-DEP-01, DDD-REP-02, CA-BND-03]
+    fixtures:
+      violation: [ca-dep-02/v1-ts, ca-dep-02/v2-py, ca-dep-02/h1-py]
+      borderline: [ca-dep-02/b1-ts, ca-dep-02/b2-py]
+      not_violation: [ca-dep-02/n1-ts, ca-dep-02/n2-py]
+
+  - id: CA-DEP-03
+    name: アプリケーション層がアダプタ層・インフラ層に依存している
+    principle: アプリケーション層は、アダプタ層・インフラ層・Main のモジュールを import しない
+    principles: [ca.dependency-rule]
+    source: Martin『Clean Architecture』22章 The Clean Architecture（The Dependency Rule）
+    status: ready
+    release: v1
+    applies_when:
+      layers: [application]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: static
+      static: >-
+        アプリケーション層のファイルの import を解決し、解決先がアダプタ層・インフラ層・
+        Main に属するファイルになるものを列挙する
+      implementation: ca_dep_03
+    location: import 文（複数行にわたる場合はその範囲）
+    criteria:
+      violation: アプリケーション層のファイルが、アダプタ層・インフラ層・Main のファイルを実行時に読み込む import を持つ
+      borderline: 外側の層を型だけで参照している（import type、TYPE_CHECKING の中）
+      not_violation: >-
+        アプリケーション層からドメイン層・共有カーネルへの import。アプリケーション層が定義した
+        ポートをインフラ層が実装している（依存の向きはインフラ層からアプリケーション層）
+    exclusions:
+      - テストコード
+      - 生成コード
+    severity:
+      default: High
+    fix_patterns:
+      - 使っている実装クラスの代わりに、アプリケーション層にポート（インターフェース）を定義し、コンストラクタで受け取る
+      - 具象の生成は Main（コンポジションルート）に移す
+    related: [CA-DEP-04, CA-BND-03, CA-MAIN-01]
+    fixtures:
+      violation: [ca-dep-03/v1-ts, ca-dep-03/v2-py, ca-dep-03/h1-ts]
+      borderline: [ca-dep-03/b1-py]
+      not_violation: [ca-dep-03/n1-ts, ca-dep-03/n2-py]
+
+  - id: CA-DEP-04
+    name: 層をまたぐ循環依存がある
+    principle: 層をまたいでモジュールの依存を循環させない
+    principles: [ca.acyclic-dependencies, ca.dependency-rule]
+    source: Martin『Clean Architecture』14章 Component Coupling（The Acyclic Dependencies Principle）
+    status: ready
+    release: v1
+    applies_when:
+      layers: [any]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: static
+      static: >-
+        モジュール依存グラフの強連結成分のうち、2つ以上の層のファイルを含むものを列挙する。
+        型だけの import の辺を除いても循環が残るかを併せて調べる
+      implementation: ca_dep_04
+    location: >-
+      循環の中で、内側の層から外側の層へ向かう import 文。複数あれば、内側の層を優先し、
+      同じ層ならパスと行の昇順で最初のもの。内側から外側へ向かう import がなければ（同じ深さの層どうしの循環）、
+      層をまたぐ import のうちパスと行の昇順で最初のもの。循環1つにつき指摘1件。
+      層の深さは domain・shared が0、application が1、adapter・infrastructure が2、main が3
+    criteria:
+      violation: 2つ以上の層にまたがる循環があり、型だけの import を除いても循環が残る
+      borderline: 循環が型だけの import を含むときにだけ成り立つ（実行時には循環しない）
+      not_violation: 同じ層の中だけで閉じた循環。このチェックでは扱わない
+    exclusions:
+      - テストコード
+      - 生成コード
+    severity:
+      default: High
+    fix_patterns:
+      - 循環の中で内側から外側へ向かう import を、内側に定義したインターフェースへの依存に置き換える（依存性逆転）
+      - 両方が使う型を、内側の層か共有カーネルへ移す
+    related: [CA-DEP-01, CA-DEP-03]
+    fixtures:
+      violation: [ca-dep-04/v1-ts, ca-dep-04/v2-py, ca-dep-04/v3-py, ca-dep-04/h1-ts]
+      borderline: [ca-dep-04/b1-ts]
+      not_violation: [ca-dep-04/n1-ts, ca-dep-04/n2-py]
+
+  # ---------------------------------------------------------------- BND: 境界の越え方
+  - id: CA-BND-01
+    name: ORM のモデルがそのまま境界を越えている
+    principle: ユースケースの入出力には、ORM の永続化モデルではなく、内側で定義したデータ構造を使う
+    principles: [ca.boundary-data]
+    source: Martin『Clean Architecture』22章 What Data Crosses the Boundaries
+    status: draft
+    release: v1
+    applies_when:
+      layers: [application, adapter]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: hybrid
+      static: >-
+        アプリケーション層の公開関数・公開メソッドの引数と戻り値、アダプタ層からユースケースへ渡す値の型を列挙し、
+        ORM のモデル（@Entity を付けたクラス、Model・DeclarativeBase の継承、Prisma の生成型など）に当たるものを候補にする
+      question: >-
+        この型は ORM の永続化モデルそのもので、変換されずにユースケースの入力か出力として
+        境界を越えているか。
+      implementation: ca_bnd_01
+    location: 関数・メソッドの名前がある行
+    criteria:
+      violation: ユースケースの入出力の型が ORM のモデルそのもので、変換されずに境界を越えている
+      borderline: ORM の生成型から型を導出している（Pick や Omit で切り出しただけの型など）
+      not_violation: ORM のモデルをインフラ層の中だけで使い、リポジトリ実装がドメインの型に変換して返している
+    exclusions:
+      - テストコード
+      - 読み取り専用のクエリサービス（CQRS の参照側）で、設定かコメントでそう明示されているもの
+    severity:
+      default: Medium
+      deescalate: 規模判定で小規模とされたプロジェクトでは Info（design-router の衝突ルール）
+    fix_patterns:
+      - ユースケースの入出力用の型（DTO）をアプリケーション層に定義し、ORM モデルとの変換をリポジトリ実装に置く
+    related: [CA-BND-02, DDD-REP-02]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: CA-BND-02
+    name: ユースケースの入出力に HTTP・Web フレームワークの型を使っている
+    principle: ユースケースは配送の仕組み（HTTP・CLI・キュー）を知らず、入出力は内側で定義したデータ構造で受け渡す
+    principles: [ca.boundary-data, ca.framework-independence]
+    source: Martin『Clean Architecture』22章 What Data Crosses the Boundaries、20章 Use Cases
+    status: ready
+    release: v1
+    applies_when:
+      layers: [application]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: static
+      static: >-
+        アプリケーション層の公開関数・公開メソッドの引数と戻り値の型注釈に、
+        Web フレームワーク（express・fastify・koa・next・@nestjs/common・hono・FastAPI・Flask・Django・Starlette など）
+        から import した名前が出るものを列挙する
+      implementation: ca_bnd_02
+    location: 関数・メソッドの名前がある行
+    criteria:
+      violation: アプリケーション層の公開関数・公開メソッドの引数か戻り値の型に、Web フレームワークの型（Request・Response・Context など）が使われている
+      borderline: Web フレームワークの型を import しているが、公開シグネチャには出さず、本体の中だけで使っている
+      not_violation: アダプタ層（コントローラ）が Web フレームワークの型を受け取り、ユースケース用の入力に変換して渡している
+    exclusions:
+      - テストコード
+      - 非公開の関数・メソッド（TypeScript の private・protected、Python の _ 始まり）
+    severity:
+      default: Medium
+    fix_patterns:
+      - ユースケースの入力と出力の型をアプリケーション層に定義し、Request からの変換と Response の組み立てをコントローラに移す
+    related: [CA-BND-01, CA-UC-01]
+    fixtures:
+      violation: [ca-bnd-02/v1-ts, ca-bnd-02/v2-py, ca-bnd-02/h1-py]
+      borderline: [ca-bnd-02/b1-ts]
+      not_violation: [ca-bnd-02/n1-ts, ca-bnd-02/n2-py]
+
+  - id: CA-BND-03
+    name: アプリケーション層が外部 I/O をポートを介さずに直接使っている
+    principle: 内側の層が外部 I/O を使うときは、内側で定義したインターフェース（ポート）を通し、具象は外側に置く
+    principles: [ca.ports-and-adapters, ca.dependency-rule]
+    source: Martin『Clean Architecture』11章 DIP、22章 Crossing Boundaries／Cockburn "Hexagonal Architecture"
+    status: draft
+    release: v1
+    applies_when:
+      layers: [application]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: hybrid
+      static: >-
+        アプリケーション層のファイルが、HTTP クライアント・DB ドライバ・ORM・クラウド SDK・メール送信などの
+        外部 I/O ライブラリを import している箇所と、そのクライアントを生成・呼び出している箇所を列挙する
+      question: >-
+        このアプリケーション層のコードは、外部 I/O のライブラリを、アプリケーション層かドメイン層で
+        定義したインターフェースを介さずに直接呼んでいるか。
+      implementation: ca_bnd_03
+    location: 外部 I/O ライブラリの import 文
+    criteria:
+      violation: アプリケーション層が外部 I/O ライブラリのクライアントを生成するか、直接呼び出している
+      borderline: トランザクション管理・ロガーなど、横断的な仕組みのライブラリを直接使っている（プロジェクトの方針次第）
+      not_violation: アプリケーション層がポートのインターフェースを受け取り（依存性注入）、それを通して外部を呼んでいる
+    exclusions:
+      - テストコード
+    severity:
+      default: High
+    fix_patterns:
+      - 外部 I/O の操作をアプリケーション層のポート（インターフェース）として定義し、ライブラリを使う実装をインフラ層に移す
+    related: [CA-DEP-02, CA-DEP-03, CA-MAIN-01]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  # ---------------------------------------------------------------- UC: ユースケースの責務
+  - id: CA-UC-01
+    name: コントローラ・ハンドラに業務ロジックがある
+    principle: 業務の判断はユースケースとドメインに置き、コントローラは入力の変換と結果の提示だけを行う
+    principles: [ca.use-case-responsibility]
+    source: Martin『Clean Architecture』22章 Interface Adapters、20章 Business Rules
+    status: draft
+    release: v1
+    applies_when:
+      layers: [adapter]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: hybrid
+      static: >-
+        アダプタ層（コントローラ・ハンドラ・ルート定義）の関数で、ドメインの型の状態や値に基づく条件分岐、
+        算術計算、リポジトリの直接呼び出しを含むものを列挙する。入力形式の検証と HTTP ステータスの分岐は除く
+      question: >-
+        このハンドラの条件分岐や計算は、業務上のルール（何が許されるか、いくらになるか）を決めているか。
+        入力形式の検証や応答の組み立てだけではないか。
+      implementation: ca_uc_01
+    location: 業務ルールを実装している条件分岐か計算の行範囲
+    criteria:
+      violation: コントローラ・ハンドラが、状態による可否判断や金額・数量の計算といった業務ルールを実装している
+      borderline: 入力検証のうち、業務ルールと区別しにくいもの（注文数量の上限チェックなど）
+      not_violation: リクエストの形式検証、認証情報の取り出し、ユースケースの結果に応じた HTTP ステータスの選択
+    exclusions:
+      - テストコード
+    severity:
+      default: Medium
+    fix_patterns:
+      - 業務判断をユースケースかドメインのメソッドに移し、コントローラは入力の変換とユースケースの呼び出しだけにする
+    related: [PLC-03, DDD-ENT-02]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: CA-UC-02
+    name: 1つのユースケースが複数のアクターの目的を抱えている
+    principle: ユースケースは1つのアクターの1つの目的に対応させ、別のアクターの変更理由を混ぜない
+    principles: [ca.use-case-responsibility]
+    source: Martin『Clean Architecture』7章 SRP、20章 Use Cases
+    status: draft
+    release: v1
+    applies_when:
+      layers: [application]
+      languages: [typescript, python]
+    detection:
+      type: llm
+      question: >-
+        このユースケースは、異なる利用者（アクター）の別々の目的を、フラグや呼び出し元による分岐で
+        1つにまとめているか。
+    location: ユースケースのクラス名か関数名がある行
+    criteria:
+      violation: 呼び出し元の種類（管理者と顧客、画面とバッチなど）ごとに分岐し、それぞれ別の業務手順を実行している
+      borderline: 同じ目的だが、権限によって返す項目だけが変わる
+      not_violation: 同じアクターの同じ目的で、入力に応じて結果が変わるだけ
+    exclusions:
+      - テストコード
+    severity:
+      default: Low
+    fix_patterns:
+      - アクターごとにユースケースを分け、共通の業務ルールはドメインに置く
+    related: [CA-UC-01]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: CA-UC-03
+    name: ユースケースが表示の形式を組み立てている
+    principle: ユースケースは表示の形式を知らず、出力データを返して整形はプレゼンタに任せる
+    principles: [ca.use-case-responsibility, ca.humble-object]
+    source: Martin『Clean Architecture』22章 Interface Adapters、23章 Presenters and Humble Objects
+    status: draft
+    release: v1
+    applies_when:
+      layers: [application]
+      languages: [typescript, python]
+    detection:
+      type: llm
+      question: >-
+        このユースケースは、画面やメッセージ向けの表示の形式（HTML、表示用の文字列、日付や金額の書式、
+        画面の項目名）を組み立てているか。
+    location: 表示の形式を組み立てている行範囲
+    criteria:
+      violation: ユースケースの中で、表示用の文字列・書式・HTML を組み立てて返している
+      borderline: ログやエラーメッセージの文言を組み立てている
+      not_violation: 業務上の値（金額・日付・状態）を構造化したデータとして返している
+    exclusions:
+      - テストコード
+    severity:
+      default: Low
+    fix_patterns:
+      - 出力用のデータ構造を返し、書式化をアダプタ層のプレゼンタに移す
+    related: [CA-BND-02]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  # ---------------------------------------------------------------- HUM: I/O と判断の分離
+  - id: CA-HUM-01
+    name: I/O と業務の判断が分離されていない
+    principle: 外部 I/O（DB・API・時刻・乱数）を扱う部分と業務の判断を分け、判断を I/O なしでテストできるようにする
+    principles: [ca.humble-object]
+    source: Martin『Clean Architecture』23章 Presenters and Humble Objects
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain, application]
+      languages: [typescript, python]
+    detection:
+      type: llm
+      question: >-
+        この関数は、外部 I/O（DB・API・現在時刻・乱数）の呼び出しと業務の判断が交互に混ざっていて、
+        判断の部分だけを I/O なしで呼び出せない構造か。
+    location: 関数名がある行
+    criteria:
+      violation: 判断の途中で I/O を呼び、その結果でさらに判断する形が、分離されずに1つの関数に入っている
+      borderline: I/O を先頭でまとめて取得し、その後で判断しているが、同じ関数の中にある
+      not_violation: I/O を取得する関数と、取得結果を引数に受ける判断の関数に分かれている
+    exclusions:
+      - テストコード
+      - 判断を含まない単純な取得・保存
+    severity:
+      default: Medium
+    fix_patterns:
+      - I/O で得た値を引数に受ける純粋な関数（またはドメインのメソッド）に判断を切り出し、元の関数は取得・判断の呼び出し・保存の順に並べるだけにする
+    related: [PLC-01, PLC-03]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  # ---------------------------------------------------------------- MAIN: 組み立て
+  - id: CA-MAIN-01
+    name: 具象の組み立てがコンポジションルートの外に散らばっている
+    principle: 具象クラスの生成と依存の組み立ては Main（コンポジションルート）に集め、内側の層は具象を生成しない
+    principles: [ca.main-component, ca.ports-and-adapters]
+    source: Martin『Clean Architecture』26章 The Main Component
+    status: draft
+    release: v1
+    applies_when:
+      layers: [domain, application]
+      languages: [typescript, python]
+      requires: [layer_map]
+    detection:
+      type: hybrid
+      static: >-
+        ドメイン層・アプリケーション層で、インフラ層・アダプタ層に属するクラスを生成している箇所と、
+        サービスロケータ的な取得（container.get・resolve など）を列挙する
+      question: このコードは、どの実装を使うかの決定（依存の組み立て）を内側の層で行っているか。
+      implementation: ca_main_01
+    location: 生成か取得を行っている行
+    criteria:
+      violation: ユースケースやドメインサービスの中で、リポジトリ実装や外部クライアントの具象を生成している
+      borderline: 内側の層でファクトリを通して生成しているが、そのファクトリが具象を返す
+      not_violation: 値オブジェクト・エンティティ・ドメインイベントの生成（具象の組み立てではない）
+    exclusions:
+      - テストコード
+      - Main に当たるファイル（main.ts・main.py・composition root・DI 設定）
+    severity:
+      default: Low
+    fix_patterns:
+      - 具象をコンストラクタ引数で受け取るように変え、生成を Main に移す
+    related: [CA-DEP-03, CA-BND-03]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []

@@ -1,0 +1,37 @@
+{
+  "case": "ddd-vo-02/v1-ts",
+  "check": "DDD-VO-02",
+  "label": "violation",
+  "split": "dev",
+  "description": "値オブジェクトの書き換え。Money の public 引数プロパティ、ValueObject を継承した Address の公開フィールドとメソッド内の代入、TagList のメソッド内の push。基底クラスの protected readonly は対象外。",
+  "findings": [
+    {
+      "id": "DDD-VO-02",
+      "verdict": "violation",
+      "file": "src/domain/money.ts",
+      "start_line": 4,
+      "end_line": 4
+    },
+    {
+      "id": "DDD-VO-02",
+      "verdict": "violation",
+      "file": "src/domain/address.ts",
+      "start_line": 9,
+      "end_line": 9
+    },
+    {
+      "id": "DDD-VO-02",
+      "verdict": "violation",
+      "file": "src/domain/address.ts",
+      "start_line": 17,
+      "end_line": 17
+    },
+    {
+      "id": "DDD-VO-02",
+      "verdict": "violation",
+      "file": "src/domain/tag-list.ts",
+      "start_line": 9,
+      "end_line": 9
+    }
+  ]
+}

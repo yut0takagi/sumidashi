@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# sumidashi の解析器の入口。uv があれば依存（tree-sitter など）を自動で解決する。
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if command -v uv >/dev/null 2>&1; then
+  exec uv run --quiet --no-project --with-requirements "$ROOT/tools/requirements.txt" \
+    python "$ROOT/tools/run.py" "$@"
+fi
+exec python3 "$ROOT/tools/run.py" "$@"

@@ -1,0 +1,16 @@
+{
+  "case": "ca-bnd-02/h1-py",
+  "check": "CA-BND-02",
+  "label": "violation",
+  "split": "holdout",
+  "description": "モジュラーモノリス（src/payments/）のアプリケーション層の関数が Flask の Request を受け取り Response を返している。",
+  "findings": [
+    {
+      "id": "CA-BND-02",
+      "verdict": "violation",
+      "file": "src/payments/application/refund.py",
+      "start_line": 8,
+      "end_line": 8
+    }
+  ]
+}

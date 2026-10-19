@@ -1,0 +1,23 @@
+{
+  "case": "ddd-evt-01/h1-ts",
+  "check": "DDD-EVT-01",
+  "label": "violation",
+  "split": "holdout",
+  "description": "モジュラーモノリス（src/promotion/）のドメインイベント。型エイリアスの CouponRedeemEvent と、BaseEvent を継承するインターフェースの GiftWrapEvent が過去形でない。CouponIssued は問題なし。",
+  "findings": [
+    {
+      "id": "DDD-EVT-01",
+      "verdict": "violation",
+      "file": "src/promotion/domain/events.ts",
+      "start_line": 9,
+      "end_line": 9
+    },
+    {
+      "id": "DDD-EVT-01",
+      "verdict": "violation",
+      "file": "src/promotion/domain/events.ts",
+      "start_line": 14,
+      "end_line": 14
+    }
+  ]
+}

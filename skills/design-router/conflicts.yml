@@ -1,0 +1,55 @@
+# 思想間の衝突と裁定
+# finalize が機械的に裁定できる衝突の組を書く。裁定の順番と理由は references/conflict-rules.md。
+# 衝突とみなすのは、location が重なり、修正方針が逆向きで、この表に組として書かれているもの。
+# 同じ問題を別の言葉で言うだけの組（重複）はここに書かず、checks.yml の also_accept で扱う。
+# 両立する組（DDD-AGG-04 の ID 参照と SCL-03 のまとめての取得など）も書かない。
+
+rulings:
+  - id: R0-ADR
+    order: 0
+    statement: >-
+      Accepted の ADR の scope に入り exempts に当たる指摘を、ほかの裁定より先に Info にする。
+      ただし DDD-AGG-01・DDD-AGG-02・DDD-VO-01 は Low に留め、毎回表示する
+  - id: R0-SCALE
+    order: 1
+    statement: >-
+      適用判定（規模・複雑さ）を、層や型を増やす指摘より優先する。
+      例: 小規模判定のとき、CA-BND-01（変換層を足す）を Info に下げる
+  - id: R1-HIGH
+    order: 2
+    statement: 重大度 High の指摘を優先する
+  - id: R2-DEPENDENCY
+    order: 3
+    statement: CA-DEP 系の指摘を、内部構造の指摘（DDD-AGG 系の分割、MDL 系の統合・分離）より優先する
+  - id: R3-FEWER-FILES
+    order: 4
+    statement: 変更ファイル数が少ない修正案を採る
+  - id: R4-HOLD
+    order: 5
+    statement: 採らなかった側の指摘は消さず、status を held にして、勝った側のチェックIDと裁定の id を添えて残す
+
+conflicts:
+  - checks: [MDL-01, MDL-05]
+    when: 同じ型について、MDL-01 は重複した型を1つにまとめよと言い、MDL-05 はその共通化は誤りだから分けよと言う
+    ruling: R3-FEWER-FILES
+    note: >-
+      どちらかが High に上がっていれば R1-HIGH で決まる。同じ重大度なら変更ファイル数の少ない案を採り、
+      負けた側は held にする
+  - checks: [CA-DEP-01, MDL-01]
+    when: >-
+      ドメイン層が外側の層の型を import し、同じ形の型をドメイン層にも持っている。MDL-01 は型を1つにまとめよと言い、
+      CA-DEP-01 は外側への依存を切れと言う
+    ruling: R2-DEPENDENCY
+    note: 外側の型に寄せてまとめると依存の向きが逆転するため、CA-DEP-01 を採り、ドメイン層の型を残す
+  - checks: [CA-DEP-03, MDL-01]
+    when: >-
+      アプリケーション層が外側の層の型を import し、同じ形の型をアプリケーション層にも持っている。
+      MDL-01 は型を1つにまとめよと言い、CA-DEP-03 は外側への依存を切れと言う
+    ruling: R2-DEPENDENCY
+    note: CA-DEP-01 との組と同じ理由で、CA-DEP-03 を採る
+  - checks: [MDL-05, MDL-06]
+    when: >-
+      共有カーネルの型について、MDL-05 は別の概念をまとめた共通化だから文脈ごとに分けよと言い、
+      MDL-06 は再定義せずに共有カーネルの型を import して使えと言う
+    ruling: R3-FEWER-FILES
+    note: 分けるか共有するかは文脈の境界の設計判断なので、繰り返し保留になるなら /sumidashi:adr-draft で ADR を勧める

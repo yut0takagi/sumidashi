@@ -1,0 +1,37 @@
+{
+  "case": "ca-dep-02/v2-py",
+  "check": "CA-DEP-02",
+  "label": "violation",
+  "split": "dev",
+  "description": "Python のドメイン層が SQLAlchemy と requests を import している。TYPE_CHECKING の中の SQLAlchemy も violation のまま。decimal などの標準ライブラリは対象外。",
+  "findings": [
+    {
+      "id": "CA-DEP-02",
+      "verdict": "violation",
+      "file": "src/shop/domain/base.py",
+      "start_line": 1,
+      "end_line": 1
+    },
+    {
+      "id": "CA-DEP-02",
+      "verdict": "violation",
+      "file": "src/shop/domain/product.py",
+      "start_line": 6,
+      "end_line": 6
+    },
+    {
+      "id": "CA-DEP-02",
+      "verdict": "violation",
+      "file": "src/shop/domain/product.py",
+      "start_line": 11,
+      "end_line": 11
+    },
+    {
+      "id": "CA-DEP-02",
+      "verdict": "violation",
+      "file": "src/shop/domain/price_feed.py",
+      "start_line": 3,
+      "end_line": 3
+    }
+  ]
+}

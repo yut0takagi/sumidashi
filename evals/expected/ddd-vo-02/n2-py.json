@@ -1,0 +1,8 @@
+{
+  "case": "ddd-vo-02/n2-py",
+  "check": "DDD-VO-02",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "frozen な dataclass の値オブジェクト（__post_init__ の object.__setattr__ で正規化、コレクションは tuple）。NamedTuple、id を持つエンティティ、名前で除外される MoneyDto は対象外。",
+  "findings": []
+}

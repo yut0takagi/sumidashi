@@ -1,0 +1,8 @@
+{
+  "case": "ddd-rep-02/n1-ts",
+  "check": "DDD-REP-02",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "ドメイン層のリポジトリはドメインの型・仕様オブジェクト・自前の検索条件型（query: OrderSearchQuery）だけを使う。TypeORM を使う実装はインフラ層にあるので対象外。",
+  "findings": []
+}

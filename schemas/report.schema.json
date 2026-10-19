@@ -1,0 +1,314 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sumidashi:schema:report",
+  "title": "sumidashi report",
+  "description": "sumidashi finalize の出力（report.json）。report.md はこれを描画したもの。",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "tool",
+    "generated_at",
+    "root",
+    "target",
+    "strictness",
+    "layer_map",
+    "applicability",
+    "active_by_philosophy",
+    "summary",
+    "findings",
+    "aggregated",
+    "scores",
+    "checks_run",
+    "checks_skipped",
+    "adrs_used",
+    "notes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "tool": {
+      "$ref": "urn:sumidashi:schema:facts#/$defs/tool"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "root": {
+      "type": "string"
+    },
+    "target": {
+      "description": "facts の target から changed_lines を除いたもの",
+      "type": "object",
+      "required": [
+        "mode",
+        "files"
+      ],
+      "not": {
+        "required": [
+          "changed_lines"
+        ]
+      }
+    },
+    "strictness": {
+      "$ref": "urn:sumidashi:schema:facts#/$defs/strictness"
+    },
+    "layer_map": {
+      "description": "facts の layer_map からファイルごとの対応を除いた要約",
+      "type": "object",
+      "required": [
+        "source",
+        "estimable",
+        "counts"
+      ],
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "files"
+            ]
+          },
+          {
+            "required": [
+              "unmapped"
+            ]
+          }
+        ]
+      }
+    },
+    "applicability": {
+      "$ref": "urn:sumidashi:schema:facts#/$defs/applicability"
+    },
+    "active_by_philosophy": {
+      "description": "思想ごとの走らせたチェックの数。0 の思想は「走らせるチェックがなかった」として総評に出す",
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "counts",
+        "by_status",
+        "headline"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "counts": {
+          "description": "指摘一覧と同種まとめに出した指摘の、重大度ごとの件数",
+          "type": "object",
+          "required": [
+            "High",
+            "Medium",
+            "Low",
+            "Info"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "High": {
+              "type": "integer"
+            },
+            "Medium": {
+              "type": "integer"
+            },
+            "Low": {
+              "type": "integer"
+            },
+            "Info": {
+              "type": "integer"
+            }
+          }
+        },
+        "by_status": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "reported",
+              "needs_review",
+              "held",
+              "merged",
+              "aggregated",
+              "filtered"
+            ]
+          },
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "headline": {
+          "description": "High があれば総評の冒頭に出す一文。なければ空",
+          "type": "string"
+        }
+      }
+    },
+    "findings": {
+      "description": "finalize 後の指摘。status で表示先が決まる",
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "urn:sumidashi:schema:finding"
+          },
+          {
+            "required": [
+              "status",
+              "fingerprint"
+            ]
+          }
+        ]
+      }
+    },
+    "aggregated": {
+      "description": "同じチェックIDの指摘が5件を超えたときの、6件目以降のまとめ",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "count",
+          "locations"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "locations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "scores": {
+      "description": "思想ごとの 0〜10 点。走らせたチェックがない思想は含めない。設定の report.scores が false なら null",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "score",
+          "total_deduction",
+          "deductions",
+          "improvements"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+          },
+          "total_deduction": {
+            "description": "減点の合計。10 を超えると score は 0 に張りつく",
+            "type": "number",
+            "minimum": 0
+          },
+          "deductions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/deduction"
+            }
+          },
+          "improvements": {
+            "description": "重い順に直していったときの点数。gain はその1件だけを直したときに上がる点、score_after はそこまでを全部直したときの点数",
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/deduction"
+                },
+                {
+                  "required": [
+                    "gain",
+                    "score_after"
+                  ],
+                  "properties": {
+                    "gain": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "score_after": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 10
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "checks_run": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "checks_skipped": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "reason"
+        ]
+      }
+    },
+    "adrs_used": {
+      "description": "例外の根拠に使った ADR の ID",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "deduction": {
+      "type": "object",
+      "required": [
+        "id",
+        "file",
+        "line",
+        "severity",
+        "weight"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer"
+        },
+        "severity": {
+          "$ref": "urn:sumidashi:schema:facts#/$defs/severity"
+        },
+        "weight": {
+          "description": "High 3 / Medium 1.5 / Low 0.5",
+          "type": "number"
+        }
+      }
+    }
+  }
+}

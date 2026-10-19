@@ -1,0 +1,23 @@
+{
+  "case": "ddd-ent-03/b1-ts",
+  "check": "DDD-ENT-03",
+  "label": "borderline",
+  "split": "dev",
+  "description": "エンティティ Cart の items は readonly だが配列そのものは変更できる。coupons の getter は内部の配列をそのまま返す。",
+  "findings": [
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "borderline",
+      "file": "src/domain/cart.ts",
+      "start_line": 4,
+      "end_line": 4
+    },
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "borderline",
+      "file": "src/domain/cart.ts",
+      "start_line": 9,
+      "end_line": 11
+    }
+  ]
+}

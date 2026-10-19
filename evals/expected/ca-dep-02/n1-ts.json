@@ -1,0 +1,8 @@
+{
+  "case": "ca-dep-02/n1-ts",
+  "check": "CA-DEP-02",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "ドメイン層は I/O を伴わないユーティリティ（date-fns・decimal.js・uuid・lodash）だけを使い、ORM と HTTP クライアントはインフラ層にある。",
+  "findings": []
+}

@@ -1,0 +1,16 @@
+{
+  "case": "ca-dep-04/v3-py",
+  "check": "CA-DEP-04",
+  "label": "violation",
+  "split": "dev",
+  "description": "同じ深さ（2）の adapters と infrastructure の循環。浅い層から深い層への辺がないので、層をまたぐ辺のうちパス・行の昇順で最初のもの（routes.py の import）を位置にする。",
+  "findings": [
+    {
+      "id": "CA-DEP-04",
+      "verdict": "violation",
+      "file": "src/shop/adapters/web/routes.py",
+      "start_line": 4,
+      "end_line": 4
+    }
+  ]
+}

@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sumidashi:schema:checks-file",
+  "title": "sumidashi checks.yml",
+  "description": "1つの思想（スキル）が持つ出典・原則・チェック項目の定義。skills/<思想>/checks.yml に置く。",
+  "type": "object",
+  "required": ["philosophy", "sources", "principles", "checks"],
+  "additionalProperties": false,
+  "properties": {
+    "philosophy": {
+      "type": "object",
+      "required": ["id", "name", "summary", "release"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "name": { "type": "string" },
+        "summary": { "type": "string" },
+        "release": { "$ref": "#/$defs/release" },
+        "id_prefixes": {
+          "description": "このファイルのチェックIDが使う接頭辞。省略時は制約しない",
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[A-Z]+(-[A-Z]+)?$" }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "author"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "title": { "type": "string" },
+          "author": { "type": "string" },
+          "year": { "type": "integer" },
+          "url": { "type": "string" }
+        }
+      }
+    },
+    "principles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "statement", "sources"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z]+\\.[a-z0-9-]+$" },
+          "statement": { "type": "string" },
+          "sources": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/check" }
+    }
+  },
+  "$defs": {
+    "release": { "type": "string", "enum": ["v1", "v1.5", "v2", "v3"] },
+    "severity": { "type": "string", "enum": ["High", "Medium", "Low", "Info"] },
+    "check": {
+      "type": "object",
+      "required": [
+        "id", "name", "principle", "principles", "source", "status", "release",
+        "applies_when", "detection", "location", "criteria", "exclusions",
+        "severity", "fix_patterns", "fixtures"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "<思想>-<区分>-<連番>。一度振ったら変えない",
+          "type": "string",
+          "pattern": "^[A-Z]+(-[A-Z]+)?-[0-9]{2}$"
+        },
+        "name": { "type": "string" },
+        "principle": { "description": "守るべき原則を1文で（指摘の principle 欄にそのまま出る）", "type": "string" },
+        "principles": {
+          "description": "知識グラフ上で守らせる Principle の id",
+          "type": "array", "minItems": 1, "items": { "type": "string" }
+        },
+        "source": { "description": "原典の書名と章", "type": "string" },
+        "status": {
+          "description": "draft: 定義のみ（fixtures 未整備）。ready: fixtures が揃い評価対象。既定で有効になるかは評価の出荷ゲートで決まる",
+          "type": "string", "enum": ["draft", "ready"]
+        },
+        "release": { "$ref": "#/$defs/release" },
+        "applies_when": {
+          "type": "object",
+          "required": ["layers"],
+          "additionalProperties": false,
+          "properties": {
+            "layers": {
+              "type": "array", "minItems": 1,
+              "items": { "type": "string", "enum": ["domain", "application", "adapter", "infrastructure", "main", "shared", "any"] }
+            },
+            "languages": {
+              "type": "array",
+              "items": { "type": "string", "enum": ["typescript", "python", "markdown", "yaml"] }
+            },
+            "file_kinds": { "type": "array", "items": { "type": "string" } },
+            "requires": {
+              "description": "前提となる推定・入力。layer_map / aggregate_map / adr / glossary / business_rules / ticket など",
+              "type": "array", "items": { "type": "string" }
+            }
+          }
+        },
+        "detection": {
+          "type": "object",
+          "required": ["type"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "type": "string", "enum": ["static", "hybrid", "llm"] },
+            "static": { "description": "静的に何を列挙・確定するか", "type": "string" },
+            "question": { "description": "LLM に投げる YES/NO の判定質問", "type": "string" },
+            "implementation": {
+              "description": "解析器の実装キー（static・hybrid）。未実装なら省略",
+              "type": "string"
+            }
+          },
+          "allOf": [
+            { "if": { "properties": { "type": { "const": "static" } } }, "then": { "required": ["static"] } },
+            { "if": { "properties": { "type": { "const": "hybrid" } } }, "then": { "required": ["static", "question"] } },
+            { "if": { "properties": { "type": { "const": "llm" } } }, "then": { "required": ["question"] } }
+          ]
+        },
+        "location": { "description": "指摘の location が指す行の決め方。評価の突き合わせに使う", "type": "string" },
+        "criteria": {
+          "type": "object",
+          "required": ["violation", "borderline", "not_violation"],
+          "additionalProperties": false,
+          "properties": {
+            "violation": { "type": "string" },
+            "borderline": { "type": "string" },
+            "not_violation": { "type": "string" }
+          }
+        },
+        "exclusions": { "type": "array", "items": { "type": "string" } },
+        "severity": {
+          "type": "object",
+          "required": ["default"],
+          "additionalProperties": false,
+          "properties": {
+            "default": { "$ref": "#/$defs/severity" },
+            "escalate": { "type": "string" },
+            "deescalate": { "type": "string" }
+          }
+        },
+        "fix_patterns": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "related": { "type": "array", "items": { "type": "string" } },
+        "also_accept": {
+          "description": "同じ箇所でこのチェックと相手が両方当たったとき、相手を主として扱い、このチェックは重複として出さない",
+          "type": "array", "items": { "type": "string" }
+        },
+        "conflicts_with": { "type": "array", "items": { "type": "string" } },
+        "fixtures": {
+          "description": "evals/fixtures/ からの相対パス（1ケース=1ディレクトリ）",
+          "type": "object",
+          "required": ["violation", "borderline", "not_violation"],
+          "additionalProperties": false,
+          "properties": {
+            "violation": { "type": "array", "items": { "type": "string" } },
+            "borderline": { "type": "array", "items": { "type": "string" } },
+            "not_violation": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    }
+  }
+}

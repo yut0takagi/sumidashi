@@ -1,0 +1,397 @@
+# ADR のチェック項目（9個）
+# ADR-CMP: コードと ADR の整合 / ADR-DOC: ADR 自体の書き方
+# 1チェック=1エントリ。id は一度振ったら変えない。
+# スキーマ: schemas/checks-file.schema.json
+
+philosophy:
+  id: adr
+  name: ADR（Architecture Decision Record）
+  summary: ADR による例外、コードと ADR の整合、ADR 自体のレビュー
+  release: v1
+  id_prefixes: [ADR]
+
+sources:
+  - id: nygard-2011
+    title: Documenting Architecture Decisions
+    author: Michael Nygard
+    year: 2011
+    url: https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions
+  - id: madr
+    title: "MADR: Markdown Architectural Decision Records"
+    author: Oliver Kopp ほか（adr.github.io）
+    url: https://adr.github.io/madr/
+  - id: sumidashi-requirements
+    title: sumidashi 要件定義「ADRの扱い」
+    author: Ytkg
+    year: 2026
+
+principles:
+  - id: adr.decision-record
+    statement: 重要な設計判断は、背景・決定・帰結を ADR に記録し、チームが合意した判断の拠り所にする
+    sources: [nygard-2011]
+  - id: adr.decision-conformance
+    statement: Accepted の ADR の決定は、その適用範囲のコードで守り、守られているかを確かめられるようにする
+    sources: [madr, nygard-2011]
+  - id: adr.supersede-not-rewrite
+    statement: 判断を覆すときは古い ADR を消さずに Superseded とし、置き換え先の ADR から参照する
+    sources: [nygard-2011]
+  - id: adr.explicit-scope
+    statement: ADR による例外は、適用範囲（scope）と外れてよいチェック（exempts）を明示し、その範囲の外へ広げない
+    sources: [sumidashi-requirements]
+  - id: adr.considered-options
+    statement: 決定には、検討した代替案と、それを採らなかった理由を残す
+    sources: [madr]
+  - id: adr.balanced-consequences
+    statement: 帰結には良い面だけでなく、失うものと新たに生じる制約も書く
+    sources: [nygard-2011, madr]
+  - id: adr.explicit-deviation
+    statement: 設計原則から外れる決定は、どの原則から外れるかと、その理由を明示する
+    sources: [sumidashi-requirements]
+
+checks:
+  # ---------------------------------------------------------------- CMP: コードと ADR の整合
+  - id: ADR-CMP-01
+    name: Accepted の ADR の決定に反するコードがある
+    principle: Accepted の ADR の scope 内のコードは、その ADR の Decision に従う
+    principles: [adr.decision-conformance, adr.decision-record]
+    source: Nygard "Documenting Architecture Decisions"／MADR（Confirmation）
+    status: draft
+    release: v1
+    applies_when:
+      layers: [any]
+      languages: [typescript, python]
+      requires: [adr]
+    detection:
+      type: llm
+      question: >-
+        このコードは、自分を scope に含む Accepted の ADR の Decision に書かれた方針と、
+        逆の実装になっているか。
+    location: ADR の決定に反している実装の行範囲
+    criteria:
+      violation: >-
+        Accepted の ADR の scope 内で、Decision に書かれた方針と逆の実装がある
+        （例: 「金額は整数の最小単位で持つ」と決めた範囲で、浮動小数で金額を計算している）
+      borderline: >-
+        Decision の文言が抽象的で、このコードが反しているかを文言だけでは決められない。
+        または ADR に scope がなく、本文から推定した範囲にこのコードが入るかが確かでない
+      not_violation: Decision に沿った実装。Decision が触れていない事柄の実装
+    exclusions:
+      - テストコード
+      - Status が Accepted でない ADR（Proposed・Deprecated は参照しない。Superseded は置き換え先を辿る）
+      - 見出しから Status・Context・Decision・Consequences を推定できない「形式不明」の ADR
+    severity:
+      default: High
+      deescalate: ADR に scope がなく、本文から適用範囲を推定した場合は Medium
+    fix_patterns:
+      - 実装を Decision に合わせる
+      - 決定のほうを変えるべきなら、新しい ADR を起票して古い ADR を Superseded にする（/sumidashi:adr-draft で下書き）
+    related: [ADR-CMP-02, ADR-CMP-03, ADR-DOC-05]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: ADR-CMP-02
+    name: Superseded の ADR の決定に沿った実装が新しく追加されている
+    principle: 置き換えられた ADR の決定ではなく、置き換え先の ADR の決定に沿って新しいコードを書く
+    principles: [adr.supersede-not-rewrite, adr.decision-conformance]
+    source: Nygard "Documenting Architecture Decisions"（Status の superseded）
+    status: draft
+    release: v1
+    applies_when:
+      layers: [any]
+      languages: [typescript, python]
+      requires: [adr]
+    detection:
+      type: hybrid
+      static: >-
+        Superseded の ADR と、その置き換え先の ADR を辿って組にする。差分で追加された行のうち、
+        Superseded の ADR の scope に入り、その Decision に出てくる識別子・パッケージ名・パス
+        （バッククォートで囲まれた語）を含むものを候補にする
+      question: >-
+        この新しく追加されたコードは、置き換え前の ADR の決定に沿っていて、
+        置き換え先の ADR の決定には沿っていないか。
+    location: 追加された行のうち、置き換え前の決定に沿った実装の行範囲
+    criteria:
+      violation: Superseded の ADR の決定に沿った実装が、差分で新しく追加されている
+      borderline: >-
+        新旧どちらの決定にも当てはまる実装。または ADR が Superseded なのに、
+        置き換え先（Superseded by）が書かれておらず辿れない
+      not_violation: 差分の外にある既存のコード（置き換え前から残っているもの）。置き換え先の決定に沿った実装
+    exclusions:
+      - テストコード
+      - 置き換え先の ADR が移行期間中の併存を認めている範囲の移行用コード
+    severity:
+      default: Medium
+      escalate: 置き換え先の ADR が、古い方式の新規利用を禁止すると明記している場合は High
+    fix_patterns:
+      - 置き換え先の ADR の決定に沿った実装に書き換える
+      - 古い方式を使い続ける理由があるなら、その範囲を新しい ADR に例外として記録する
+    related: [ADR-CMP-01, ADR-DOC-06]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: ADR-CMP-03
+    name: ADR で例外にしたチェックが scope の外でも破られている
+    principle: ADR による例外は、その ADR の scope の中だけで認め、範囲の外へ広げない
+    principles: [adr.explicit-scope]
+    source: sumidashi 要件定義「ADRの扱い」（ADR のフロントマターの scope と exempts）
+    status: draft
+    release: v1
+    applies_when:
+      layers: [any]
+      languages: [typescript, python]
+      requires: [adr]
+    detection:
+      type: static
+      static: >-
+        Accepted の ADR のフロントマターから scope（glob）と exempts（チェックID）を読み、
+        exempts に入ったチェックの指摘のうち、location が scope のどの glob にも入らないものを列挙する
+    location: scope の外で出た元の指摘と同じ location
+    criteria:
+      violation: >-
+        exempts に挙げたチェックの違反が、その ADR の scope の外でも出ている
+        （scope の中だけで例外にした方式が、範囲の外に広がっている）
+      borderline: >-
+        scope の外の違反が、scope のいずれかの glob と同じ親ディレクトリにある
+        （範囲の書き漏れか、例外の拡大かが決まらない）
+      not_violation: >-
+        scope の中の違反（ADR による例外で Info になる）。exempts に入っていないチェックの違反
+        （このチェックの対象外で、元のチェックがそのまま指摘する）
+    exclusions:
+      - テストコード
+      - scope を書いていない ADR（例外に使わないため、このチェックの対象にもしない）
+      - Status が Accepted でない ADR
+    severity:
+      default: Medium
+    fix_patterns:
+      - 範囲の外の実装を、原則どおりに直す
+      - 範囲を広げるのが正しいなら、ADR の scope を改訂し、その改訂について合意を取る
+    related: [ADR-CMP-01, ADR-DOC-05]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  # ---------------------------------------------------------------- DOC: ADR 自体の書き方
+  - id: ADR-DOC-01
+    name: ADR に必須の項目が欠けている
+    principle: ADR には Status・Context・Decision・Consequences の4項目を、それぞれ1文以上書く
+    principles: [adr.decision-record]
+    source: Nygard "Documenting Architecture Decisions"（Title・Context・Decision・Status・Consequences）
+    status: draft
+    release: v1
+    applies_when:
+      layers: [any]
+      languages: [markdown]
+      file_kinds: [adr]
+      requires: [adr]
+    detection:
+      type: static
+      static: >-
+        ADR ファイルのフロントマターの status と見出しを読み、Status・Context・Decision・Consequences
+        （MADR では Context and Problem Statement・Decision Outcome・Consequences などの対応する見出し）が
+        それぞれあるか、本文が1文以上あるかを調べる
+    location: 本文が1文未満の項目は、その見出しの行。見出しごと欠けている項目は、タイトル（最初の # 見出し）の行
+    criteria:
+      violation: Status・Context・Decision・Consequences のいずれかがない、または本文が1文未満
+      borderline: >-
+        見出しの名前が Nygard 形式とも MADR とも違い、どの項目に当たるかを見出しの文言から推定して対応づけた
+        （推定した対応が正しいかは人が確かめる）
+      not_violation: >-
+        4項目がすべてあり、それぞれ1文以上ある。MADR で Status をフロントマターの status に持つ場合も、
+        Status があるとみなす
+    exclusions:
+      - テンプレート（template.md、0000-*.md など番号が 0 の ADR）
+      - ADR のディレクトリに置かれた README・索引のファイル
+    severity:
+      default: Medium
+    fix_patterns:
+      - 欠けている項目を書き足す。Nygard 形式なら Status・Context・Decision・Consequences の4つの見出しを置く
+    related: [ADR-DOC-02, ADR-DOC-03]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: ADR-DOC-02
+    name: ADR に検討した代替案が書かれていない
+    principle: 決定には、検討した代替案と、それを採らなかった理由を書く
+    principles: [adr.considered-options]
+    source: MADR（Considered Options、Pros and Cons of the Options）
+    status: draft
+    release: v1
+    applies_when:
+      layers: [any]
+      languages: [markdown]
+      file_kinds: [adr]
+      requires: [adr]
+    detection:
+      type: llm
+      question: この ADR は、検討した代替案か、それぞれを採らなかった理由のどちらかを欠いているか。
+    location: 代替案の節があればその見出しの行。なければ Decision の見出しの行
+    criteria:
+      violation: 検討した代替案と、採らなかった理由が書かれていない
+      borderline: 代替案は挙げているが、採らなかった理由が「合わない」程度で、何が合わないのかが書かれていない
+      not_violation: >-
+        代替案が1つ以上あり、それぞれ採らなかった理由が書かれている。または代替案がないことと、
+        その理由（法令や契約で方式が決まっているなど）が書かれている
+    exclusions:
+      - テンプレート
+      - Status が Superseded・Deprecated の ADR（新規・更新のレビューの対象外）
+    severity:
+      default: Medium
+    fix_patterns:
+      - 「検討した選択肢」の節を足し、各案の長所・短所と採らなかった理由を書く（MADR の Considered Options と Pros and Cons of the Options）
+    related: [ADR-DOC-01, ADR-DOC-03]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: ADR-DOC-03
+    name: ADR の帰結に良い面しか書かれていない
+    principle: 帰結には、この決定で得るものに加えて、失うもの・新たに生じる制約・リスクを書く
+    principles: [adr.balanced-consequences]
+    source: Nygard "Documenting Architecture Decisions"（Consequences）
+    status: draft
+    release: v1
+    applies_when:
+      layers: [any]
+      languages: [markdown]
+      file_kinds: [adr]
+      requires: [adr]
+    detection:
+      type: llm
+      question: >-
+        この ADR の Consequences は、良い面だけを書き、失うもの・新たに生じる制約・リスクを
+        1つも書いていないか。
+    location: Consequences の見出しの行
+    criteria:
+      violation: Consequences に良い面しか書かれていない
+      borderline: 悪い面の欄はあるが、「特になし」としか書かれていない
+      not_violation: 良い面と、失うもの・制約・リスクの両方が書かれている
+    exclusions:
+      - テンプレート
+      - Status が Superseded・Deprecated の ADR
+    severity:
+      default: Low
+    fix_patterns:
+      - この決定で失うもの、増える作業、将来の変更を難しくする点を書き足す
+    related: [ADR-DOC-02, ADR-DOC-04]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: ADR-DOC-04
+    name: ADR が原則から外れることを明示していない
+    principle: 設計原則から外れる決定は、どの原則（チェックID）から外れるかと、その理由を書く
+    principles: [adr.explicit-deviation, adr.explicit-scope]
+    source: sumidashi 要件定義「ADRの扱い」（ADR-DOC 系）
+    status: draft
+    release: v1
+    applies_when:
+      layers: [any]
+      languages: [markdown]
+      file_kinds: [adr]
+      requires: [adr]
+    detection:
+      type: llm
+      question: >-
+        この ADR の決定は sumidashi の v1 のチェック（CA-BND-01 など）が違反とする方式を採っているのに、
+        どの原則から外れるかと、その理由を書いていないか。
+    location: Decision の見出しの行
+    criteria:
+      violation: 決定内容が v1 のチェックに当たるのに、どの原則から外れるかと理由が書かれていない
+      borderline: 原則から外れることには触れているが、どの原則・チェックかを特定できない書き方になっている
+      not_violation: >-
+        外れる原則（またはチェックID）と理由が書かれている。決定がどのチェックにも当たらない。
+        決定の良し悪しそのものは、このチェックでは判定しない
+    exclusions:
+      - テンプレート
+      - Status が Superseded・Deprecated の ADR
+    severity:
+      default: Medium
+    fix_patterns:
+      - 外れる原則とチェックIDを本文に書き、フロントマターの exempts にチェックIDを、scope に対象のパスを書く
+      - 決定が v1 のチェックに当たる場合だけ、該当するチェックIDと「この判断で失うもの」を添える
+    related: [ADR-DOC-05, ADR-CMP-03, ADR-DOC-03]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: ADR-DOC-05
+    name: ADR の適用範囲が書かれていない
+    principle: ADR には、決定が適用されるコードの範囲を、機械が読める scope として書く
+    principles: [adr.explicit-scope]
+    source: sumidashi 要件定義「ADRの扱い」（ADR の読み込み）
+    status: draft
+    release: v1
+    applies_when:
+      layers: [any]
+      languages: [markdown]
+      file_kinds: [adr]
+      requires: [adr]
+    detection:
+      type: hybrid
+      static: >-
+        ADR のフロントマターに scope があるかを調べる。ない ADR の本文から、パス・モジュール名・パッケージ名
+        （バッククォートで囲まれた語と、リポジトリに実在するディレクトリ名）を抜き出して候補にする
+      question: この ADR は、本文を読んでも、決定が適用されるコードの範囲（パス・モジュール）を特定できないか。
+    location: タイトル（最初の # 見出し）の行
+    criteria:
+      violation: フロントマターに scope がなく、本文からも適用範囲を特定できない
+      borderline: 本文から範囲の候補は取れるが、1つに絞れない
+      not_violation: フロントマターに scope がある。またはリポジトリ全体に適用する決定であることが本文に書かれている
+    exclusions:
+      - テンプレート
+      - Status が Superseded・Deprecated の ADR
+    severity:
+      default: Low
+    fix_patterns:
+      - フロントマターに scope（対象のパスの glob）を書く。原則から外れる決定なら exempts も書く
+    related: [ADR-CMP-03, ADR-DOC-04, ADR-CMP-01]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []
+
+  - id: ADR-DOC-06
+    name: ADR が既存の Accepted の ADR と矛盾している
+    principle: Accepted の ADR どうしは矛盾させず、置き換えるときは Supersedes で明示する
+    principles: [adr.supersede-not-rewrite, adr.decision-record]
+    source: Nygard "Documenting Architecture Decisions"（Status の superseded）
+    status: draft
+    release: v1
+    applies_when:
+      layers: [any]
+      languages: [markdown]
+      file_kinds: [adr]
+      requires: [adr]
+    detection:
+      type: llm
+      question: >-
+        この ADR の決定は、Accepted の別の ADR の決定と同じ範囲で両立しないのに、
+        その ADR を置き換える（Supersedes）と書いていないか。
+    location: Decision の見出しの行
+    criteria:
+      violation: Accepted の別の ADR と決定内容が矛盾し、Supersedes の記載もない
+      borderline: 2つの ADR の範囲が一部だけ重なり、重なる部分で両立するかが本文だけでは決まらない
+      not_violation: 範囲が重ならない。または Supersedes で置き換えを明記し、古い ADR の Status を Superseded にしている
+    exclusions:
+      - テンプレート
+      - Status が Superseded・Deprecated の ADR どうしの組
+    severity:
+      default: High
+    fix_patterns:
+      - 古い ADR を置き換えるなら、新しい ADR に Supersedes を書き、古い ADR の Status を Superseded にする
+      - 両立させるなら、範囲を分けてそれぞれの scope を書き直す
+    related: [ADR-CMP-02, ADR-DOC-05]
+    fixtures:
+      violation: []
+      borderline: []
+      not_violation: []

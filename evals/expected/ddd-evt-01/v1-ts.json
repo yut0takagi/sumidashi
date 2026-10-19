@@ -1,0 +1,30 @@
+{
+  "case": "ddd-evt-01/v1-ts",
+  "check": "DDD-EVT-01",
+  "label": "violation",
+  "split": "dev",
+  "description": "ドメインイベントの名前が命令形・現在形になっている（PlaceOrderEvent・OrderCancelEvent・StockShippingEvent）。過去分詞の OrderPlacedEvent、Handler で終わるクラス、基底の DomainEvent は対象外。",
+  "findings": [
+    {
+      "id": "DDD-EVT-01",
+      "verdict": "violation",
+      "file": "src/domain/events/order-events.ts",
+      "start_line": 9,
+      "end_line": 9
+    },
+    {
+      "id": "DDD-EVT-01",
+      "verdict": "violation",
+      "file": "src/domain/events/order-events.ts",
+      "start_line": 15,
+      "end_line": 15
+    },
+    {
+      "id": "DDD-EVT-01",
+      "verdict": "violation",
+      "file": "src/domain/events/order-events.ts",
+      "start_line": 24,
+      "end_line": 24
+    }
+  ]
+}

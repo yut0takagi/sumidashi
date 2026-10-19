@@ -1,0 +1,23 @@
+{
+  "case": "ddd-evt-01/v2-py",
+  "check": "DDD-EVT-01",
+  "label": "violation",
+  "split": "dev",
+  "description": "DomainEvent を継承するクラスの名前が過去形でない（MemberRegister・RankUpgradeEvent）。名前が Event で終わらなくても、Event で終わる型を継承していれば対象になる。PointsGranted・MemberLoggedIn は問題なし。",
+  "findings": [
+    {
+      "id": "DDD-EVT-01",
+      "verdict": "violation",
+      "file": "src/shop/domain/events.py",
+      "start_line": 17,
+      "end_line": 17
+    },
+    {
+      "id": "DDD-EVT-01",
+      "verdict": "violation",
+      "file": "src/shop/domain/events.py",
+      "start_line": 23,
+      "end_line": 23
+    }
+  ]
+}

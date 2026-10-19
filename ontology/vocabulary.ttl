@@ -1,0 +1,157 @@
+@prefix sd:   <urn:sumidashi:vocab#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# sumidashi の設計知識の語彙。
+# 実体（思想・チェック・原則・出典・評価ケース・裁定）は tools/dev/build_knowledge.py が
+# checks.yml と conflicts.yml から generated/knowledge.ttl に書き出す。
+# 制約は shapes.ttl（SHACL）に置き、CI で検証する。実行時には推論器も SPARQL も使わない。
+
+<urn:sumidashi:vocab> a owl:Ontology ;
+    rdfs:label "sumidashi vocabulary"@en , "sumidashi の語彙"@ja .
+
+# ------------------------------------------------------------------ クラス
+sd:Philosophy a owl:Class ;
+    rdfs:label "設計思想"@ja ;
+    rdfs:comment "1つのスキルにまとめた設計の考え方（クリーンアーキテクチャ、DDD の戦術的設計など）"@ja .
+
+sd:Check a owl:Class ;
+    rdfs:label "チェック"@ja ;
+    rdfs:comment "コードに当てる判定項目。checks.yml の1エントリ"@ja .
+
+sd:Principle a owl:Class ;
+    rdfs:label "原則"@ja ;
+    rdfs:comment "チェックの根拠になる設計原則。1つ以上の出典を持つ"@ja .
+
+sd:Source a owl:Class ;
+    rdfs:label "出典"@ja ;
+    rdfs:comment "書籍・論文・記事"@ja .
+
+sd:Fixture a owl:Class ;
+    rdfs:label "評価ケース"@ja ;
+    rdfs:comment "evals/fixtures の1ケース。期待のラベル（violation・borderline・not_violation）を持つ"@ja .
+
+sd:Ruling a owl:Class ;
+    rdfs:label "裁定ルール"@ja ;
+    rdfs:comment "思想間の衝突を決める規則（design-router/conflicts.yml の rulings）"@ja .
+
+sd:Conflict a owl:Class ;
+    rdfs:label "衝突"@ja ;
+    rdfs:comment "同じ箇所で逆向きの修正を求める2つのチェックの組と、その裁定"@ja .
+
+sd:ADR a owl:Class ;
+    rdfs:label "ADR"@ja ;
+    rdfs:comment "対象リポジトリの設計判断の記録。exempts と scope でチェックの例外を宣言する"@ja .
+
+# ------------------------------------------------------------------ 関係
+sd:belongsTo a owl:ObjectProperty ;
+    rdfs:label "所属する思想"@ja ;
+    rdfs:domain sd:Check ;
+    rdfs:range sd:Philosophy .
+
+sd:basedOn a owl:ObjectProperty ;
+    rdfs:label "根拠の原則"@ja ;
+    rdfs:domain sd:Check ;
+    rdfs:range sd:Principle .
+
+sd:citedFrom a owl:ObjectProperty ;
+    rdfs:label "出典"@ja ;
+    rdfs:domain sd:Principle ;
+    rdfs:range sd:Source .
+
+sd:hasFixture a owl:ObjectProperty ;
+    rdfs:label "評価ケース"@ja ;
+    rdfs:domain sd:Check ;
+    rdfs:range sd:Fixture .
+
+sd:related a owl:ObjectProperty ;
+    rdfs:label "関連するチェック"@ja ;
+    rdfs:domain sd:Check ;
+    rdfs:range sd:Check .
+
+sd:alsoAccept a owl:ObjectProperty ;
+    rdfs:label "重複として受け入れるチェック"@ja ;
+    rdfs:comment "A alsoAccept B: 同じ箇所に B の指摘があれば A は B にまとめる。A は B と related でもある"@ja ;
+    rdfs:domain sd:Check ;
+    rdfs:range sd:Check .
+
+sd:conflictsWith a owl:ObjectProperty , owl:SymmetricProperty ;
+    rdfs:label "衝突するチェック"@ja ;
+    rdfs:domain sd:Check ;
+    rdfs:range sd:Check .
+
+sd:between a owl:ObjectProperty ;
+    rdfs:label "衝突の当事者"@ja ;
+    rdfs:domain sd:Conflict ;
+    rdfs:range sd:Check .
+
+sd:resolvedBy a owl:ObjectProperty ;
+    rdfs:label "裁定ルール"@ja ;
+    rdfs:domain sd:Conflict ;
+    rdfs:range sd:Ruling .
+
+sd:exempts a owl:ObjectProperty ;
+    rdfs:label "例外にするチェック"@ja ;
+    rdfs:domain sd:ADR ;
+    rdfs:range sd:Check .
+
+# ------------------------------------------------------------------ 値
+sd:identifier a owl:DatatypeProperty ;
+    rdfs:label "ID"@ja ;
+    rdfs:range xsd:string .
+
+sd:name a owl:DatatypeProperty ;
+    rdfs:label "名前"@ja ;
+    rdfs:range xsd:string .
+
+sd:statement a owl:DatatypeProperty ;
+    rdfs:label "原則の文"@ja ;
+    rdfs:domain sd:Principle ;
+    rdfs:range xsd:string .
+
+sd:status a owl:DatatypeProperty ;
+    rdfs:label "状態"@ja ;
+    rdfs:comment "draft か ready"@ja ;
+    rdfs:range xsd:string .
+
+sd:detection a owl:DatatypeProperty ;
+    rdfs:label "判定方式"@ja ;
+    rdfs:comment "static・hybrid・llm"@ja ;
+    rdfs:domain sd:Check ;
+    rdfs:range xsd:string .
+
+sd:defaultSeverity a owl:DatatypeProperty ;
+    rdfs:label "既定の重大度"@ja ;
+    rdfs:domain sd:Check ;
+    rdfs:range xsd:string .
+
+sd:release a owl:DatatypeProperty ;
+    rdfs:label "リリース"@ja ;
+    rdfs:range xsd:string .
+
+sd:label a owl:DatatypeProperty ;
+    rdfs:label "期待のラベル"@ja ;
+    rdfs:comment "violation・borderline・not_violation"@ja ;
+    rdfs:domain sd:Fixture ;
+    rdfs:range xsd:string .
+
+sd:path a owl:DatatypeProperty ;
+    rdfs:label "パス"@ja ;
+    rdfs:range xsd:string .
+
+sd:order a owl:DatatypeProperty ;
+    rdfs:label "裁定の順番"@ja ;
+    rdfs:domain sd:Ruling ;
+    rdfs:range xsd:integer .
+
+sd:scope a owl:DatatypeProperty ;
+    rdfs:label "適用範囲の glob"@ja ;
+    rdfs:domain sd:ADR ;
+    rdfs:range xsd:string .
+
+sd:adrStatus a owl:DatatypeProperty ;
+    rdfs:label "ADR の状態"@ja ;
+    rdfs:domain sd:ADR ;
+    rdfs:range xsd:string .

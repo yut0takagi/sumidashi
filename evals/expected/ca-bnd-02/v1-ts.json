@@ -1,0 +1,23 @@
+{
+  "case": "ca-bnd-02/v1-ts",
+  "check": "CA-BND-02",
+  "label": "violation",
+  "split": "dev",
+  "description": "アプリケーション層のユースケースが express の Request・Response を公開メソッドと export 関数の引数に取っている。private メソッドは対象外。",
+  "findings": [
+    {
+      "id": "CA-BND-02",
+      "verdict": "violation",
+      "file": "src/application/checkout.ts",
+      "start_line": 7,
+      "end_line": 7
+    },
+    {
+      "id": "CA-BND-02",
+      "verdict": "violation",
+      "file": "src/application/checkout.ts",
+      "start_line": 17,
+      "end_line": 17
+    }
+  ]
+}

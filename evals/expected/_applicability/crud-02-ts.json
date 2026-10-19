@@ -1,0 +1,15 @@
+{
+  "case": "_applicability/crud-02-ts",
+  "kind": "applicability",
+  "description": "NestJS 風の controllers と Prisma の CRUD。controllers・services・prisma に分かれているが domain がなく、層マップは推定できない。",
+  "expect": {
+    "ddd-tactical": {
+      "applied": false,
+      "max_findings": 0
+    },
+    "clean-architecture": {
+      "mode": "dep-only",
+      "severity_shift": -1
+    }
+  }
+}

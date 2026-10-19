@@ -1,0 +1,8 @@
+{
+  "case": "ca-dep-04/n2-py",
+  "check": "CA-DEP-04",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "infrastructure の中だけで db.py と repositories.py が循環している。層をまたがないので対象外。",
+  "findings": []
+}

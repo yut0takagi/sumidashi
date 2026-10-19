@@ -1,0 +1,8 @@
+{
+  "case": "ca-dep-01/n2-py",
+  "check": "CA-DEP-01",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "ドメイン層はドメイン内と標準ライブラリだけを import する。tests/ 配下のテストがインフラ層を import しているが、テストは対象外。",
+  "findings": []
+}

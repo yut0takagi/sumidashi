@@ -1,0 +1,8 @@
+{
+  "case": "ca-dep-02/n2-py",
+  "check": "CA-DEP-02",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "ドメイン層は標準ライブラリ（decimal・datetime・uuid・enum・dataclasses・typing）だけを使う。test_*.py のテストが sqlalchemy を import しているが、テストは対象外。",
+  "findings": []
+}

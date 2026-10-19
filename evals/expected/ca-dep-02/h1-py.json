@@ -1,0 +1,23 @@
+{
+  "case": "ca-dep-02/h1-py",
+  "check": "CA-DEP-02",
+  "label": "violation",
+  "split": "holdout",
+  "description": "ドメイン層がクラウド SDK（boto3）と Web フレームワーク（FastAPI の HTTPException）を import している。decimal は対象外。",
+  "findings": [
+    {
+      "id": "CA-DEP-02",
+      "verdict": "violation",
+      "file": "src/billing/domain/invoice.py",
+      "start_line": 3,
+      "end_line": 3
+    },
+    {
+      "id": "CA-DEP-02",
+      "verdict": "violation",
+      "file": "src/billing/domain/invoice.py",
+      "start_line": 4,
+      "end_line": 4
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "case": "_applicability/crud-03-ts",
+  "kind": "applicability",
+  "description": "層のディレクトリはそろっていて層マップは推定できるが、domain は public フィールドだけの User クラス1つで、テスト以外の行数の 10% 未満。CRUD 中心とみなす。",
+  "expect": {
+    "ddd-tactical": {
+      "applied": false,
+      "max_findings": 0
+    },
+    "clean-architecture": {
+      "mode": "dep-only",
+      "severity_shift": 0
+    }
+  }
+}

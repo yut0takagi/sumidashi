@@ -1,0 +1,8 @@
+{
+  "case": "ddd-ent-03/n1-ts",
+  "check": "DDD-ENT-03",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "エンティティの状態は #・private・readonly・ReadonlyArray で守られ、setter にはガードがあり、getter はコピーを返す。id を持つ OrderSummaryDto は名前で除外される。",
+  "findings": []
+}

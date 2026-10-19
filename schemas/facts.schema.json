@@ -1,0 +1,545 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sumidashi:schema:facts",
+  "title": "sumidashi facts",
+  "description": "sumidashi collect の出力。静的解析で確定した事実（層マップ・規模・適用判定・static の指摘・hybrid の候補）。principle-reviewer はこれを読み、finalize はこれと LLM の指摘を合わせて report にする。",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "tool",
+    "generated_at",
+    "root",
+    "eval_mode",
+    "target",
+    "config",
+    "layer_map",
+    "scale",
+    "applicability",
+    "active_checks",
+    "skipped_checks",
+    "findings",
+    "candidates",
+    "adrs",
+    "parse_errors",
+    "notes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "tool": {
+      "$ref": "#/$defs/tool"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "root": {
+      "description": "対象リポジトリの絶対パス",
+      "type": "string"
+    },
+    "eval_mode": {
+      "description": "評価ハーネスから呼んだとき true。適用判定を full に固定し、入力ファイルの有無を問わない",
+      "type": "boolean"
+    },
+    "target": {
+      "type": "object",
+      "required": [
+        "mode",
+        "files"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "diff",
+            "paths",
+            "all"
+          ]
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "base": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "merge_base": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "files": {
+          "description": "レビュー対象のファイル（リポジトリのルートからの相対パス）",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "changed_lines": {
+          "description": "diff モードでの変更行。ファイルごとに [開始行, 終了行] の組。diff モード以外は null",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        }
+      }
+    },
+    "config": {
+      "description": ".claude/sumidashi.yml を読み、既定値を埋めたもの",
+      "type": "object",
+      "required": [
+        "strictness",
+        "effective_strictness",
+        "report_scores",
+        "pre_pr_check",
+        "warnings"
+      ],
+      "properties": {
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "strictness": {
+          "$ref": "#/$defs/strictness"
+        },
+        "effective_strictness": {
+          "description": "オンボーディング期間中は strict を standard に読み替える",
+          "$ref": "#/$defs/strictness"
+        },
+        "onboarding": {
+          "type": "boolean"
+        },
+        "report_scores": {
+          "type": "boolean"
+        },
+        "pre_pr_check": {
+          "type": "boolean"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "layer_map": {
+      "type": "object",
+      "required": [
+        "source",
+        "estimable",
+        "counts",
+        "files"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "config",
+            "estimated",
+            "config+estimated"
+          ]
+        },
+        "estimable": {
+          "description": "domain があり、domain・application・adapter・infrastructure のうち 2 つ以上が見つかった",
+          "type": "boolean"
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "unmapped_count": {
+          "type": "integer"
+        },
+        "ignored_count": {
+          "type": "integer"
+        },
+        "files": {
+          "description": "ファイル → 層",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/layer"
+          }
+        },
+        "unmapped": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "scale": {
+      "type": "object",
+      "required": [
+        "files",
+        "loc",
+        "domain_ratio"
+      ],
+      "properties": {
+        "files": {
+          "type": "integer"
+        },
+        "loc": {
+          "type": "integer"
+        },
+        "loc_by_layer": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "domain_ratio": {
+          "description": "ドメイン層の行数の割合。0.10 未満は CRUD 中心とみなす",
+          "type": "number"
+        },
+        "entities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/type_ref"
+          }
+        },
+        "value_objects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/type_ref"
+          }
+        },
+        "aggregate_candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "root",
+              "children"
+            ],
+            "properties": {
+              "root": {
+                "type": "string"
+              },
+              "children": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "applicability": {
+      "$ref": "#/$defs/applicability"
+    },
+    "active_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "philosophy",
+          "detection",
+          "severity",
+          "enabled_by"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "philosophy": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "detection": {
+            "$ref": "#/$defs/detection"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "ready"
+            ]
+          },
+          "severity": {
+            "$ref": "#/$defs/severity"
+          },
+          "implementation": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "enabled_by": {
+            "description": "gate / enabled_checks / experimental / ignore_gate / eval",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "skipped_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "reason"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "philosophy": {
+            "type": "string"
+          },
+          "detection": {
+            "$ref": "#/$defs/detection"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "findings": {
+      "description": "static のチェックの指摘（finalize 前。status はまだない）",
+      "type": "array",
+      "items": {
+        "$ref": "urn:sumidashi:schema:finding"
+      }
+    },
+    "candidates": {
+      "description": "hybrid のチェックの候補箇所。チェックID → 候補の配列。v0.1 では空",
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "location"
+          ],
+          "properties": {
+            "location": {
+              "type": "object",
+              "required": [
+                "file",
+                "start_line",
+                "end_line"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "adr_dir": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "adrs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "file",
+          "status",
+          "scope",
+          "exempts",
+          "usable_for_exemption"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^ADR-[0-9]{4}$"
+          },
+          "file": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "exempts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "usable_for_exemption": {
+            "description": "accepted で、scope と exempts がそろっている",
+            "type": "boolean"
+          },
+          "problems": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "coverage_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parse_errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "tool": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "const": "sumidashi"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "strictness": {
+      "type": "string",
+      "enum": [
+        "lenient",
+        "standard",
+        "strict"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "High",
+        "Medium",
+        "Low",
+        "Info"
+      ]
+    },
+    "detection": {
+      "type": "string",
+      "enum": [
+        "static",
+        "hybrid",
+        "llm"
+      ]
+    },
+    "layer": {
+      "type": "string",
+      "enum": [
+        "domain",
+        "application",
+        "adapter",
+        "infrastructure",
+        "main",
+        "shared",
+        "ignore"
+      ]
+    },
+    "type_ref": {
+      "type": "object",
+      "required": [
+        "name",
+        "file",
+        "line"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer"
+        }
+      }
+    },
+    "applicability": {
+      "description": "思想 → 適用判定",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "mode",
+          "reasons",
+          "severity_shift"
+        ],
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "full",
+              "dep-only",
+              "ent-vo-only",
+              "off"
+            ]
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "severity_shift": {
+            "type": "integer",
+            "maximum": 0
+          },
+          "source": {
+            "description": "auto / config / override / eval",
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "case": "ddd-evt-01/n1-ts",
+  "check": "DDD-EVT-01",
+  "label": "not_violation",
+  "split": "dev",
+  "description": "過去分詞のイベント名（規則変化・不規則変化・版の接尾辞つき）。Handler・Bus で終わる型は除外され、インフラ層の SyncRequestEvent はドメイン層でないので対象外。",
+  "findings": []
+}

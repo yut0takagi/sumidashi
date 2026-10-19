@@ -1,0 +1,30 @@
+{
+  "case": "ddd-ent-03/h1-py",
+  "check": "DDD-ENT-03",
+  "label": "violation",
+  "split": "holdout",
+  "description": "モジュラーモノリス（src/inventory/）のエンティティ Warehouse。識別子は warehouse_id。__init__ で公開属性を代入し、代入だけの set_status を持つ。",
+  "findings": [
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "violation",
+      "file": "src/inventory/domain/warehouse.py",
+      "start_line": 3,
+      "end_line": 3
+    },
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "violation",
+      "file": "src/inventory/domain/warehouse.py",
+      "start_line": 4,
+      "end_line": 4
+    },
+    {
+      "id": "DDD-ENT-03",
+      "verdict": "violation",
+      "file": "src/inventory/domain/warehouse.py",
+      "start_line": 8,
+      "end_line": 9
+    }
+  ]
+}

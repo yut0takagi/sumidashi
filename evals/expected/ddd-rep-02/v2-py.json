@@ -1,0 +1,30 @@
+{
+  "case": "ddd-rep-02/v2-py",
+  "check": "DDD-REP-02",
+  "label": "violation",
+  "split": "dev",
+  "description": "Python のリポジトリに SQLAlchemy・Django ORM の型が漏れている。ドメイン層の抽象クラスは Select と Session を引数に取り、アプリケーション層の OrderQueryRepo は QuerySet を返す。",
+  "findings": [
+    {
+      "id": "DDD-REP-02",
+      "verdict": "violation",
+      "file": "src/shop/domain/member_repository.py",
+      "start_line": 14,
+      "end_line": 14
+    },
+    {
+      "id": "DDD-REP-02",
+      "verdict": "violation",
+      "file": "src/shop/domain/member_repository.py",
+      "start_line": 17,
+      "end_line": 17
+    },
+    {
+      "id": "DDD-REP-02",
+      "verdict": "violation",
+      "file": "src/shop/application/order_query_repo.py",
+      "start_line": 7,
+      "end_line": 7
+    }
+  ]
+}

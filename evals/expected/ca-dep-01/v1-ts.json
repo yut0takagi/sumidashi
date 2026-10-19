@@ -1,0 +1,23 @@
+{
+  "case": "ca-dep-01/v1-ts",
+  "check": "CA-DEP-01",
+  "label": "violation",
+  "split": "dev",
+  "description": "ドメイン層がインフラ層とアプリケーション層のファイルを実行時に import している。同じファイルの uuid やドメイン内の import は対象外。",
+  "findings": [
+    {
+      "id": "CA-DEP-01",
+      "verdict": "violation",
+      "file": "src/domain/order.ts",
+      "start_line": 4,
+      "end_line": 4
+    },
+    {
+      "id": "CA-DEP-01",
+      "verdict": "violation",
+      "file": "src/domain/discount-policy.ts",
+      "start_line": 2,
+      "end_line": 5
+    }
+  ]
+}

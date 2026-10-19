@@ -1,0 +1,23 @@
+{
+  "case": "ca-dep-01/h1-ts",
+  "check": "CA-DEP-01",
+  "label": "violation",
+  "split": "holdout",
+  "description": "tsconfig の paths 別名（@/infrastructure/*・@/application/*）を通して、ドメイン層が外側の層を読み込んでいる。export ... from の再エクスポートも import として数える。",
+  "findings": [
+    {
+      "id": "CA-DEP-01",
+      "verdict": "violation",
+      "file": "src/domain/reservation.ts",
+      "start_line": 2,
+      "end_line": 2
+    },
+    {
+      "id": "CA-DEP-01",
+      "verdict": "violation",
+      "file": "src/domain/index.ts",
+      "start_line": 3,
+      "end_line": 3
+    }
+  ]
+}

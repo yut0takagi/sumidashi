@@ -1,0 +1,23 @@
+{
+  "case": "ca-dep-02/b1-ts",
+  "check": "CA-DEP-02",
+  "label": "borderline",
+  "split": "dev",
+  "description": "ドメイン層がバリデーション用のライブラリ（zod・class-validator）を import している。業務ルールの表現か入力検証かはコードだけでは決まらない。",
+  "findings": [
+    {
+      "id": "CA-DEP-02",
+      "verdict": "borderline",
+      "file": "src/domain/email-address.ts",
+      "start_line": 1,
+      "end_line": 1
+    },
+    {
+      "id": "CA-DEP-02",
+      "verdict": "borderline",
+      "file": "src/domain/shipping-address.ts",
+      "start_line": 1,
+      "end_line": 1
+    }
+  ]
+}

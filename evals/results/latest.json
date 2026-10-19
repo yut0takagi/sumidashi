@@ -1,0 +1,350 @@
+{
+  "schema_version": 1,
+  "tool_version": "0.1.0",
+  "generated_at": "2026-10-19T08:02:34+00:00",
+  "gate": {
+    "precision": 0.85,
+    "recall": 0.85
+  },
+  "runs": 5,
+  "checks": {
+    "CA-BND-02": {
+      "cases": 6,
+      "dev": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "holdout": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "has_holdout": true,
+      "borderline": {
+        "expected": 1,
+        "matched": 1,
+        "agreement": 1.0
+      },
+      "borderline_noise": 0,
+      "jaccard": 1.0,
+      "failures": [],
+      "all": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "gate_split": "holdout",
+      "precision": 1.0,
+      "recall": 1.0,
+      "passed": true
+    },
+    "CA-DEP-01": {
+      "cases": 6,
+      "dev": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "holdout": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "has_holdout": true,
+      "borderline": {
+        "expected": 2,
+        "matched": 2,
+        "agreement": 1.0
+      },
+      "borderline_noise": 0,
+      "jaccard": 1.0,
+      "failures": [],
+      "all": {
+        "tp": 6,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "gate_split": "holdout",
+      "precision": 1.0,
+      "recall": 1.0,
+      "passed": true
+    },
+    "CA-DEP-02": {
+      "cases": 7,
+      "dev": {
+        "tp": 8,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "holdout": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "has_holdout": true,
+      "borderline": {
+        "expected": 3,
+        "matched": 3,
+        "agreement": 1.0
+      },
+      "borderline_noise": 0,
+      "jaccard": 1.0,
+      "failures": [],
+      "all": {
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "gate_split": "holdout",
+      "precision": 1.0,
+      "recall": 1.0,
+      "passed": true
+    },
+    "CA-DEP-03": {
+      "cases": 6,
+      "dev": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "holdout": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "has_holdout": true,
+      "borderline": {
+        "expected": 1,
+        "matched": 1,
+        "agreement": 1.0
+      },
+      "borderline_noise": 0,
+      "jaccard": 1.0,
+      "failures": [],
+      "all": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "gate_split": "holdout",
+      "precision": 1.0,
+      "recall": 1.0,
+      "passed": true
+    },
+    "CA-DEP-04": {
+      "cases": 7,
+      "dev": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "holdout": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "has_holdout": true,
+      "borderline": {
+        "expected": 1,
+        "matched": 1,
+        "agreement": 1.0
+      },
+      "borderline_noise": 0,
+      "jaccard": 1.0,
+      "failures": [],
+      "all": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "gate_split": "holdout",
+      "precision": 1.0,
+      "recall": 1.0,
+      "passed": true
+    },
+    "DDD-ENT-03": {
+      "cases": 6,
+      "dev": {
+        "tp": 12,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "holdout": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "has_holdout": true,
+      "borderline": {
+        "expected": 2,
+        "matched": 2,
+        "agreement": 1.0
+      },
+      "borderline_noise": 0,
+      "jaccard": 1.0,
+      "failures": [],
+      "all": {
+        "tp": 15,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "gate_split": "holdout",
+      "precision": 1.0,
+      "recall": 1.0,
+      "passed": true
+    },
+    "DDD-EVT-01": {
+      "cases": 6,
+      "dev": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "holdout": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "has_holdout": true,
+      "borderline": {
+        "expected": 2,
+        "matched": 2,
+        "agreement": 1.0
+      },
+      "borderline_noise": 0,
+      "jaccard": 1.0,
+      "failures": [],
+      "all": {
+        "tp": 7,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "gate_split": "holdout",
+      "precision": 1.0,
+      "recall": 1.0,
+      "passed": true
+    },
+    "DDD-REP-02": {
+      "cases": 6,
+      "dev": {
+        "tp": 6,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "holdout": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "has_holdout": true,
+      "borderline": {
+        "expected": 3,
+        "matched": 3,
+        "agreement": 1.0
+      },
+      "borderline_noise": 0,
+      "jaccard": 1.0,
+      "failures": [],
+      "all": {
+        "tp": 8,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "gate_split": "holdout",
+      "precision": 1.0,
+      "recall": 1.0,
+      "passed": true
+    },
+    "DDD-VO-02": {
+      "cases": 6,
+      "dev": {
+        "tp": 7,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "holdout": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "has_holdout": true,
+      "borderline": {
+        "expected": 2,
+        "matched": 2,
+        "agreement": 1.0
+      },
+      "borderline_noise": 0,
+      "jaccard": 1.0,
+      "failures": [],
+      "all": {
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "gate_split": "holdout",
+      "precision": 1.0,
+      "recall": 1.0,
+      "passed": true
+    }
+  },
+  "applicability": {
+    "cases": 5,
+    "failed": 0,
+    "failures": []
+  }
+}

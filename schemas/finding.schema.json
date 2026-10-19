@@ -1,0 +1,291 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sumidashi:schema:finding",
+  "title": "sumidashi finding",
+  "description": "指摘1件。静的解析・principle-reviewer の両方がこの形で出し、finalize が重大度の調整と衝突裁定をかける。",
+  "type": "object",
+  "required": [
+    "id",
+    "severity",
+    "location",
+    "evidence",
+    "principle",
+    "suggestion",
+    "verdict",
+    "detection",
+    "tradeoff"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "description": "チェックID",
+      "type": "string",
+      "pattern": "^[A-Z]+(-[A-Z]+)?-[0-9]{2}$"
+    },
+    "philosophy": {
+      "type": "string"
+    },
+    "name": {
+      "description": "チェック名",
+      "type": "string"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "High",
+        "Medium",
+        "Low",
+        "Info"
+      ]
+    },
+    "location": {
+      "type": "object",
+      "required": [
+        "file",
+        "start_line",
+        "end_line"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "description": "リポジトリのルートからの相対パス",
+          "type": "string"
+        },
+        "start_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "end_line": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "summary"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "description": "該当コードの要約",
+          "type": "string"
+        },
+        "snippet": {
+          "description": "引用。10行以内",
+          "type": "string"
+        },
+        "facts": {
+          "description": "静的解析で確定した事実（依存の経路、型名など）",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "principle": {
+      "description": "破っている原則を1文で",
+      "type": "string"
+    },
+    "suggestion": {
+      "type": "object",
+      "required": [
+        "summary"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "type": "string"
+        },
+        "diff": {
+          "description": "差分案（unified diff）",
+          "type": "string"
+        },
+        "placement": {
+          "description": "ロジック配置の判定手順で結論が出た Q 番号と理由",
+          "type": "string"
+        }
+      }
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "violation",
+        "borderline"
+      ]
+    },
+    "detection": {
+      "type": "string",
+      "enum": [
+        "static",
+        "hybrid",
+        "llm"
+      ]
+    },
+    "tradeoff": {
+      "type": "object",
+      "required": [
+        "fix_cost",
+        "impact_if_ignored"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "fix_cost": {
+          "type": "string"
+        },
+        "impact_if_ignored": {
+          "type": "string"
+        },
+        "files_to_change": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "severity_trace": {
+      "description": "既定値から最終値までの調整の履歴",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "rule",
+          "from",
+          "to"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "rule": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "adr": {
+      "description": "例外の根拠にした ADR",
+      "type": "string"
+    },
+    "status": {
+      "description": "finalize 後の扱い。reported: 指摘一覧 / needs_review: 要確認 / held: 衝突により保留 / merged: 重複として統合 / aggregated: 同種まとめ / filtered: 厳しさ設定で非表示",
+      "type": "string",
+      "enum": [
+        "reported",
+        "needs_review",
+        "held",
+        "merged",
+        "aggregated",
+        "filtered"
+      ]
+    },
+    "status_reason": {
+      "type": "string"
+    },
+    "in_diff": {
+      "description": "差分の変更行に掛かっているか",
+      "type": "boolean"
+    },
+    "fingerprint": {
+      "description": "追跡用の安定ID（チェックID・ファイル・正規化した該当行から計算）",
+      "type": "string"
+    },
+    "severity_default": {
+      "description": "checks.yml の既定の重大度（finalize が付ける）",
+      "type": "string",
+      "enum": [
+        "High",
+        "Medium",
+        "Low",
+        "Info"
+      ]
+    },
+    "severity_hint": {
+      "description": "static のチェックが確かめた escalate・deescalate の条件。finalize の手順2で適用して消す",
+      "type": "object",
+      "required": [
+        "to",
+        "rule"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "to": {
+          "type": "string",
+          "enum": [
+            "High",
+            "Medium",
+            "Low",
+            "Info"
+          ]
+        },
+        "rule": {
+          "type": "string",
+          "enum": [
+            "escalate",
+            "deescalate"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "touches": {
+      "description": "location のほかに、差分との突き合わせに使う場所（CA-DEP-04 の循環の辺など）",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "file",
+          "start_line",
+          "end_line"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "type": "string"
+          },
+          "start_line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "end_line": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "held_by": {
+      "description": "衝突裁定で保留にしたときの、勝った側の指摘",
+      "type": "object",
+      "required": [
+        "id",
+        "ruling"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ruling": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
